@@ -1,0 +1,37 @@
+The Elder Scrolls Online\depot\eso0002.dat
+The Elder Scrolls Online\depot\eso0003.dat
+The Elder Scrolls Online\depot\eso0004.dat
+The Elder Scrolls Online\depot\eso0005.dat
+The Elder Scrolls Online\depot\eso0006.dat
+The Elder Scrolls Online\depot\eso0007.dat
+The Elder Scrolls Online\depot\eso0008.dat
+The Elder Scrolls Online\depot\eso0009.dat
+The Elder Scrolls Online\depot\eso001*.dat
+The Elder Scrolls Online\depot\eso002*.dat
+The Elder Scrolls Online\depot\eso0030.dat
+The Elder Scrolls Online\depot\eso0238.dat
+
+The Elder Scrolls Online\vo_de\esoaudiode0000.dat
+The Elder Scrolls Online\vo_de\esoaudiode0016.dat
+The Elder Scrolls Online\vo_de\esoaudiode0017.dat
+The Elder Scrolls Online\vo_de\esoaudiode0018.dat
+The Elder Scrolls Online\vo_de\esoaudiode0019.dat
+The Elder Scrolls Online\vo_de\esoaudiode0020.dat
+
+The Elder Scrolls Online\vo_en\esoaudiode0000.dat
+The Elder Scrolls Online\vo_en\esoaudiode0016.dat
+The Elder Scrolls Online\vo_en\esoaudiode0017.dat
+The Elder Scrolls Online\vo_en\esoaudiode0018.dat
+The Elder Scrolls Online\vo_en\esoaudiode0019.dat
+The Elder Scrolls Online\vo_en\esoaudiode0020.dat
+
+The Elder Scrolls Online\vo_fr\esoaudiode0000.dat
+The Elder Scrolls Online\vo_fr\esoaudiode0016.dat
+The Elder Scrolls Online\vo_fr\esoaudiode0017.dat
+The Elder Scrolls Online\vo_fr\esoaudiode0018.dat
+The Elder Scrolls Online\vo_fr\esoaudiode0019.dat
+The Elder Scrolls Online\vo_fr\esoaudiode0020.dat
+
+The Elder Scrolls Online\vo_soundsets\esoaudiosoundsets0001.dat
+The Elder Scrolls Online\vo_soundsets\esoaudiosoundsets0002.dat
+The Elder Scrolls Online\vo_soundsets\esoaudiosoundsets0003.dat

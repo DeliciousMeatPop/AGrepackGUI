@@ -1,0 +1,373 @@
+CYBERPUNK 2077 — UMOWA UŻYTKOWNIKA KOŃCOWEGO
+Ostatnia aktualizacja: 10 grudnia 2020 r.
+
+Witaj, dzięki za zainteresowanie Cyberpunkiem 2077! Tę umowę napisaliśmy, aby wyjaśnić, co możesz z grą robić, a czego nie. Ujęliśmy ją na tyle prosto, na ile pozwala prawo. Dodaliśmy też krótkie streszczenia, aby pomóc Ci ją zrozumieć. Stworzył je prawdziwy cyberpunk z Night City, który całkiem nieźle ogarnia tłumaczenie z prawniczej nowomowy na ludzki język. Musisz jednak wiedzieć, że prawnie wiążący jest mimo wszystko tylko pełny tekst z lewej strony.
+ 
+OGÓLNE STRESZCZENIE:
+1.		Drogi Graczu, masz przed sobą umowę między Tobą a nami — CD PROJEKT RED — dotyczącą gry Cyberpunk 2077.
+2.		Udzielamy Ci prawa do grania w nią, mając szczerą nadzieję, że da Ci ona sporo radości. Jej powstanie to owoc dobrych kilku lat naszej pracy, więc dodajmy, że jako nasza twórczość stanowi ona naszą własnością intelektualną i taką pozostanie. W niczym nie ogranicza to Twojej zabawy, prawda? ;)
+3.		W tej Umowie znajdziesz przykłady rzeczy, których nie powinieneś robić z Cyberpunkiem 2077. Porusza ona też kilka spraw takich jak arbitraż, zasady odpowiedzialności i wszystko inne czego tam jeszcze prawnikom potrzeba (staramy się jednak grać fair).
+4.		Kochamy twórczość naszych fanów! Dlatego też stworzyliśmy Zasady dotyczące Treści Fanowskich[https://cdprojektred.com/fan-content], mające pomóc odpowiedzieć sobie na pytanie, co jest OK, a co nie. Gwoli jasności w pełni akceptujemy streamy i Let’s Playe (w tym monetyzację), o ile twórcy przestrzegają tych właśnie Zasad [https://cdprojektred.com/fan-content] (między innymi prosimy, aby oglądanie Waszych treści nie wiązało się dla odbiorców z żadnymi opłatami).
+5.		Chcemy też jasno powiedzieć, jakie dane zbieramy (a jakich nie) i do czego je wykorzystujemy. Sprawę danych traktujemy poważnie, dlatego prosimy Cię o przeczytanie Polityki prywatności [https://regulations.cdprojektred.com/privacy_policy].
+6.		Może się tak zdarzyć, że Umowa, którą teraz czytasz, zostanie zmieniona. Jeżeli to nastąpi, zaktualizowaną wersję zamieścimy online.
+7.		Nie jesteśmy fanatykami zasad, ale jeżeli POWAŻNIE je naruszysz, możesz utracić dostęp do gry (na jakiś czas albo na zawsze). Jesteśmy pewni, że wszystko będzie OK, ale prawnicy kazali nam to na wszelki wypadek napisać.
+
+PEŁNY TEKST
+
+1	O UMOWIE
+
+1.1	Niniejsza Umowa. Niniejsza Umowa licencyjna użytkownika końcowego (krócej: „Umowa”) stanowi wiążącą umowę między Tobą a CD PROJEKT S.A. z siedzibą w Warszawie przy ul. Jagiellońskiej 74, kod pocztowy 03-301.
+ 
+Dla jasności „CD PROJEKT RED” to nazwa studia będącego częścią CD PROJEKT S.A. i dlatego w dalszej części Umowy piszemy o sobie „CD PROJEKT RED”, „my”, “nas” itd. 
+ 
+Umowa dotyczy stworzonej przez nas gry Cyberpunk 2077, w tym kluczy i kodów do niej („Cyberpunk 2077” albo „gra” obejmuje wszystkie te rzeczy ).
+
+1.2	Zawarcie Umowy. Umowa stanie się dla Ciebie i dla nas wiążąca, kiedy pobierzesz Cyberpunka 2077, zainstalujesz go albo zaczniesz z niego korzystać (w zależności od tego, co zrobisz najpierw). Jeżeli więc nie zgadzasz się na zawarcie Umowy, żadnej z tych rzeczy nie wolno Ci zrobić.
+
+1.3	Pozostałe dokumenty. Prosimy przeczytaj: (a) Zasady dotyczące Treści Fanowskich [https://cdprojektred.com/fan-content]  — wyjaśniające, co można robić z treściami pochodzącymi z gry Cyberpunk 2077 lub opartymi na niej, a co nie; (b) ogólną Umowę użytkownika [https://regulations.cdprojektred.com/user_agreement] CD PROJEKT RED — regulującą ogólne kwestie prawne takie jak obsługa klienta, wsparcie techniczne, oficjalne fora, gropedie oparte na Wiki, blogi i media społecznościowe ; (c) Politykę Prywatności [https://regulations.cdprojektred.com/privacy_policy] — szczegółowo omawiającą zbieranie, wykorzystywanie i ochronę Twoich danych osobowych przez CD PROJEKT RED. Wszystkie te dokumenty stanowią część Umowy i wszystkie mogą podlegać dalszym zmianom. Do pobrania gry i grania w nią może okazać się też konieczne zaakceptowanie i przestrzeganie regulaminów platform dystrybucyjnych takich jak nasz wspaniały siostrzany GOG.
+
+2 	OGRANICZENIA WIEKOWE I OSTRZEŻENIA ZWIĄZANE Z TREŚCIĄ
+
+2.1	Ograniczenia wiekowe. Cyberpunk 2077 ma ograniczenia dotyczące wieku minimalnego (np. w skalach PEGI i ESRB), które mogą różnić się w zależności od miejsca przebywania, a które będą widoczne przy zakupie. Aby móc grać, musisz spełniać te kryteria wiekowe. Jeżeli spełniasz wskazany wiek minimalny i masz: (a) więcej niż 18 lat (albo inny wiek pełnoletności w Twoim kraju) — witamy w świecie Cyberpunka 2077; (b) powyżej 17, ale poniżej 18 lat (albo innego wieku pełnoletności w Twoim kraju) — zanim będziemy mogli powitać Cię z równą serdecznością, o przeczytanie i zaakceptowanie Umowy w Twoim imieniu poproś rodzica lub opiekuna (ponieważ w niektórych krajach osoby poniżej pewnego wieku nie mogą zawierać  umów, takich jak ta), który powinien również nadzorować Twoje korzystanie z gry. Jeżeli masz lat mniej niż 17 albo mniej, niż wymaga ograniczenie wiekowe w Twoim kraju, nie możesz korzystać z gry ani jej pobierać. W końcu jednak kiedyś będziemy mogli Cię zaprosić do Night City!
+
+2.2	Ostrzeżenia dotyczące treści. Cyberpunk 2077 zawiera sceny przemocy, seksu i zażywania narkotyków, co niektórym osobom może przeszkadzać. Jeżeli jesteś osobą wrażliwą na takie treści, weź to pod rozwagę przed rozpoczęciem gry.
+
+3	KORZYSTANIE Z CYBERPUNK 2077
+
+3.1	Licencja. CD PROJEKT RED udziela Ci osobistej, ograniczonej, odwołalnej, niewyłącznej i nieprzenoszalnej licencji na wyświetlanie, oglądanie, pobieranie, instalowanie, uruchamianie i używanie Cyberpunk 2077 na Twoim urządzeniu/platformie (komputerze osobistym, konsoli itd.) z listy pozycji wyraźnie zatwierdzonych przez CD PROJEKT RED, dostępnej pod adresem: [https://www.cyberpunk.net/], zależnie na jakie urządzenie lub na jaką platformę gra została zakupiona. Licencja obejmuje jedynie Twój osobisty użytek (a więc nie możesz gry podarować, sprzedać ani użyczyć innej osobie, udzielić dalszej licencji, dokonać cesji ani w żaden inny sposób przenieść jej na inną osobę) i nie przenosi na Ciebie żadnych praw związanych z własnością gry.
+
+3.2	 Ostrzeżenie dla epileptyków. Cyberpunk 2077 może zawierać migotanie światła i obrazu, co może wywołać atak epilepsji. Jeżeli cierpisz na tę chorobę albo cierpi na nią inny domownik, przed graniem w Cyberpunk 2077 zasięgnij porady lekarskiej. Jeżeli w związku z grą wystąpią zawroty głowy, zaburzenia widzenia, skurcze powiek i mięśni oczu, mimowolne ruchy lub drgawki, natychmiast przerwij grę i skonsultuj się z lekarzem.
+
+4	MINIMALNE WYMAGANIA I MONITOROWANIE
+
+4.1	Minimalne wymagania. Cyberpunk 2077 ma minimalne wymagania zależnie od wyboru urządzenia, systemu i platformy — wymagania te będą podane na stronie sklepu. Przed zakupem sprawdź, czy je spełniasz! Choć Cyberpunk 2077 nie ma DRM ani żadnego innego zabezpieczenia przed kopiowaniem, niektórzy producenci urządzeń, systemów i platform korzystają z technologii zabezpieczających, nad którymi nie mamy kontroli.
+
+4.2	Monitorowanie. Mając na celu poprawę jakości rozgrywki, zapobieganie działaniom zakazanym w art. 7 Umowy, ochronę integralności Cyberpunka 2077 i egzekwowanie niniejszej Umowy, możemy posłużyć się narzędziami informatycznymi działającymi w tle na Twoim urządzeniu lub powiązanych z nim urządzeniach w trakcie Twojej rozgrywki. Część tych narzędzi jest opcjonalna i będzie uruchamiać się tylko za Twoją zgodą. Jeżeli zajdzie potrzeba wprowadzenia narzędzi obowiązkowych, najpierw Cię o tym powiadomimy (np. w grze lub na stronie internetowej gry). Bardziej szczegółowe informacje na ten temat znajdziesz w Polityce Prywatności.
+
+5	PATCHE, AKTUALIZACJE I ZMIANY
+
+Możemy (ale nie mamy obowiązku) wprowadzać do gry patche, aktualizacje i zmiany (na przykład dodawać i usuwać funkcje, poprawiać błędy i dostrajać równowagę — „balans” — gry). Wynikiem tego będą aktualizacje, które mogą być obowiązkowe i automatyczne, a stare, niezaktualizowane wersje gry mogą przestać nadawać się do użytku. Takie uprawnienie jest nam potrzebne do zapewnienia sprawnego działania gry i dlatego zastrzegamy je sobie bez konieczności uprzedzania Cię o takich działaniach.
+
+6	PRAWA WŁASNOŚCI INTELEKTUALNEJ
+
+6.1	Prawo do Cyberpunka 2077. Cyberpunk 2077, w tym jego komponenty wizualne, postacie, linie fabularne, oprawa artystyczna, animacje, projekty, przedmioty, ścieżka muzyczna, efekty dźwiękowe, dialogi, grafika, kod,, interfejs użytkownika, wygląd i sposób działania, mechanika gry, przebieg rozgrywki, klipy audio i wideo, tekst, układ, bazy danych, dane oraz wszelkie inne treści i wszystkie Prawa Własności Intelektualnej (zdefiniowane poniżej) oraz wszelkie inne prawem przewidziane uprawnienia i prawa do eksploatacji albo są własnością CD PROJEKT RED albo są licencjonowane od podmiotów trzecich. Wszystkie prawa do Cyberpunka 2077 są zastrzeżone, z wyjątkiem tych wskazanych w Umowie. Nie możesz używać ani eksploatować żadnej części Cyberpunk 2077 w sposób inny niż wyjaśniony w tej Umowie i naszych Zasadach dotyczących Twórczości Fanowskiej. Cyberpunk 2077 wraz ze wszystkimi Prawami Własności Intelektualnej podlega ochronie prawa autorskiego, znaków towarowych i innych praw własności intelektualnej na całym świecie.
+
+„Prawa własności intelektualnej” oznaczają wszelkie osobiste i majątkowe prawa autorskie, znaki towarowe, znaki usługowe, renomę, firmę, oznaczenia przedsiębiorstwa, inne nazwy handlowe, domeny, prawa z rejestracji wzorów przemysłowych,  prawa do baz danych, patenty, prawa do wzorów użytkowych, know how, tajemnice handlowe i informacje poufne, prawa do artystycznych wykonań, prawa do fonogramu i wideogramu, prawo do wizerunku,, a także wszelkie inne prawa własności intelektualnej, które obecnie już istnieją bądź powstaną w przyszłości w dowolnej części świata, niezależnie od rejestracji i zdolności rejestracyjnej, w tym będące przedmiotem wniosku o rejestrację,  podział, przedłużenie, ponowne udzielenie, odnowienie, wydłużenie, czy przeniesienie zwrotne.
+
+6.2	Własność podmiotów trzecich. CD PROJEKT RED szanuje prawa własności intelektualnej przysługujące innym podmiotom. Jeżeli uważasz, że w Cyberpunk 2077 bądź za jego pośrednictwem Twoje prawa zostały naruszone, skontaktuj się z nami pod adresem legal@cdprojektred.com.
+
+7	ZASADY KORZYSTANIA Z CYBERPUNK 2077
+
+Gra w Cyberpunk 2077 wymaga przestrzegania również pewnych innych reguł. Zapoznaj się z zasadami przedstawionymi poniżej oraz z treścią Zasad dotyczących Twórczości Fanowskiej [https://cdprojektred.com/fan-content], bo ich nieprzestrzeganie będzie uważane za „istotne naruszenie” Umowy mogące prowadzić do zawieszenia, a nawet utraty przez Ciebie dostępu do Cyberpunka 2077. 
+ 
+A oto te zasady:
+ 
+a) Użytek osobisty. Z Cyberpunk 2077 korzystać możesz jedynie dla własnego użytku osobistego, a nie możesz korzystać w celach komercyjnych, z wyjątkiem wyraźnie dopuszczonych w Zasadach dotyczących Twórczości Fanowskiej.
+
+b) Prawo właściwe. W trakcie korzystania z Cyberpunka 2077 musisz przestrzegać wszystkich znajdujących zastosowanie przepisów prawa i innych regulacji.
+ 
+c) Zakaz przenoszenia. Nie wolno w żaden sposób inny niż wyraźnie dopuszczony w Umowie podejmować prób kopiowania, wypożyczania, kupowania, sprzedawania, udostępniania, wynajmowania, sublicencjonowania, cesji, rozpowszechniania, publikowania ani wyświetlania publicznie Cyberpunka 2077. Nie wolno również kraść ani przywłaszczać kluczy/kodów do gry. Jeżeli masz obawę, że padłeś ofiarą któregoś z tych zachowań, skontaktuj się z https://support.cdprojektred.com/en/.
+ 
+d) Nadużycie techniczne. Nie wolno Cyberpunka 2077 modyfikować, łączyć, rozprowadzać, tłumaczyć, poddawać inżynierii wstecznej, podejmować prób pozyskania lub wykorzystania kodu źródłowego, dekompilacji bądź deasemblacji, chyba że wyraźnie pozwala na to stosowna norma prawa.
+
+e) Hakowanie i oszustwa. Nie wolno tworzyć, wykorzystywać, udostępniać ani rozpowszechniać oszustw („cheatów”). Oszustwa rozumiemy jako wykorzystywanie niedopracowań, oprogramowanie automatyzujące, roboty, boty, hacki, „pająki”, oprogramowanie szpiegujące, skrypty, trainery, narzędzia ekstrakcyjne i inne oprogramowanie w jakikolwiek sposób wchodzące w interakcję z Cyberpunk 2077 bądź wpływające na jego działanie (w tym wszelkie niedozwolone programy stron trzecich pobierające informacje na temat Cyberpunka 2077 przez odczyt obszarów pamięci wykorzystywanych przez grę do przechowywania informacji).
+
+f) 	Usługi CD PROJEKT RED. Nie wolno w sposób umyślny ani na skutek lekkomyślności lub niedbalstwa  ingerować w usługi CD PROJEKT RED takie, jak obsługa klienta i wsparcie techniczne ani podszywać się pod personel firmy.
+ 
+g) Systemy informatyczne CD PROJEKT RED. Nie wolno w sposób umyślny ani na skutek lekkomyślności lub niedbalstwa ingerować w objęte ograniczeniami dostępu obszary oprogramowania sieciowego i serwerów CD PROJEKT RED i stron trzecich, w tym na drodze tunelowania, wstrzykiwania bądź wstawiania kodu, odmowy obsługi (denial of service), wprowadzania zmian (modyfikacji) do oprogramowania, posługiwania się jakimkolwiek innym podobnym oprogramowaniem razem z oprogramowaniem CD PROJEKT RED, za pomocą emulacji protokołu, tworzenia lub wykorzystywania prywatnych serwerów i innych analogicznych usług dotyczących Cyberpunk 2077.
+
+h) Eksploracja danych. Nie wolno przechwytywać, ekstrahować ani w inny sposób pobierać danych osobowych ani informacji poufnych z Cyberpunk 2077.
+ 
+i) 	Nazwy. Nazw „CD PROJEKT RED”, „CYBERPUNK 2077” ani innych nazw, logotypów i znaków towarowych grupy CD PROJEKT RED nie wolno wykorzystywać bez wyraźnego upoważnienia od CD PROJEKT RED.   
+
+j) 	Zawartość naruszająca. Nie wolno z Cyberpunk 2077 robić niczego, co naruszałoby jakiekolwiek Prawa Własności Intelektualnej, prywatność i inne.  
+
+k) Złośliwy kod. Nie wolno wgrywać żadnych plików zawierających złośliwy kod, w tym wirusów, oprogramowania szpiegującego, koni trojańskich, robaków, bomb czasowych, umyślnie uszkodzonych danych ani jakichkolwiek innych plików zawierających złośliwy kod bądź mogących w jakikolwiek sposób ingerować w działanie Cyberpunk 2077 lub uszkadzać grę.
+ 
+l) 	Oznakowania geograficzne. Prosimy o przestrzeganie wszystkich znajdujących zastosowanie ograniczeń, wymogów i reguł geograficznych, językowych i regionalnych dotyczących Cyberpunk 2077.
+ 
+m) Bądź miły! Nie mów ani nie rób niczego, co jest albo może być uznane za rasistowskie, nękające, ksenofobiczne, seksistowskie, dyskryminujące, naruszające dobra osobiste, zniesławiające ani w inny sposób niewłaściwe bądź niezgodne z prawem i nie korzystaj w taki sposób z Cyberpunk 2077.
+
+8	TREŚCI FANOWSKIE
+
+Zapoznaj się z Zasadami dotyczącymi Treści Fanowskich [https://cdprojektred.com/fan-content], aby dowiedzieć się, w jakich sytuacjach i w jaki sposób można tworzyć treści społecznościowe odnoszące się do Cyberpunk 2077 (np. fanarty, strony internetowe, klipy, streamy, let’s playe itp.) oraz jak zapatrujemy się na nie z punktu widzenia naszych praw i licencji.
+
+9	INFORMACJE ZWROTNE I RAPORTY BŁĘDÓW
+
+9.1	Informacje zwrotne. Kochamy feedback ze społeczności graczy, więc jeśli chcesz opowiedzieć nam o swoich doświadczeniach, skontaktuj się z zespołem supportu pod adresem https://support.cdprojektred.com/en/. Pamiętaj tylko, że każdą otrzymaną sugestię możemy wykorzystać albo i nie — nie bierzemy na siebie z tego tytułu żadnych zobowiązań, a jeśli tę sugestię w jakiś sposób wykorzystamy w związku z grą, nie mamy obowiązku finansowo ani w żaden inny sposób Cię za nią wynagradzać.
+
+9.2	Raporty błędów. Jeżeli coś pójdzie nie tak, możemy poprosić Cię o przesłanie raportu błędów, co pomoże nam ulepszyć kod gry na przyszłość. Raporty te są opcjonalne i mogą zawierać dane osobowe (więcej informacji patrz Polityka Prywatności).
+
+10	TREŚĆ OBCA I USŁUGI ZEWNĘTRZNE
+
+Za pośrednictwem Cyberpunka 2077 możesz otrzymywać od nas linki do zewnętrznych stron internetowych lub innych treści. Możesz też uruchamiać Cyberpunka 2077 z różnych urządzeń, systemów i platform. Ze wszystkiego tego korzystasz dobrowolnie — nie możemy zagwarantować ich działania ani tego, że będą dostępne za darmo. Poszczególne urządzenia/systemy/platformy mogą również podlegać własnym regulaminom, które musisz przejrzeć przed korzystaniem.
+
+11	GWARANCJE
+
+11.1 Nasze gwarancje. Gwarantujemy, że: (a) jesteśmy uprawnieni do zawarcia niniejszej Umowy i udzielenia Ci licencji na korzystanie z Cyberpunka 2077, o której mowa w art. 3; (b) dołożymy należytej staranności w związku z Cyberpunkiem 2077 i Twoim korzystaniem z niego; oraz (c) dołożymy rozsądnych starań, aby przy wykonywaniu wobec Ciebie zobowiązań z niniejszej Umowy stosować się do wszystkich znajdujących zastosowanie przepisów prawa.
+ 
+11.2 Twoje oświadczenia i gwarancje. Oświadczasz i zapewniasz, że masz pełne prawo i pełną zdolność do zawarcia niniejszej Umowy i będziesz w pełni przestrzegać jej postanowień.
+
+12	ODPOWIEDZIALNOŚĆ
+
+Niniejszy art. 12 nie stosuje się do Ciebie, jeżeli jesteś rezydentem Unii Europejskiej lub kraju, którego prawo wyraźnie zakazuje poniższych ograniczeń odpowiedzialności, ale stosuje się do Ciebie, jeżeli mieszkasz gdzie indziej, w tym w USA.
+ 
+12.1 Wyłączenie odpowiedzialności. Z Cyberpunka 2077 korzystasz na własne ryzyko. Z wyjątkami wskazanymi w treści tej Umowy CD PROJEKT RED wraz ze swoimi podmiotami powiązanymi, partnerami i licencjodawcami wykluczają wszelkie wyraźne i dorozumiane gwarancje i zapewnienia dotyczące Cyberpunka 2077. Cyberpunk 2077 jest Ci udostępniany w stanie takim, w jakim jest, i na miarę dostępności, bez jakichkolwiek wyraźnych ani dorozumianych gwarancji, a my nie odpowiadamy za żadne szkody i straty wynikające z korzystania przez Ciebie z gry bądź z braku możliwości takiego korzystania. W najszerszym zakresie, na jaki pozwalają stosowne normy prawa, wykluczamy wszelkie gwarancje wyraźne i dorozumiane, jakie mogłyby mieć zastosowanie do Cyberpunka 2077, w tym: dorozumiane gwarancje tytułu prawnego, braku naruszenia praw, zdatności do obrotu handlowego, satysfakcjonującej jakości, zdatności do konkretnego celu, jak również gwarancji mogących wynikać z praktyki postępowania, praktyki wykonywania zobowiązań lub zwyczaju handlowego, gwarancje wolności od wirusów, błędów i wad, a także wszelkie gwarancje dotyczące trafności, zgodności z prawem, wiarygodności i jakości jakichkolwiek treści i informacji zawartych w Cyberpunk 2077. Nie gwarantujemy, że Cyberpunk 2077 będzie wolny od przerw w dostępności i błędów, że błędy będą korygowane ani że gra będzie wolna od wirusów i innych szkodliwych komponentów.
+ 
+12.2 Ograniczenie naszej odpowiedzialności. W maksymalnym zakresie, na jaki pozwalają stosowne normy prawa, CD PROJEKT RED wraz z podmiotami powiązanymi, partnerami i licencjodawcami wykluczają swoją odpowiedzialność  wobec Ciebie za jakiekolwiek utracone zyski, opłaty i wydatki, utratę danych, zniekształcenia bądź utratę informacji, utratę korzyści związanych z działalnością gospodarczą, jak również z tytułu jakichkolwiek strat, szkód i odszkodowań/zadośćuczynień o charakterze specjalnym, pośrednim, karnym, przykładowym lub wynikowym, jak również za jakiekolwiek zakłócenia, w każdym z tych przypadków niezależnie od tego, czy podstawa opierałaby się na naruszeniu umowy, czynie niedozwolonym (w tym zaniedbanie, naruszenie obowiązku ustawowego, naruszenie umowy, naruszenie gwarancji, odpowiedzialność niezależna od winy), nieprawdziwości oświadczenia, przywróceniu do stanu poprzedniego, czy też byłaby jeszcze inna, niezależnie od tego, czy dana strona była poinformowana o możliwości wystąpienia danej szkody.
+ 
+12.3 LIMIT KWOTOWY NASZEJ ODPOWIEDZIALNOŚCI. W MAKSYMALNYM ZAKRESIE, NA JAKI POZWALAJĄ STOSOWNE NORMY PRAWA, ŁĄCZNA KWOTA ODPOWIEDZIALNOŚCI CD PROJEKT RED WRAZ Z PODMIOTAMI POWIĄZANYMI, PARTNERAMI I LICENCJODAWCAMI WOBEC CIEBIE W ZWIĄZKU Z CYBERPUNKIEM 2077 LUB NINIEJSZĄ UMOWĄ W ŻADNYM RAZIE NIE MOŻE PRZEKRACZAĆ KWOTY RÓWNEJ SUMIE OPŁAT FAKTYCZNIE PONIESIONYCH PRZEZ CIEBIE NA NASZĄ RZECZ W ZWIĄZKU Z KWESTIAMI LEŻĄCYMI U PODSTAW JAKICHKOLWIEK ROSZCZEŃ. KWOTA, O KTÓREJ MOWA WYŻEJ, JEST JEDYNYM I WYŁĄCZNYM ŚRODKIEM PRZYSŁUGUJĄCYM CI W ZWIĄZKU Z NINIEJSZĄ UMOWĄ.
+ 
+12.4 Zwolnienie nas z odpowiedzialnośc przez Ciebie. Zobowiązujesz się zwolnić i zabezpieczyć CD PROJEKT RED wraz z podmiotami powiązanymi, licencjodawcami i partnerami (oraz zapewnić im to zwolnienie i zabezpieczenie na stałe) z tytułu wszelkich szkód, odszkodowań, roszczeń i wydatków, w tym opłat za pomoc prawną, w związku z: (a) wszelkim rzeczywistym lub domniemanym naruszeniem przez Ciebie tej Umowy; (b) korzystaniem z Cyberpunk 2077 przez Ciebie bądź inną osobę w Twoim imieniu; (c) naruszeniem Praw Własności Intelektualnej CD PROJEKT RED lub podmiotów powiązanych, licencjodawców i partnerów. W razie skierowania do nas roszczeń będziesz w pełni z nami współdziałać, przy czym zastrzegamy sobie prawo do przejęcia i prowadzenia obrony przed takimi roszczeniami. Żadnych takich roszczeń nie możesz załatwić ugodowo w całości ani w części bez naszej uprzedniej pisemnej zgody.
+ 
+12.5 Uprawnienie do świadczeń w naturze. Wyrażasz zgodę, że żadne poniesione przez Ciebie straty i szkody nie są niepowetowane i że inne środki będą adekwatne, w związku z czym nie przysługuje Ci uprawnienie do świadczeń w naturze ani żadnych innych zasądzeń opartych na systemie zasad słuszności (equity) od CD PROJEKT RED lib podmiotów powiązanych, licencjodawców i partnerów.
+ 
+12.6 Rezydenci Kalifornii. Jeżeli jesteś rezydentem stanu Kalifornia, przysługuje Ci prawo do następujących konkretnych informacji z zakresu praw konsumentami: możesz skontaktować się z Komórką ds. Pomocy przy Skargach w Wydziale Usług Konsumenckich Departamentu Spraw Konsumenckich pocztą na adres: Complaint Assistance Unit, Division of Consumer Services, Department of Consumer Affairs, 400 R St., Suite 1080, Sacramento, California, 95814, bądź telefonicznie pod numerem lokalnym 916.445.1254. Rezydenci Kalifornii udzielają wyraźnej zgody na zrzeczenie się art. 1542 Kodeksu cywilnego Kalifornii, który stanowi: „Ogólne zwolnienie nie obejmuje roszczeń, co do których uprawniony nie wie i nie podejrzewa, że istnieją i mu przysługują w chwili udzielania zwolnienia, a które gdyby były mu znane, musiałyby w istotny sposób wpłynąć na ugodę zawartą ze zobowiązanym”.
+
+13	ROZWIĄZANIE UMOWY
+
+13.1 Twoje prawa w przypadku rozwiązania Umowy. Możesz rozwiązać Umowę w dowolnym czasie przez trwałe zaprzestanie korzystania z Cyberpunka 2077. Rozwiązanie Umowy nie wpływa na istniejące już prawa i obowiązki — ani Twoje, ani nasze.
+
+13.2 Nasze prawa w przypadku rozwiązania Umowy. Możemy zawiesić, a nawet zakończyć Twój dostęp do Cyberpunka 2077 i tę Umowę, jeżeli dopuścisz się istotnego naruszenia Umowy, w tym naruszenia, które jest poważne lub może prowadzić do poważnej szkody dla Cyberpunka 2077, jego użytkowników lub CD PROJEKT RED lub podmiotów powiązanych, licencjodawców i partnerów. W szczególności odnosi się to do zasad Cyberpunka 2077, które wymieniliśmy w art. 7 Umowy. W miarę możliwości postaramy się z Tobą skontaktować, aby wyjaśnić motywy naszego działania i poinformować Cię, co (jeżeli cokolwiek w ogóle) możesz w takiej sytuacji zrobić. Jeżeli zawiesimy albo zakończymy Twój dostęp do Cyberpunka 2077 i samą Umowę w związku z naruszeniem przez Ciebie Umowy, nie będziemy wobec Ciebie mieć żadnych zobowiązań.
+
+13.3 Zakończenie korzystania z Cyberpunk 2077. Wydaje się to bardzo mało prawdopodobne, ale jeżeli kiedyś będziemy musieli zakończyć udostępnianie Cyberpunka 2077 (w całości albo w części, tj. np. na którejś z platform) na stałe i powodem tego nie będzie naruszenie przez Ciebie Umowy, postaramy się dać Ci znać przynajmniej na 120 (sto dwadzieścia) dni naprzód przez powiadomienie na naszej stronie internetowej.).
+
+14	SIŁA WYŻSZA
+
+Żadna ze stron nie odpowiada za szkody wyrządzone w związku z niewykonaniem zobowiązania, bądź jego opóźnieniem, w całości albo w części jeżeli nastąpiło to na skutek Siły Wyższej.
+
+„Siła Wyższa” oznacza jakąkolwiek przyczynę całkowicie albo częściowo uniemożliwiającą stronie wywiązanie się z jej zobowiązań w wyniku bądź w związku z działaniami, zdarzeniami, zaniechaniami i wypadkami znajdujących się poza rozsądną kontrolą strony doznającej przeszkody, w tym: strajków, strajków okupacyjnych i innych sporów branżowych (w tym dotyczących pracowników danej strony), incydentów nuklearnych, sił przyrody, wojny, działań terrorystycznych, zamieszek, rozruchów, złośliwego działania (z wyjątkiem pracowników odnośnej strony bądź jej podwykonawców), przestrzegania jakichkolwiek norm prawnych i nakazów organu władzy, regulacji i wskazań, czy też działań branżowych podejmowanych przez pracowników dostawców energii elektrycznej, awarii obiektów technicznych, działalności ha\kerskiej, ataków denial of service bądź innych ataków informatycznych, posłużenia się złośliwym oprogramowaniem o charakterze wirusowym lub podobną technologią, pandemii (np. COVID-19), pożaru, powodzi, naruszenia ze strony dostawców i podwykonawców.
+
+15	PRAWO WŁAŚCIWE
+
+15.1 Jeżeli jesteś rezydentem Unii Europejskiej albo jakiegokolwiek innego miejsca na świecie innego niż Stany Zjednoczone:
+
+Zgodnie postanawiamy, że zarówno korzystanie przez Ciebie z Cyberpunk 2077, jak i niniejsza Umowa wraz ze wszelkimi wynikającymi z niej kwestiami podlegają prawu polskiemu i zgodnie z tym prawem będą interpretowane, a wszelkie spory będą podlegać wyłącznej jurysdykcji krajowej sądów polskich. Strona wygrywająca uprawniona będzie do zwrotu kosztów postępowania i pomocy prawnej stosownie do właściwych przepisów. 
+
+Jeżeli jesteś rezydentem Stanów Zjednoczonych:
+
+W zakresie nieobjętym art. 16 Umowy w części o rozwiązywaniu sporów i zapisie na sąd polubowny zgodnie postanawiamy, że korzystanie przez Ciebie z Cyberpunka 2077 oraz niniejsza Umowa i wszystkie związane z tym kwestie uważa się za zawarte w Los Angeles w Kalifornii oraz podlegające prawu stanu Kalifornia i zgodnej z tym prawem wykładni (w razie zastosowania obejmuje to również prawo federalne) bez względu na reguły kolizyjne. Wszelkie Twoje roszczenia przeciwko CD PROJEKT RED w zakresie nieobjętym art. 16 Umowy w części o rozwiązywaniu sporów i zapisie na sąd polubowny podnoszone będą wyłącznie przed sądami stanowymi i federalnymi z siedzibą w Los Angeles w Kalifornii, którym to będzie przysługiwać jurysdykcja wyłączna nad naszym sporem, a zatem na tę ich jurysdykcję wspólnie wyrażamy zgodę. Ponadto zrzekasz się wszelkich praw do kwestionowania jurysdykcji i właściwości sądów stanowych i federalnych w Los Angeles w Kalifornii. Strona wygrywająca uprawniona będzie do zwrotu kosztów postępowania i pomocy prawnej stosownie do właściwych przepisów.
+
+16	ROZWIĄZYWANIE SPORÓW I ZAPIS NA SĄD POLUBOWNY
+
+16.1 Spory. Jeżeli masz jakieś problemy w związku z korzystaniem z Cyberpunk 2077 lub jakiekolwiek zarzuty do nas, mamy nadzieję, że uda nam się rozwiązać je szybko i polubownie za pośrednictwem usługi supportu Cyberpunk 2077 dostępnej pod adresem https://support.cdprojektred.com/en/. Mamy jednak świadomość, że czasami zdarzają się spory, których nie da się tak łatwo rozwiązać. W tym artykule wyjaśniamy, co stanie się, gdy zaistnieje spór prawny.
+
+16.2 Pozasądowa ścieżka rozwiązywania sporów.
+Zgodnie zobowiązujemy się do podjęcia w dobrej wierze rozsądnych starań o rozwiązanie wszelkich naszych ewentualnych sporów na drodze pozasądowej.  Sugerujemy, żebyśmy dali sobie 30-dniowy (trzydziesto-) termin na wspólne znalezienie rozwiązania, poza wyjątkowymi okolicznościami. Jeżeli w tym czasie nie uda nam się rozwiązać sporu między sobą, dalszy tok postępowania zależeć będzie od tego, gdzie mieszkasz. Jeżeli jesteś rezydentem Unii Europejskiej, może przysługiwać Ci prawo do wniesienia skargi za pośrednictwem internetowej platformy rozstrzygania sporów Komisji Europejskiej — szczegółowe informacje znajdziesz pod adresem ec.europa.eu/consumers/odr/.
+ 
+16.3 Rozstrzyganie sporów — dalsze kroki (jeżeli mieszkasz w Unii Europejskiej albo innym miejscu na świecie, innym niż Stany Zjednoczone).
+
+Każdej ze stron przysługuje prawo do wejścia na drogę sądową jeżeli uzna to za konieczne. Jeżeli chcesz podnieść roszczenie przeciwko CD PROJEKT RED, fizyczną kopię właściwego pisma prześlij na adres: Dział Prawny, CD PROJEKT S.A., ul. Jagiellońska 74, 03-301 Warszawa wraz z kopią elektroniczną na adres legal@cdprojektred.com.
+
+16.4 Rozstrzyganie sporów — dalsze kroki (jeżeli mieszkasz w Stanach Zjednoczonych).
+ 
+Zapis na sąd polubowny:
+Zgodnie zobowiązujemy się rozstrzygać wszelkie spory i roszczenia między nami na drodze indywidualnego postępowania przed sądem polubownym (arbitrażu). Powyższe obejmuje m.in. wszelkie roszczenia wynikające z niniejszej Umowy i wszelkie aspekty stosunku prawnego łączącego Cię z CD PROJEKT RED. Zgodnie postanawiamy, że wszelkie roszczenia wynikające z gry Cyberpunk 2077 bądź z nią związane wymagają podniesienia w terminie 1 (jednego) roku od zaistnienia tego roszczenia; jest to termin zawity. Ten artykuł obowiązuje niezależnie od tego, czy spór lub roszczenie wynikają z umowy, czynu niedozwolonego, przepisu ustawy, oszustwa, czynu nieuczciwej konkurencji, fałszywego oświadczenia, czy też innej podstawy prawnej.
+
+Tytułem wyjaśnienia: „sąd polubowny” lub „arbitraż” oznacza polubowny sposób rozstrzygania sporów, w którym obie strony przedstawiają swoje stanowiska neutralnemu arbitrowi (nie jest to sędzia ani ława przysięgłych). Arbitraż jest mniej sformalizowany od sporu sądowego i obowiązuje w nim mniej reguł formalnych (o których mowa poniżej). Dla pełnej jasności: decydując się na arbitraż zrzekamy się prawa do rozstrzygnięcia sprawy przed sądem (sędzią lub ławą przysięgłych). Wyrażasz zgodę na obowiązywanie postanowień tego artykułu również po ustaniu Twojego dostępu do Cyberpunka 2077 i po ustaniu obowiązywania tej Umowy.
+
+Jak wszcząć arbitraż:
+Jeżeli któraś ze stron postanowi skierować sprawę do arbitrażu, musi przekazać drugiej stronie pisemne wezwanie określające podstawy roszczenia i formułowane żądania. Drukowana wersja niniejszej Umowy oraz wszelkich wezwań i zawiadomień elektronicznych będzie dopuszczalna jako dowód w takim samym zakresie i na takich samych warunkach, jak inne dokumenty \pierwotnie wytworzone i utrzymywane w postaci drukowanej. Jeżeli chcesz skierować do nas takie wezwanie, prosimy zrób to pocztą tradycyjną (Dział Prawny, CD PROJEKT S.A., ul. Jagiellońska 74, 03-301 Warszawa) i elektroniczną (legal@cdprojektred.com). Każda ze stron może wszcząć postępowanie arbitrażowe w dowolnej rozsądnej i dogodnej dla Ciebie lokalizacji AAA położonej w Stanach Zjednoczonych.
+
+16.5 Reguły w postępowaniu arbitrażowym:
+Do niniejszego ustępu znajduje zastosowanie amerykańska Federalna ustawa arbitrażowa (US Federal Arbitration Act). Arbitraż toczyć się będzie według Reguł Arbitrażu Handlowego (Commercial Arbitration Rules) Amerykańskiego Stowarzyszenia Arbitrażu (American Arbitration Association — „AAA”), a w razie zastosowania również Procedur uzupełniających AAA dla sporów konsumenckich (Supplementary Procedures for Consumer Related Disputes), ze zmianami przewidzianymi w niniejszej Umowie (http://www.adr.org). Arbiter będzie związany niniejszą Umową.
+
+Postępowanie toczyć się będzie przed pojedynczym arbitrem mającym znaczne doświadczenie w rozstrzyganiu sporów dotyczących własności intelektualnej i sporów konsumenckich na tle umów, a wyznaczony zostanie ze stosownej listy arbitrów AAA. Ustalenie, czy spór podlega rozstrzygnięciu na drodze arbitrażu podlega Federalnej ustawie o arbitrażu, a dokonuje go arbiter, nie sąd. Administracją postępowania zajmie się AAA, a samo postępowanie toczyć się będzie w języku angielskim. Może ono odbywać się na drodze przedstawiania dokumentów, telefonicznej lub osobistego stawiennictwa we wspólnie ustalonym miejscu. Rozprawa arbitrażowa musi rozpocząć się w ciągu 30 (trzydziestu) dni od wyznaczenia arbitra, chyba że umówimy się odmiennie. AAA przysługiwać będzie uprawnienie do rozstrzygnięcia sporu jedynie między nami, z wyłączeniem możliwości objęcia tym postępowaniem innych osób. Czynności sądowych w oparciu o wyrok arbitrażowy może dokonać dowolny sąd mający jurysdykcję i właściwość, a także może przed takim sądem zostać złożony wniosek o sądowe zatwierdzenie wyroku arbitrażowego i nadanie mu wykonalności, stosownie do przypadku.
+
+Jeżeli ubiegać się będziesz o kwotę 10.000 USD bądź niższą, CD PROJEKT RED zobowiązuje się zwrócić opłatę wpisową i Twoją część kosztów arbitrażu (z wyjątkiem opłat profesjonalnych pełnomocników i biegłych), w tym Twoją część wynagrodzenia arbitra, chyba że arbiter uzna Twoje roszczenia za pozbawione podstaw lub Twoje koszty za nieuzasadnione („nierozsądne”). Zobowiązujemy się nie dochodzić w arbitrażu naszych własnych opłat za obsługę prawną, chyba że arbiter uzna Twoje roszczenia za pozbawione podstaw lub Twoje koszty za nieuzasadnione. Jeżeli ubiegać się będziesz o kwotę wyższą niż 10.000 USD, wówczas koszty arbitrażu, w tym wynagrodzenie arbitra, zostaną między nas podzielone według Reguł arbitrażu handlowego AAA bądź Procedur uzupełniających AAA dla sporów konsumenckich, zależnie od zastosowania.
+
+Do jakich kwestii ustępy o rozwiązywaniu sporów i arbitrażu nie stosują się:
+Wymogi dotyczące rozwiązywania sporów i arbitrażu nie stosują się do roszczeń i sporów wszczętych przez dowolną stronę w odniesieniu do naruszenia praw własności intelektualnej bądź zarzutów nieuprawnionego korzystania, piractwa, kradzieży lub przywłaszczenia.
+
+Niniejszy ustęp nie uniemożliwia Ci poddania sporu pod rozwagę dowolnej agencji federalnej, stanowej bądź samorządowej (local government), która zgodnie z prawem może dla Ciebie czegokolwiek od nas się domagać.
+ 
+16.6 Zrzeczenie się prawa do sporu zbiorowego.
+W maksymalnym zakresie, na jaki pozwalają odpowiednie normy prawa krajowego lub stanowego, zgodnie zobowiązujemy się w żadnych okolicznościach nie wszczynać sporu zbiorowego ani reprezentatywnego, prywatnego powództwa z udziałem prokuratora generalnego ani arbitrażu zbiorowego ani w takim postępowaniu nie brać udziału. Oznacza to, że w najpełniejszym zakresie dopuszczalnym prawnie: (a) żadne postępowania arbitrażowe nie mogą być łączone; (b) nie istnieje żadne uprawnienie ani żadna podstawa do arbitrażu zbiorowego ani stosowania właściwych dlań procedur oraz (c) nie istnieje żadne uprawnienie ani żadna podstawa do wszczęcia sporu w domniemanym charakterze reprezentatywnym z ramienia opinii publicznej bądź innych osób.
+
+Jeżeli zawarte w niniejszym ustępie porozumienie o niewszczynaniu sporów zbiorowych i reprezentatywnych, prywatnych powództw z udziałem prokuratora generalnego i arbitraży zbiorowych oraz o nieuczestniczeniu w takich sporach zostanie uznane za niezgodne z prawem bądź niepodlegające wykonaniu, zgodnie postanawiamy, że nie będzie ono objęte indywidualną klauzulą salwatoryjną — za niepodlegający wykonaniu zostanie uznany cały ustęp, a wszelkie roszczenia i spory będą zatem podlegały rozstrzygnięciu przez sąd.
+
+17	INNE KWESTIE PRAWNE
+
+Tu znajdują się inne „kwestie prawne”, które prawnicy kazali nam włączyć do umowy.
+ 
+17.1 Klauzula salwatoryjna. Jeżeli jakaś część Umowy zostanie uznana za nieważną bądź nieskuteczną, pozostanie to bez wpływu na resztę Umowy.
+ 
+17.2 Żadnych stron trzecich. Umowa reguluje nasz stosunek prawny z Tobą (i odwrotnie). Nie tworzy ona żadnych praw dla innych osób, chyba że sama wyraźnie o tym wspomina.
+
+17.3 Inne przepisy. Pamiętaj, że podlegamy różnym systemom prawnym i możemy być zmuszeni do poddania się wymogom związanym z egzekwowaniem prawa, ograniczeniami eksportowymi/importowymi i innym wymogom prawnym. Zgodnie postanawiamy, że do gry Cyberpunk 2077 i do niniejszej Umowy nie znajduje zastosowania Konwencja Narodów Zjednoczonych o umowach międzynarodowej sprzedaży towarów (CISG).
+
+17.4 Cesja. Wolno nam przenieść tę Umowę na podmiot trzeci lub inny podmiot z naszej grupy bądź powierzyć ją takiemu podmiotowi w podwykonawstwo, jeżeli okaże się to konieczne dla wsparcia Cyberpunka 2077 lub wyniknie z przekształceń, fuzji i innych powodów biznesowych. Jeżeli tak się stanie, powiadomimy Cię o tym.
+
+17.5 Opóźnienie. Żaden brak — tak przez nas, jak przez Ciebie — wykonywania ani żadne opóźnienie w wykonywaniu jakiegokolwiek uprawnienia lub środka prawnego przewidzianego Umową lub prawem nie będzie stanowić zrzeczenia się ani takiego uprawnienia lub środka prawnego, ani żadnego innego, ani też nie będzie wykluczać czy ograniczać dalszego wykonywania takiego bądź innego uprawnienia lub środka prawnego, chyba że w Umowie wyraźnie zastrzeżono inaczej. Żaden pojedynczy przypadek wykonywania ani żadne częściowe wykonanie takiego uprawnienia lub środka — tak przez nas, jak przez Ciebie — nie będzie ograniczać dalszego wykonywania takiego ani innego uprawnienia lub środka.
+ 
+17.6 Wyczerpujące porozumienie stron. Niniejsza Umowa wraz ze wszelkimi wzmiankowanymi w niej dokumentami stanowi całość Twojego i naszego porozumienia w odniesieniu do jej przedmiotu, zastępując wszelkie uprzednie porozumienia pisemne i ustne.
+
+18	ZMIANY UMOWY
+
+18.1 Zmiany. Mamy prawo zmienić tę Umowę, jeżeli uznamy to za potrzebne (np. ze względów prawnych lub aby uwzględnić zmiany w Cyberpunk 2077). Jeżeli tak się stanie, zmienioną Umowę udostępnimy online i w rozsądny sposób postaramy się przekazać Ci o tym informację (np. przez powiadomienie w grze).
+
+18.2 Data obowiązywania. Zmiany Umowy będą wiążące po upływie trzydziestu (30) dni od ich publikacji online. W tym terminie możesz do nas napisać na adres legal@cdprojektred.com, jeżeli będziesz mieć jakieś konkretne pytania na temat zmian. Jeżeli nie wyrazisz na nie zgody (niezależnie od tego, czy do nas napiszesz), niestety będziemy zmuszeni poprosić Cię o zakończenie korzystania z Cyberpunk 2077. Jest nam z tego powodu bardzo przykro, jednak mamy nadzieję, że zrozumiesz — aby Cyberpunk 2077 mógł działać prawidłowo, muszą obowiązywać jednolite reguły dla wszystkich i nie możemy robić wyjątków.. Dlatego w razie pytań i zastrzeżeń zachęcamy do kontaktu.
+
+KRÓTKIE PODSUMOWANIE
+
+1	O UMOWIE
+
+Dobra, to żeby wszystko było jasne — ten tekst po lewej wcale nie jest taki skomplikowany, to znaczy on tak wygląda i tak brzmi, ale sumie jest całkiem prosty. Trzeba tylko wiedzieć, jak go czytać, ale właśnie od tego masz mnie.
+
+Zanim zaczniemy pamiętaj, że tekst po lewej ma moc prawną, ja takiej mocy nie mam (może to i lepiej). A i jeszcze jedno, ta umowa dotyczy wyłącznie Cyberpunka 2077, a nie pozostałych gier CD PROJEKT RED, jeśli chcesz poznać zasady korzystania na przykład z GWINTA, to musisz przeczytać umowę do GWINTA. Proste, prawda? 
+
+Mam jednak wrażenie, że póki co, lektur Ci nie zabraknie. W tym miejscu korposy zachęcają cię do do zgłębienia takich kultowych pozycji jak Zasady dotyczące Treści Fanowskich, Umowa Użytkownika CD PROJEKT RED i Polityka Prywatności CD PROJEKT RED. W Night City zna je każde dziecko. 
+
+2	OGRANICZENIA WIEKOWE I OSTRZEŻENIA ZWIĄZANE Z TREŚCIĄ
+
+Bądźmy szczerzy, ta gra to nie domowe przedszkole, a wymagania wiekowe nie wzięły się znikąd, więc jeśli chcesz śmigać po Night City, musisz je spełniać. Taka prawda, nic dodać, nic ująć. W większości przypadków wiek minimalny to 18+, ale równie dobrze może być i 17+, jeśli takie przepisy obowiązują właśnie w Twoim kraju. To w sumie prosta matematyka: jeśli masz 17 lat, a gra jest od 17+, to nie ma przebacz, musisz biec do rodziców po zgodę. 
+
+Grając w Cyberpunk 2077, możesz zobaczyć wszystko, przed czym ostrzegali Cię rodzice: seks, dragi, przemoc, motocykle, mordercze ostrza w rękach. Totalny hardcore, po którym możesz już nigdy nie dojść do siebie. Ostrzegam, żeby nie było później na mnie. 
+
+3.	KORZYSTANIE Z CYBERPUNK 2077
+
+Lubię, gdy korposy stawiają sprawę jasno: kupujesz grę w konkretnej wersji, więc masz prawo do grania w nią na takim sprzęcie lub systemie, na jakim ją posiadasz. Żelazna logika.
+
+To akurat bardzo ważne i żarty na bok. Jeśli masz epilepsję lub mieszkasz z kimś, kto cierpi na epilepsję, przed odpaleniem gry pogadaj z lekarzem. Serio, dbaj o siebie i o innych, a świat będzie lepszy. 
+
+4	MINIMALNE WYMAGANIA I MONITOROWANIE
+
+Cyberpunk 2077, jak większośc rzeczy na świecie, ma minimalne wymagania (moje to na przykład apartament w Westbrook), które różnią się w zależności od tego, na jakim sprzęcie go uruchamiasz. Weź to pod uwagę, bo inaczej możesz się nieźle przejechać i z grania nici.
+
+Tutaj piszą, że może być konieczne użycie w tle jakichś narzędzi informatycznych do monitorowania Cyberpunka 2077, żeby zawsze działał jak trzeba. Jeżeli będą opcjonalne, zawsze spytają Cię o zgodę. Jeżeli będą konieczne, dadzą Ci znać wprost z wyprzedzeniem. Nie będzie żadnego szpiegowania, ani nic z tych rzeczy.
+
+5	PATCHE, AKTUALIZACJE I ZMIANY
+
+Cyberpunk 2077 jest prima sort, ale nawet największy kozak potrzebuje ulepszeń, żeby zarobić na chleb w tym mieście. Dlatego gra będzie ściągała łatki i aktualizacje, kiedy takowe się pojawią, co by lepiej śmigać. 
+
+6	PRAWA WŁASNOŚCI INTELEKTUALNEJ
+
+Pamiętaj, że Cyberpunk 2077 jako taki należy do CD PROJEKT RED lub jest przez nich licencjonowany.  Na ulicach Night City śmiało, hulaj dusza, ale jeśli masz zamiar wykorzystać elementy z gry poza nią, musisz trzymać się zasad zapisanych w tej umowie i innych stosownych dokumentach. Kumasz? Dobra, to jedziemy dalej. 
+
+7	ZASADY KORZYSTANIA Z CYBERPUNK 2077
+
+O, to powinno Cię ucieszyć — celem Cyberpunka 2077 jest dostarczanie Ci rozrywki. Miło z ich strony, prawda? Też tak myślę, dlatego lepiej nie łam zasad opisanych po lewej stronie, bądź miły/a, szanuj innych, bo inaczej ktoś zakręci kurek z funem, a tego nie chcemy, prawda?
+
+8	TREŚCI FANOWSKIE
+
+Tutaj z kolei piszą, że może być tak, że Cyberpunk 2077 zainspiruje Cię do stworzenia czegoś wyjątkowego. W takiej sytuacji po pierwsze, nie panikuj. Po drugie, sprawdź Zasady dotyczące Treści Fanowskich (chwytliwy tytuł), żeby wiedzieć, co Ci wolno, a czego nie.
+
+9	INFORMACJE ZWROTNE I RAPORTY BŁĘDÓW
+
+Patrz -  korpo, które słucha! Ekstra, co nie?  Czekają na Twój feedback, ale też nie dają żadnych gwarancji, że wykorzystają go w grze. Jeśli Twój pomysł nie zostanie wykorzystany, nie smuć się -  życie w Night City jest ostre jak maczeta. 
+Każdy cyberpunk popełnia błędy, nawet Cyberpunk 2077 (to mi wyszło, co?). Jeśli coś pójdzie nie tak, raport o usterce możesz wysłać do CD PROJEKT RED, a oni już zrobią z niego użytek. 
+
+10	TREŚĆ OBCA I USŁUGI ZEWNĘTRZNE
+
+W tym miejscu piszą, że możesz otrzymywać przez grę linki do stron zewnętrznych. O dziwo, jak klikniesz jeden z nich, to wyjdziesz z gry. Aha, za treści, które pojawiają się na tych stronach, CD PROJEKT RED nie odpowiada, no chyba, że te strony należą do nich. 
+
+11	GWARANCJE
+
+Kolejne miłe słowa. Piszą, że zakup Cyberpunka 2077 jest równoznaczny z podpisaniem umowy z CD PROJEKT RED (szacun!) i że studio ma z tego tytułu wobec Ciebie zobowiązania (gratuluję, wobec mnie zobowiązania ma tylko Arasaka i to niezbyt miłe). 
+
+12	ODPOWIEDZIALNOŚĆ
+
+Ten cały fragment dotyczy odpowiedzialności prawnej — zarówno Twojej, jak i CD PROJEKT RED. Odpowiedzialność… piękna rzecz.
+
+Wiesz, jak to bywa — czasem robisz wszystko jak trzeba,  a sprzęt lub oprogramowanie nie działa tak, jak powinno działać nawet po wielu próbach i odprawieniu magicznych obrzędów.
+
+Żeby była jasność: CD PROJEKT RED nie składa żadnych prawnie wiążących obietnic, co do tego, jak będzie działać Cyberpunk 2077 na Twoim sprzęcie ani Tobie, ani nawet samemu Saburo Arasace.
+
+Jeśli złamiesz tę umowę, to tym samym “zwalniasz z odpowiedzialności” CD PROJEKT RED. Po naszemu oznacza to, że będziesz musiał/a wyskoczyć z hajsu. Więc lepiej nie rób nic, czego później możesz żałować.
+
+Jest tu jeszcze trochę dodatkowych informacji — ale nie dotyczą one ludzi mieszkających na terenie Unii Europejskiej i w szeregu innych krajów.
+
+13	ROZWIĄZANIE UMOWY
+
+Masz dość zobowiązań związanych z Cyberpunkiem 2077? To przestań w niego grać. Proste. Ach, gdyby tak było w przypadku wszystkich korporacji, życie byłoby takie piękne...
+
+Jak za bardzo nawywijasz  i poważnie naruszysz postanowienia tej umowy, to możesz powiedzieć Cyberpunkowi 2077 “pa, pa” — na jakiś czas lub na amen. To przykra sprawa dla wszystkich, więc lepiej graj zgodnie z zasadami. 
+
+Tutaj trochę popłynęli. Gdyby Cyberpunk 2077 miał zostać kiedykolwiek wyłączony na dobre, co jest mało prawdopodobne, to dowiesz się o tym wcześniej za pośrednictwem ich strony internetowej. 
+
+14	SIŁA WYŻSZA
+
+Jak to szło w tym kawałku? Wszystko się może zdaaaaarzyć..., a już szczególnie w naszej branży. Dobra, do rzeczy, tutaj piszą o jakiejś “Sile Wyższej” w obliczu, której dotrzymanie warunków tej umowy będzie niemożliwe. Czyli, jak wybuchnie wojna atomowa, nastąpi potop, albo zabłąkany meteoryt wypchnie nas poza układ słoneczny, to nie masz po co iść do sądu.
+
+15	PRAWO WŁAŚCIWE
+
+Zbliżamy się powoli do końca. Tutaj informują Cię, że z prawnego punktu widzenia wszystkie wątpliwości i roszczenia dotyczące tej umowy podlegają polskiemu prawu. To dotyczy każdej osoby na Ziemi — o ile nie mieszkasz w Stanach Zjednoczonych. 
+
+16	ROZWIĄZYWANIE SPORÓW I ZAPIS NA SĄD POLUBOWNY
+
+Masz jakieś pytania... nie, to nie było pytanie. Masz, jakieś pytania, to pogadaj z ludźmi z supportu Cyberpunka 2077, chętnie cię wysłuchają i pomogą w razie problemu. 
+
+Tu jest ich adres: https://support.cdprojektred.com/en/
+
+WAŻNE: Jeżeli mieszkasz w USA, zgodnie z tym zapisem zgadzasz się na “obowiązkowy arbitraż” — czyli że będziesz rozwiązywać spory z CD PROJEKT RED bez ciągania się po sądach. Jeżeli mieszkasz poza Stanami Zjednoczonymi, arbitraż jest „opcjonalny”. 
+
+Zależnie od tego, gdzie mieszkasz, ustalacie z CD PROJEKT RED, że nie będziecie wobec siebie nawzajem stosować pozwów zbiorowych, ani też innego rodzaju działań wymagających użycia tłumu. Jeżeli chcesz dokładnie wiedzieć, jak będą rozwiązywane ewentualne spory i roszczenia między wami, musisz niestety zgłębić tekst po lewej stronie.
+
+17	INNE KWESTIE PRAWNE
+
+Tu na szczęście nie ma nic skomplikowanego. Cały ten rozdział mówi o zasadach, które prawnicy zawsze muszą sobie wrzucić w tego typu umowy. W końcu za coś im płacą. Ech, czasem żałuję, że nie zostałem jednym z nich.
+
+18	ZMIANY UMOWY
+
+Wszystko się zmienia. Również ta umowa może się kiedyś zmienić, ale jeżeli to nastąpi, zaktualizowana wersja pojawi się w sieci. Zmiany będą wprowadzane po jakimś (nie za długim, więc luz) czasie od chwili, gdy zostaniesz o nich poinformowany/a. Spokojnie, nikt Cię nie zaskoczy. 
+
+Dobrnęliśmy do końca, nie było tak źle, co? Polecam się na przyszłość, a jeżeli będziesz mieć pytania dotyczące tych zmian, puść maila na legal@cdprojektred.com — oni tylko na to czekają. 
+
+
+
+Ważne: Pamiętaj, że obowiązującym tekstem jest pełny prawniczy tekst – krótkie podsumowanie po prawej stronie zamieszczono tylko po to, żeby pomóc Ci go lepiej zrozumieć.
+
+Baw się dobrze w Night City, cyberpunku!
+
+REDmod END USER LICENSE AGREEMENT
+Last updated: September 6th, 2022
+
+Hello, we are CD PROJEKT RED and we are happy that you are interested in using REDmod! REDmod is a software tool which allows creation and development, as well as in-game use of modifications ("Mods") for our video game - Cyberpunk 2077. These are the legal rules (we’ll call them “Rules”) which we ask you to follow if you download, install or use REDmod in any way.
+
+We’ve also included some informal short summaries of each of these Rules (although remember that it’s the full version which is legally binding).
+
+FULL TEXT
+
+1. ABOUT THESE RULES
+These Rules are a legally binding contract between you and CD PROJEKT S.A, with its seat at ul. Jagiellonska 74; 03-301, Warsaw, Poland (we may further call ourselves “CD PROJEKT RED” as CD PROJEKT S.A. is the legal entity CD PROJEKT RED is part of) regarding your use of REDmod. 
+
+IMPORTANT: please also read our [https://regulations.cdprojektred.com/user_agreement] CD PROJEKT RED User Agreement which sets out the basic legal rules for most of our games and services, including REDmod. Our [https://regulations.cdprojektred.com/privacy_policy] Privacy Policy describes how we collect, use and protect any personal information gathered from users. These Rules also supplement any terms and conditions of any digital distribution platforms, which you might use to download and use REDmod. In order to use the Mods in Cyberpunk 2077, you also have to accept our [https://www.cyberpunk.net/user-agreement/] Cyberpunk 2077 End User License Agreement
+
+2. WHAT YOU GET WITH REDMOD
+We (meaning CD PROJEKT RED) give you the personal right (called a 'license' legally) to download, install and use REDmod on your personal device as long as you follow these Rules. This license is for your personal and non-commercial use only and doesn't give you ownership rights.
+
+At all times we continue to own the entirety of REDmod, its documentation, any updates or additional content for REDmod, manuals or other materials about them and the intellectual property rights in them, including all copyright, trademarks, patents and other legal things like that.
+
+REDmod might contain open source libraries. Your use of REDmod may therefore be subject to applicable open source licenses, to which you agree. You will find these licenses within REDmod.
+
+3. WHAT YOU CAN'T DO WITH REDMOD
+Please act reasonably and don’t do anything with REDmod that is against the law, these Rules or CD PROJEKT RED User Agreement. A general list of what you should not do with any of our games and services may be found in the [https://regulations.cdprojektred.com/user_agreement] CD PROJEKT RED User Agreement.
+
+4. A FEW WORDS ABOUT MODS
+You may use Mods created and developed with REDmod only as part of Cyberpunk 2077 (and not with other games or on a standalone basis) and only for non-commercial purposes. At the same time we do not claim any ownership of Mods. We do not monitor or endorse any Mods, nor are we responsible for any problems caused by Mods. You are responsible for the Mods you create. You retain the right to your original Mods, but you grant us a license to use your Mod (explained in detail in our [https://cdprojektred.com/fan-content/] Fan content Guidelines, further as "FCG") so that we can let others use your Mods together with REDmod and Cyberpunk 2077.
+
+Please refer to our FCG to learn about other rules that apply to your Mods - for example that the Mods must not infringe anyone's intellectual property rights or be offensive. We may block the access to Mods that breach those rules.
+
+Sometime in the future we may, independently from your Mod, create and publish content for Cyberpunk 2077 which may be similar or identical to the content of your Mod. You waive any intellectual property (or other) claims you may have against us in relation to such content.
+
+5. OTHER LEGAL STUFF
+As you see, this is a short document and we may amend these Rules over time. If so, we'll post an updated version and make reasonable efforts to notify you, where possible. Once we change these Rules, it will become legally binding on you 30 days after we post it online. Please also remember that these Rules are supplemented by CD PROJEKT RED User Agreement [https://regulations.cdprojektred.com/user_agreement] [https://regulations.cdprojektred.com/user_agreement].
+
+These Rules are here for a reason. As a result, if you break any of them or CD PROJEKT RED User Agreement, we reserve the right to cancel or suspend your access to REDmod.
+
+SHORT SUMMARY
+
+1. ABOUT THESE RULES
+This is a legal agreement between you, dear community member, and us - CD PROJEKT RED - regarding REDmod. There is also another document called CD PROJEKT RED User Agreement that sets out the rules for our games and services that will apply to your use of REDmod. Don't forget that in order to use the Mods in Cyberpunk 2077, you need to accept Cyberpunk 2077 End User License Agreement as well.
+
+2. WHAT YOU GET WITH REDMOD
+We grant you the right to use REDmod and we sincerely hope you will enjoy it. Please remember that it is our creation and remains our ownership. REDmod may contain open source libraries and you have to agree to those open source licenses if you want to use REDmod.
+
+3. WHAT YOU CAN'T DO WITH REDMOD
+There are some things that we are not okay with, such as reverse engineering or repurposing REDmod – you will find more examples of things you should not do in our [https://regulations.cdprojektred.com/user_agreement]CD PROJEKT RED User Agreement.
+
+4. A FEW WORDS ABOUT MODS
+Mods can only be used together with Cyberpunk 2077. If you create a Mod, you own it and you are responsible for it. Go to our [https://cdprojektred.com/fan-content/] Fan Content Guidelines to learn what other rules may apply to your Mods (e.g. you cannot sell your Mods). We may develop some content for Cyberpunk 2077 which will be similar to the content of your Mod, but will be created independently (we won't use the source code or assets from your Mod) - in such case you agree to not bring any legal claims against us.
+
+5. OTHER LEGAL STUFF
+We are not huge fans of rules but if you go against those, you may lose access to REDmod (temporarily or permanently). We are sure that nothing bad will happen, but the legal folks said this point has to be made here. Last thing - we may update this document in the future, but in such case we will post an updated version.

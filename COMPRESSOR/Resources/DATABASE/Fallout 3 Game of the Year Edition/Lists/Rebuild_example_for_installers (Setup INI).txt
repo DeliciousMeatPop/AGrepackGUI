@@ -1,0 +1,50 @@
+::To be used in CIU Setup.ini
+
+[CMDCommands]
+setlocal EnableDelayedExpansion EnableExtensions
+if not exist "{app}\fallout3.xtl" goto End
+set /a "FileList.Count=8"
+set "FileList[1].Name=Anchorage - Sounds.bsa"
+set "FileList[2].Name=BrokenSteel - Sounds.bsa"
+set "FileList[3].Name=Fallout - MenuVoices.bsa"
+set "FileList[4].Name=Fallout - Sound.bsa"
+set "FileList[5].Name=Fallout - Voices.bsa"
+set "FileList[6].Name=PointLookout - Sounds.bsa"
+set "FileList[7].Name=ThePitt - Sounds.bsa"
+set "FileList[8].Name=Zeta - Sounds.bsa"
+for /L %%i in (1, 1, !FileList.Count!) do (
+	call "{tmp}\XTool_2020\XTool.exe" decode "{app}\fallout3.xtl" "{app}\Data\!FileList[%%i].Name!_extract" "{app}\Data\!FileList[%%i].Name!"
+	rmdir /s /q "{app}\Data\!FileList[%%i].Name!_extract"
+)
+del /F /S /Q "{app}\fallout3.xtl"
+TIMEOUT 3
+:End
+endlocal
+
+-------------------------------
+
+::To be used in other installer scripts like ASIS
+::WemTool.exe and xtool.exe is executed from application root folder
+
+@echo off
+setlocal EnableDelayedExpansion EnableExtensions
+if not exist "fallout3.xtl" goto End
+set /a "FileList.Count=8"
+set "FileList[1].Name=Anchorage - Sounds.bsa"
+set "FileList[2].Name=BrokenSteel - Sounds.bsa"
+set "FileList[3].Name=Fallout - MenuVoices.bsa"
+set "FileList[4].Name=Fallout - Sound.bsa"
+set "FileList[5].Name=Fallout - Voices.bsa"
+set "FileList[6].Name=PointLookout - Sounds.bsa"
+set "FileList[7].Name=ThePitt - Sounds.bsa"
+set "FileList[8].Name=Zeta - Sounds.bsa"
+for /L %%i in (1, 1, !FileList.Count!) do (
+	call "XTool.exe" decode "fallout3.xtl" "Data\!FileList[%%i].Name!_extract" "Data\!FileList[%%i].Name!"
+	rmdir /s /q "Data\!FileList[%%i].Name!_extract"
+)
+del /F /S /Q "fallout3.xtl"
+del /S /F /Q "xtool.exe"
+TIMEOUT 3
+:End
+endlocal
+del "%~f0"

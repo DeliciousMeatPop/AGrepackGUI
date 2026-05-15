@@ -1,0 +1,17 @@
+$Default
+
+$SOUNDPack
+*.ww
+*.diffz
+*.bank
+*.fsb
+*.bnk
+*.pck
+*.wem
+*.exe
+*.dll
+*.sbp
+
+$BPKPack
+*.bik
+*.bk2

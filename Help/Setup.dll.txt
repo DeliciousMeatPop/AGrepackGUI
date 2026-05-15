@@ -1,0 +1,23 @@
+What is Setup.dll?
+
+It is just a FreeArc archive renamed to Setup.dll containing all your tools to extract your 
+archives. 
+
+
+How to make Setup.dll?
+
+If you use DiskSpan GUI it will be made automatically on the beginning of the process.
+If you don't use DiskSpan GUI, make a folder somewhere. Inside this folder copy all your 
+tools (including arc.ini, cls.ini, ...) which are needed to extract your archives.
+If you have FreeArc installed on your system, mark all files, right-click and make a FreeArc 
+archive and rename it to Setup.dll (you might have to enable file extensions inside windows 
+settings if you don't use the FA GUI).
+You can also use a batch file with arc.exe if you have not installed FA on your system.
+
+
+Can I protect Setup.dll with a password?
+
+Yes. Just set a password either on DiskSpan GUI or manually archive creation process in FA.
+Open Script.iss and change the following password to the same for your archive:
+#define PasswordDLL "123"
+(change "123" to "<yourpassword>")

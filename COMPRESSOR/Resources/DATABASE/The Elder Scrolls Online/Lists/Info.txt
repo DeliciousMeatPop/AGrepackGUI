@@ -1,0 +1,98 @@
+ESO v8.2.5 Firesong Update 36 (01.11.2022)
+
+kraken,l6,n64/reflate
+The Elder Scrolls Online\depot\eso0000.dat
+The Elder Scrolls Online\depot\eso0001.dat
+The Elder Scrolls Online\depot\eso0031.dat
+The Elder Scrolls Online\depot\eso0032.dat
+The Elder Scrolls Online\depot\eso0033.dat
+The Elder Scrolls Online\depot\eso0034.dat
+The Elder Scrolls Online\depot\eso0035.dat
+The Elder Scrolls Online\depot\eso0036.dat
+The Elder Scrolls Online\depot\eso0037.dat
+The Elder Scrolls Online\depot\eso0038.dat
+The Elder Scrolls Online\depot\eso0039.dat
+The Elder Scrolls Online\depot\eso004*.dat
+The Elder Scrolls Online\depot\eso005*.dat
+The Elder Scrolls Online\depot\eso006*.dat
+The Elder Scrolls Online\depot\eso007*.dat
+The Elder Scrolls Online\depot\eso008*.dat
+The Elder Scrolls Online\depot\eso009*.dat
+The Elder Scrolls Online\depot\eso010*.dat
+The Elder Scrolls Online\depot\eso0110.dat
+The Elder Scrolls Online\depot\eso0111.dat
+The Elder Scrolls Online\depot\eso0112.dat
+The Elder Scrolls Online\depot\eso0113.dat
+The Elder Scrolls Online\depot\eso0114.dat
+The Elder Scrolls Online\depot\eso0115.dat
+The Elder Scrolls Online\depot\eso0116.dat
+The Elder Scrolls Online\depot\eso0117.dat
+The Elder Scrolls Online\game\client\game0000.dat
+The Elder Scrolls Online\game_mac\pubplayerclient\eso.app\Contents\Resources\game0000.dat
+
+
+
+selkie,l6,n512/reflate
+The Elder Scrolls Online\depot\eso0118.dat
+The Elder Scrolls Online\depot\eso0119.dat
+The Elder Scrolls Online\depot\eso012*.dat
+The Elder Scrolls Online\depot\eso013*.dat
+The Elder Scrolls Online\depot\eso014*.dat
+The Elder Scrolls Online\depot\eso015*.dat
+The Elder Scrolls Online\depot\eso016*.dat
+The Elder Scrolls Online\depot\eso017*.dat
+The Elder Scrolls Online\depot\eso018*.dat
+The Elder Scrolls Online\depot\eso019*.dat
+The Elder Scrolls Online\depot\eso020*.dat
+The Elder Scrolls Online\depot\eso021*.dat
+The Elder Scrolls Online\depot\eso022*.dat
+The Elder Scrolls Online\depot\eso0230.dat
+The Elder Scrolls Online\depot\eso0231.dat
+The Elder Scrolls Online\depot\eso0232.dat
+The Elder Scrolls Online\depot\eso0233.dat
+The Elder Scrolls Online\depot\eso0234.dat
+The Elder Scrolls Online\depot\eso0235.dat
+The Elder Scrolls Online\depot\eso0236.dat
+The Elder Scrolls Online\depot\eso0237.dat
+
+
+
+msc/xtool flac/reflate
+The Elder Scrolls Online\depot\eso0002.dat
+The Elder Scrolls Online\depot\eso0003.dat
+The Elder Scrolls Online\depot\eso0004.dat
+The Elder Scrolls Online\depot\eso0005.dat
+The Elder Scrolls Online\depot\eso0006.dat
+The Elder Scrolls Online\depot\eso0007.dat
+The Elder Scrolls Online\depot\eso0008.dat
+The Elder Scrolls Online\depot\eso0009.dat
+The Elder Scrolls Online\depot\eso001*.dat
+The Elder Scrolls Online\depot\eso002*.dat
+The Elder Scrolls Online\depot\eso0030.dat
+The Elder Scrolls Online\depot\eso0238.dat
+
+The Elder Scrolls Online\vo_de\esoaudiode0000.dat
+The Elder Scrolls Online\vo_de\esoaudiode0016.dat
+The Elder Scrolls Online\vo_de\esoaudiode0017.dat
+The Elder Scrolls Online\vo_de\esoaudiode0018.dat
+The Elder Scrolls Online\vo_de\esoaudiode0019.dat
+The Elder Scrolls Online\vo_de\esoaudiode0020.dat
+
+The Elder Scrolls Online\vo_en\esoaudiode0000.dat
+The Elder Scrolls Online\vo_en\esoaudiode0016.dat
+The Elder Scrolls Online\vo_en\esoaudiode0017.dat
+The Elder Scrolls Online\vo_en\esoaudiode0018.dat
+The Elder Scrolls Online\vo_en\esoaudiode0019.dat
+The Elder Scrolls Online\vo_en\esoaudiode0020.dat
+
+The Elder Scrolls Online\vo_fr\esoaudiode0000.dat
+The Elder Scrolls Online\vo_fr\esoaudiode0016.dat
+The Elder Scrolls Online\vo_fr\esoaudiode0017.dat
+The Elder Scrolls Online\vo_fr\esoaudiode0018.dat
+The Elder Scrolls Online\vo_fr\esoaudiode0019.dat
+The Elder Scrolls Online\vo_fr\esoaudiode0020.dat
+
+The Elder Scrolls Online\vo_soundsets\esoaudiosoundsets0001.dat
+The Elder Scrolls Online\vo_soundsets\esoaudiosoundsets0002.dat
+The Elder Scrolls Online\vo_soundsets\esoaudiosoundsets0003.dat
+

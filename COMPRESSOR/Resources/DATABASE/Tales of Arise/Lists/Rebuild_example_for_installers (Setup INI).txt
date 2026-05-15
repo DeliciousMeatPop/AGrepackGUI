@@ -1,0 +1,45 @@
+::To be used in CIU Setup.ini
+
+[CMDCommands]
+setlocal EnableDelayedExpansion EnableExtensions
+if not exist "{app}\arise.xtl" goto End
+cd /D "{app}"
+if exist "{app}\WemTool.exe" (
+	"{app}\WemTool.exe" -d
+)
+set /a "FileList.Count=1"
+set "FileList[1].Name=pakchunk0-WindowsNoEditor.pak"
+for /L %%i in (1, 1, !FileList.Count!) do (
+	call "{tmp}\XTool_2020\XTool.exe" decode "{app}\arise.xtl" "{app}\Arise\Content\Paks\!FileList[%%i].Name!_extract" "{app}\Arise\Content\Paks\!FileList[%%i].Name!"
+	rd /s /q "{app}\Arise\Content\Paks\!FileList[%%i].Name!_extract"
+)		
+del /F /S /Q "{app}\arise.xtl"
+del /S /F /Q "{app}\WemTool.exe
+TIMEOUT 3
+:End
+endlocal
+
+-------------------------------
+
+::To be used in other installer scripts like ASIS
+::WemTool.exe and xtool.exe is executed from application root folder
+
+@echo off
+setlocal EnableDelayedExpansion EnableExtensions
+if not exist "arise.xtl" goto End
+if exist "WemTool.exe" call	"WemTool.exe" -d
+set /a "FileList.Count=3"
+set "FileList[1].Name=MUS_MEDIA.PC.PCK"
+set "FileList[2].Name=MUS_MEDIA_D1.PC.PCK"
+set "FileList[3].Name=VO_MEDIA.PC.PCK"
+for /L %%i in (1, 1, !FileList.Count!) do (
+	call "XTool.exe" decode "arise.xtl" "Arise\Content\Paks\!FileList[%%i].Name!_extract" "Arise\Content\Paks\!FileList[%%i].Name!"
+	rd /s /q "Arise\Content\Paks\!FileList[%%i].Name!_extract"
+)	
+del /F /S /Q "arise.xtl"
+del /S /F /Q "WemTool.exe"
+del /S /F /Q "xtool.exe"
+TIMEOUT 3
+:End
+endlocal
+del "%~f0"

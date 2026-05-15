@@ -1,0 +1,20 @@
+::To be used in CIU Setup.ini
+
+[CMDCommands]
+cd /D "{app}"
+if exist "{app}\WemTool.exe" (
+	"{app}\WemTool.exe" -d
+	del /S /F "{app}\WemTool.exe"
+)
+
+-------------------------------
+
+::To be used in other installer scripts like ASIS
+::WemTool.exe is executed from application root folder
+
+@echo off
+if exist "WemTool.exe" (
+	"WemTool.exe" -d
+	del /S /F "WemTool.exe"
+	TIMEOUT 3
+del "%~f0"

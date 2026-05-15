@@ -1,0 +1,32 @@
+::To be used in CIU Setup.ini
+
+[CMDCommands]
+setlocal EnableDelayedExpansion EnableExtensions
+if not exist "{app}\bg3_snd.xtl" goto End
+cd /D "{app}"
+if exist "{app}\WemTool.exe" call "{app}\WemTool.exe" -d
+call "{tmp}\XTool_2020\XTool.exe" decode "{app}\bg3_snd.xtl" "{app}\Data\SharedSounds.pak_extract" "{app}\Data\SharedSounds.pak"
+rmdir /s /q "{app}\Data\SharedSounds.pak_extract"
+del /F /S /Q "{app}\bg3_snd.xtl"
+del /F /S /Q "{app}\WemTool.exe"
+TIMEOUT 3
+:End
+endlocal
+
+-------------------------------
+
+::To be used in other installer scripts like ASIS
+::WemTool.exe and xtool.exe is executed from application root folder
+
+@echo off
+setlocal EnableDelayedExpansion EnableExtensions
+if not exist "bg3_snd.xtl" goto End
+if exist "WemTool.exe" call "WemTool.exe" -d
+call "XTool.exe" decode "bg3_snd.xtl" "Data\SharedSounds.pak_extract" "Data\SharedSounds.pak"
+rmdir /s /q "Data\SharedSounds.pak_extract"
+del /F /S /Q "bg3_snd.xtl"
+del /F /S /Q "WemTool.exe"
+TIMEOUT 3
+:End
+endlocal
+del "%~f0"

@@ -1,0 +1,9 @@
+required "quickbms_4gb_files.exe"
+
+-----------------------------
+bms2xtl_generate.bat
+------------------------------
+echo off
+bms2xtl fat2_fat3.bms "C:\Games\Watch Dogs\data_win64\*.fat" wd1.xtl
+rem bms2xtl assassin_creed_raw.bms "G:\Assassin's Creed Odyssey\*.forge" acodyssey.xtl
+pause

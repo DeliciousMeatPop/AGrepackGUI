@@ -1,0 +1,17 @@
+master\0\00.dat
+master\0\01.dat
+master\1\MGSVTUPDATEV0110\0\00.dat
+master\1\MGSVTUPDATEV0110\0\01.dat
+master\chunk0.dat
+master\chunk1.dat
+master\chunk2.dat
+master\chunk3.dat
+master\chunk4.dat
+master\data1.dat
+master\texture0.dat
+master\texture1.dat
+master\texture2.dat
+master\texture3.dat
+master\texture4.dat
+mgo\chunk0.dat
+mgo\texture0.dat

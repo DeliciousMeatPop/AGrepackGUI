@@ -1,0 +1,1 @@
+"D:\ARMGDDN Repacks\COMPRESSOR\Stay awake\KeepSystemOn.exe" "C:\Program Files\Notepad++\Notepad++.exe"

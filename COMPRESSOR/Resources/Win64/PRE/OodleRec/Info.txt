@@ -1,0 +1,8 @@
+NOTES:
+>> Since the oo2reck.exe, oo2recm.exe, oo2recs.exe executables do not support library names "oo2core_3_win64.dll" and "oo2core_8_win64.dll" these libraries are renamed: 
+"oo2core_3_win64.dll" >> "oo2core_4_win64.dll"
+"oo2core_8_win64.dll" >> "oo2core_7_win64.dll"
+If you choose the Oodle3 method you will have the "oo2core_3_win64.dll" library renamed to "oo2core_4_win64.dll" inside "Setup.dll".
+If you choose the Oodle3 method you will have the "oo2core_8_win64.dll" library renamed to "oo2core_7_win64.dll" inside "Setup.dll".
+
+INFO: The file "oo2core_3_win64.dll" in "Libraries" folder is from the game "Batman The Telltale Series".

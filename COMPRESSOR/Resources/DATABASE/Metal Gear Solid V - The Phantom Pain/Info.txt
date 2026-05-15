@@ -1,0 +1,4 @@
+Setup.ini
+
+[CMDCommands]
+call "{app}\Rebuild.cmd"

@@ -1,0 +1,2 @@
+Do not remove the RAR folder.
+The folders will be used when choosing the RAR method and will be cleaned after compression is complete.

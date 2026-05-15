@@ -1,0 +1,16 @@
+$Default
+
+$BPKPack
+*.bik
+*.bk2
+
+$MSCPack
+*.raw
+*.wav
+
+$MP3Pack
+*.mp3
+
+$JPGPack
+*.jpg
+*.jpeg

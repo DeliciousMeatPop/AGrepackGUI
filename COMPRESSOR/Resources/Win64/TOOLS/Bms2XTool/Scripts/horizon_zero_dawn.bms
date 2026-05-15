@@ -1,0 +1,24 @@
+####################################
+comtype oodle
+
+get FNAME basename
+getdstring DUMMY 0x8
+get FSIZE longlong
+get SIZE longlong
+get FILECOUNT longlong
+get CHUNKCOUNT long
+get DUMMY long
+math FILECOUNT * 32
+getdstring DUMMY FILECOUNT
+
+append
+for i = 0 < CHUNKCOUNT
+   get TOTAL_SIZE longlong
+   get CHUNK_SIZE long
+   get DUMMY long
+   get OFFSET longlong
+   get CHUNK_ZSIZE long
+   get FILEID long
+   string NAME p "%s%s" FNAME .bin_d
+   clog NAME OFFSET CHUNK_ZSIZE CHUNK_SIZE
+next i

@@ -1,0 +1,33 @@
+
+Library: CLS DiskSpan (R3)
+Release: Modifyed version by Cesar82
+
+Modified version of the CLS-DISKSPAN.dll (R3) library (by Razor12911).
+Built using the DELPHI 10.2 Tokyo compiler.
+
+----------------------------------------------------------------------------------------------------
+NEW DECLARATIONS:
+----------------------------------------------------------------------------------------------------
+type
+  TDiskSpanStatus = (cbStoped, cbPaused, cbWorking);
+  TDiskSpanProc = procedure(Status: TDiskSpanStatus);
+  TRequestDisk = procedure(var APath: WideString; AFileName: WideString);
+
+function ClsInit(hParent: THandle; StrPath: WideString; DiskRequest: TRequestDisk; Callback: TDiskSpanProc): Boolean;
+  external 'ClsInit@{tmp}\CLS-DISKSPAN.dll stdcall delayload'; // optional
+  
+procedure ClsDiskRequest(RequestDisk: TRequestDisk);
+  external 'ClsDiskRequest@{tmp}\CLS-DISKSPAN.dll stdcall delayload';
+  
+function ClsFirstPath(StrPath: WideString): WideString; {StrPath = '' only get result, no change path}
+  external 'ClsFirstPath@{tmp}\CLS-DISKSPAN.dll stdcall delayload';
+    
+procedure ClsSourcePath(StrPath: WideString);
+  external 'ClsSourcePath@{tmp}\CLS-DISKSPAN.dll stdcall delayload';
+  
+procedure ClsSetDisks(Disks: WideString);
+  external 'ClsSetDisks@{tmp}\CLS-DISKSPAN.dll stdcall delayload';
+  
+procedure ClsMsgBoxText(MsgLabel, MsgCaption: WideString);
+  external 'ClsMsgBoxText@{tmp}\CLS-DISKSPAN.dll stdcall delayload';
+

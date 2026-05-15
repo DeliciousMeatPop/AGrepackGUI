@@ -1,0 +1,579 @@
+<html>
+
+<head>
+<title>SuperREP 3.9 beta: LZ77 preprocessor with multigigabyte dictionary</title>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+.cs6 {
+    padding: 10px;
+    background-color: #fff;
+}
+
+th {padding: 5px;}
+td {padding: 0px 5px;}
+
+td  {text-align: right;}
+.c1 {text-align: left;}
+
+table tr:nth-child(even) {background-color: #ddd;}
+table tr:nth-child(odd)  {background-color: #fff;}
+</style>
+</head>
+
+<body>
+
+<h1>SuperREP 3.9 beta: huge-dictionary LZ77 preprocessor</h1>
+<p>Homepage: <a href="http://freearc.org/research/SREP.aspx">http://freearc.org/research/SREP.aspx</a></p>
+
+<h3>Description</h3>
+<p>
+SuperREP is the first LZ77 compressor that supports dictionaries larger than RAM available.
+Default settings (-l512) allow to process files that are 10x larger than RAM size.
+Memory requirements are proportional to 1/L, so by increasing -l option value it's possible to process even larger files.
+For example, with -l64k RAM usage will be about 1/1000 of filesize.
+Compression speed is 30-4000 mb/s (depending on -m -a -l options) and decompression runs at 1500 mb/s on i7-2600.
+</p>
+
+
+<h3>Changelog</h3>
+<li><a href="#3.90">SREP 3.90 beta (June 6, 2013)</a> - <a href="http://freearc.org/download/research/srep39.zip">download</a></li>
+<li><a href="#3.91">SREP 3.91 beta (June 27, 2013)</a> - <a href="http://freearc.org/download/research/srep391.zip">download</a></li>
+<li><a href="#3.92">SREP 3.92 beta (July 23, 2013)</a> - <a href="http://freearc.org/download/research/srep392.zip">download</a></li>
+<li><a href="#3.93">SREP 3.93 beta (September 30, 2014)</a> - <a href="http://freearc.org/download/research/srep393.zip">download</a></li>
+<li><a href="#3.93a">SREP 3.93a beta (October 11, 2014)</a> - <a href="http://freearc.org/download/research/srep393a.zip">download</a></li>
+<li><a href="#3.9x">Future plans</a></li>
+<br>
+
+
+<hr>
+
+
+<h3 id="3.90">SREP 3.9 beta (June 6, 2013) - <a href="http://freearc.org/download/research/srep39.zip">download</a></h3>
+Compression methods:
+<li>-m1: 1 GB/s deduplication using fixed-window content-defined chunking (like fma)</li>
+<li>-m2: 0.5 GB/s deduplication using order-1 content-defined chunking (like zpaq)</li>
+<li>-m3..-m5: renamed old -m1..-m3 methods</li>
+<br>
+
+Compression accelerator (only for -m3..-m5):
+<li>-a2..-a64 now have almost the same compression ratio as -a1</li>
+<li>-aX/Y: alloc X bytes per every L input bytes for acceleration table; Y=0/1/2/4/8/16/32/64</li>
+<li>per each input byte, it executes 1/Y+Y/L simple plus Y/(20*X)+1/L complex memory operations at average</li>
+<li>without acceleration (-a0), it executes two complex memory operations per each input byte</li>
+<li>-aX == -aX/X, except for -a32 == -a32/16 and -a64 == -a64/16</li>
+<br>
+
+Compression modes:
+<li>-m1..-m5: new index-LZ mode. Full match index stored at the end of archive. Single-pass compression. Single-pass decompression with a few seeks over input file</li>
+<li>-m1f..-m5f: future-LZ. Every match info stored right before match source data. 2-pass compression, single-pass decompression</li>
+<li>-m1o..-m5o: IO-LZ. Single-pass compression, I/O-based decompression</li>
+<br>
+
+Other changes:
+<li>-hash=vmac(default)/siphash/md5/sha1/sha512: more hashing options for checksums of decompressed data while using fast and cryptographically strong hash by default</li>
+<li>-md5 == -hash=md5; -nomd5 == -hash-</li>
+<li>-b option: set block size (default 8mb)</li>
+<li>-sX.Y option: update stats once every X.Y seconds; -s-: print only final stats</li>
+<li>-pc option: now required to print future/index LZ performance counters on decompression</li>
+<li>default options: -m3 -a4 -hash=vmac -b8m -s0.2;  -l4k for -m1/-m2 and -l512 for -m3..-m5</li>
+<br>
+
+
+<p>New release brings us a lot of speed-related improvements (all speeds were measured on i7-2600K@4.6GHz with DDR3-1866 memory):</p>
+
+<p id="3.90-1">It adds new INDEX LZ to existing I/O LZ and FUTURE LZ decompression modes. New mode
+closely resembles FUTURE LZ, but stores full index of matches at the end of compressed file.
+This means that, finally, both compression and decompression are performed in single pass,
+although decompression needs a few file seek operations over input file in order to read match list first
+(and therefore INDEX LZ is inapplicable when you need to decompress from stdin - use FUTURE LZ as before).
+As result, INDEX LZ provides maximum speed both for compression and decompression stages:</p>
+
+<pre>
+-m3:  Compression time  ~60 sec, Decompression time ~60 sec
+-m3f: Compression time ~100 sec, Decompression time ~60 sec
+-m3o: Compression time  ~60 sec, Decompression time 60-600 sec dependig on RAM available for disk cache
+</pre>
+<br>
+
+
+<p id="3.90-2">-a2..-a64 accelerated modes now provide almost the same compression ratio as -a1.
+OTOH, -a0/-a1 became slower than in previous version.
+Thus, i strongly recommend to use -a4..-a16 modes except for cases when you are
+either short of RAM or anyway limited by disk I/O speed:</p>
+
+<pre>
+<strong>64-bit versions (input size = 4,531,060,447 bytes):</strong>
+
+C:\<strong>SREP_3.2</strong>> for %a in (0 1 2 4 8 16 32 64) do @srep64g.exe -v -nomd5 -a%a i:\4g  nul
+-a0:  3,116,697,899: 68.79%.  Cpu  45 mb/s  (95.379 sec), real  51 mb/s  (85.338 sec) = 112%
+-a1:  3,116,697,899: 68.79%.  Cpu  72 mb/s  (59.982 sec), real  87 mb/s  (49.709 sec) = 121%
+-a2:  3,117,099,563: 68.79%.  Cpu  88 mb/s  (49.374 sec), real 108 mb/s  (39.953 sec) = 124%
+-a4:  3,117,931,003: 68.81%.  Cpu 103 mb/s  (41.808 sec), real 137 mb/s  (31.637 sec) = 132%
+-a8:  3,119,199,979: 68.84%.  Cpu 116 mb/s  (37.378 sec), real 156 mb/s  (27.624 sec) = 135%
+-a16: 3,121,172,795: 68.88%.  Cpu 127 mb/s  (34.055 sec), real 179 mb/s  (24.098 sec) = 141%
+-a32: 3,121,245,851: 68.89%.  Cpu 128 mb/s  (33.868 sec), real 182 mb/s  (23.716 sec) = 143%
+-a64: 3,121,298,539: 68.89%.  Cpu 123 mb/s  (35.007 sec), real 172 mb/s  (25.181 sec) = 139%
+
+C:\<strong>SREP_3.9</strong>> for %a in (0 1 2 4 8 16 32 64) do @srep64g.exe -v -nomd5 -a%a i:\4g  nul
+-a0:  3,116,707,719: 68.79%.  Cpu  31 mb/s (140.729 sec), real  33 mb/s (130.948 sec) = 107%
+-a1:  3,116,707,719: 68.79%.  Cpu  68 mb/s  (63.695 sec), real  82 mb/s  (52.515 sec) = 121%
+-a2:  3,116,709,799: 68.79%.  Cpu  94 mb/s  (46.161 sec), real 126 mb/s  (34.385 sec) = 134%
+-a4:  3,116,710,311: 68.79%.  Cpu 114 mb/s  (38.017 sec), real 166 mb/s  (26.084 sec) = 146%
+-a8:  3,116,710,823: 68.79%.  Cpu 124 mb/s  (34.882 sec), real 189 mb/s  (22.836 sec) = 153%
+-a16: 3,116,710,807: 68.79%.  Cpu 123 mb/s  (35.069 sec), real 188 mb/s  (22.995 sec) = 153%
+-a32: 3,116,710,807: 68.79%.  Cpu 125 mb/s  (34.695 sec), real 190 mb/s  (22.707 sec) = 153%
+-a64: 3,116,710,807: 68.79%.  Cpu 119 mb/s  (36.239 sec), real 178 mb/s  (24.246 sec) = 149%
+
+
+<strong>32-bit versions:</strong>
+
+C:\<strong>SREP_3.2</strong>> for %a in (0 1 2 4 8 16 32 64) do @srep32g.exe -v -nomd5 -a%a i:\4g  nul
+-a0:  3,116,699,499: 68.79%.  Cpu  33 mb/s (129.387 sec), real  37 mb/s (116.951 sec) = 111%
+-a1:  3,116,699,499: 68.79%.  Cpu  59 mb/s  (73.617 sec), real  71 mb/s  (61.255 sec) = 120%
+-a2:  3,117,102,763: 68.79%.  Cpu  67 mb/s  (64.366 sec), real  83 mb/s  (52.138 sec) = 123%
+-a4:  3,117,929,035: 68.81%.  Cpu  78 mb/s  (55.302 sec), real  99 mb/s  (43.587 sec) = 127%
+-a8:  3,119,213,355: 68.84%.  Cpu  81 mb/s  (53.633 sec), real 105 mb/s  (41.310 sec) = 130%
+-a16: 3,121,195,611: 68.88%.  Cpu  96 mb/s  (45.053 sec), real 132 mb/s  (32.699 sec) = 138%
+-a32: 3,121,265,275: 68.89%.  Cpu  97 mb/s  (44.554 sec), real 133 mb/s  (32.558 sec) = 137%
+-a64: 3,121,265,275: 68.89%.  Cpu  90 mb/s  (47.877 sec), real 120 mb/s  (35.948 sec) = 133%
+
+C:\<strong>SREP_3.9</strong>> for %a in (0 1 2 4 8 16 32 64) do @srep32g.exe -v -nomd5 -a%a i:\4g  nul
+-a0:  3,116,701,687: 68.79%.  Cpu  21 mb/s (205.953 sec), real  22 mb/s (194.199 sec) = 106%
+-a1:  3,116,701,687: 68.79%.  Cpu  53 mb/s  (81.277 sec), real  63 mb/s  (68.062 sec) = 119%
+-a2:  3,116,703,767: 68.79%.  Cpu  70 mb/s  (62.057 sec), real  89 mb/s  (48.290 sec) = 129%
+-a4:  3,116,704,279: 68.79%.  Cpu  84 mb/s  (51.527 sec), real 115 mb/s  (37.507 sec) = 137%
+-a8:  3,116,704,791: 68.79%.  Cpu  89 mb/s  (48.704 sec), real 124 mb/s  (34.825 sec) = 140%
+-a16: 3,116,704,775: 68.79%.  Cpu  87 mb/s  (49.530 sec), real 122 mb/s  (35.302 sec) = 140%
+-a32: 3,116,704,775: 68.79%.  Cpu  89 mb/s  (48.360 sec), real 126 mb/s  (34.278 sec) = 141%
+-a64: 3,116,704,775: 68.79%.  Cpu  84 mb/s  (51.402 sec), real 116 mb/s  (37.316 sec) = 138%
+</pre>
+<br>
+
+
+<p id="3.90-3">-aX/Y: new option format allows to explicitly specify both accelerator table size (X bytes per L input bytes)
+and memory access acceleration (processing each input byte requires at average 1/Y+Y/L simple plus Y/(20*X)+1/L
+complex memory operations; since memory operations are dozens times slower than other operations,
+overall speed by 80% determined by the amount of memory operations).
+When using a short form -aX, Y will be set by default to min(X,16) as was implicitly done in previous version.
+Without acceleration (-a0), two complex memory operations executed per each input byte:</p>
+
+<pre>
+C:\>for %a in (0 1 2 4 8 16) do @srep64g.exe -a16/%a -v z:\4g nul
+-a16/0:  3,116,707,751: 68.79%.  Cpu  28 mb/s (151.820 sec), real  31 mb/s (140.687 sec) = 108%
+-a16/1:  3,116,707,751: 68.79%.  Cpu  51 mb/s ( 85.520 sec), real  58 mb/s ( 74.013 sec) = 116%
+-a16/2:  3,116,709,831: 68.79%.  Cpu  84 mb/s ( 51.340 sec), real 110 mb/s ( 39.259 sec) = 131%
+-a16/4:  3,116,710,343: 68.79%.  Cpu 112 mb/s ( 38.579 sec), real 166 mb/s ( 25.958 sec) = 149%
+-a16/8:  3,116,710,855: 68.79%.  Cpu 125 mb/s ( 34.523 sec), real 197 mb/s ( 21.982 sec) = 157%
+-a16/16: 3,116,710,839: 68.79%.  Cpu 121 mb/s ( 35.584 sec), real 189 mb/s ( 22.894 sec) = 155%
+</pre>
+<br>
+
+
+<p id="3.90-4">In addition to three old modes (-m3..-m5, former -m1..-m3) there are two new ones implementing content-defined chunking:
+fma-like -m1 and zpaq-like -m2. Both modes perform only 3 memory operations per L input bytes that makes them extremely fast.
+-m1 mode finishes current chunk when the hash of last 48 input bytes becomes lower than UINT_MAX/L.
+-m2 mode uses more sophisticated order-1 hashing with the same hash&lt;UINT_MAX/L condition.
+Both modes then find duplicates among chunks by comparison of their VMAC cryptohashes:</p>
+
+<pre>
+<strong>SREP vs EXDUPE 0.4 using the same 8kb average chunk size:</strong>
+
+srep64g.exe -m1 -l8k 4g nul:   3,666,811,076: 80.93%.  Cpu 1078 mb/s ( 4.009 sec), real 1145 mb/s ( 3.775 sec) = 106%
+srep64g.exe -m2 -l8k 4g nul:   3,607,685,110: 79.62%.  Cpu  536 mb/s ( 8.065 sec), real  559 mb/s ( 7.734 sec) = 104%
+srep64g.exe -m3 -l8k 4g nul:   3,512,700,919: 77.52%.  Cpu  153 mb/s (28.221 sec), real  252 mb/s (17.124 sec) = 165%
+
+exdupe.exe  -x0 -t1  4g nul:   3,656,451,733: 80.70%.  Cpu  138 mb/s (32.869 sec), real  137 mb/s (33.042 sec) =  99%
+exdupe.exe  -x0 -t12 4g nul:   3,674,364,960: 81.09%.  Cpu   93 mb/s (48.469 sec), real  552 mb/s ( 8.205 sec) = 590%
+
+
+<strong>SREP vs ZPAQ 6.33 using the same 64kb average chunk size:</strong>
+
+srep64g.exe -m1 -l64k 4g nul:  3,914,583,030: 86.39%.  Cpu 1078 mb/s ( 4.009 sec), real 1146 mb/s ( 3.771 sec) = 106%
+srep64g.exe -m2 -l64k 4g nul:  3,861,899,042: 85.23%.  Cpu  550 mb/s ( 7.862 sec), real  564 mb/s ( 7.660 sec) = 103%
+srep64g.exe -m3 -l64k 4g nul:  3,766,498,615: 83.13%.  Cpu  173 mb/s (25.023 sec), real  304 mb/s (14.204 sec) = 176%
+
+zpaq64 -method 0  -threads 4:  3,862,007,040: 85.23%.  Cpu   50 mb/s (90.589 sec), real   96 mb/s (47.081 sec) = 192%
+</pre>
+<br>
+
+
+<p id="3.90-5">Testing new modes on 92gb file may give us better idea about their compression ratios (unfortunately, real processing
+time is limited here by the disk read speed):</p>
+
+<pre>
+<strong>Using 8kb average chunk size (input size = 98,420,528,640 bytes):</strong>
+
+srep64g.exe -m1:   73,342,864,912: 74.52%.  Cpu 1031 mb/s ( 91.058 sec), real 467 mb/s (201.102 sec) =  45%
+srep64g.exe -m2:   70,008,184,922: 71.13%.  Cpu  531 mb/s (176.874 sec), real 467 mb/s (201.080 sec) =  88%
+srep64g.exe -m3:   66,715,247,256: 67.79%.  Cpu  121 mb/s (776.370 sec), real 175 mb/s (536.879 sec) = 145%
+
+exdupe.exe -t1 :   73,577,707,185: 74.76%.  Cpu  152 mb/s (649.400 sec), real 153 mb/s (643.753 sec) = 100%
+exdupe.exe -t12:   74,627,439,578: 75.82%.  Cpu  100 mb/s (987.439 sec), real 437 mb/s (225.296 sec) = 438%
+
+
+<strong>Using 64kb average chunk size:</strong>
+
+srep64g.exe -m1:   83,536,020,777: 84.88%.  Cpu 1008 mb/s (  93.070 sec), real 467 mb/s ( 201.084 sec) =  46%
+srep64g.exe -m2:   80,375,957,566: 81.67%.  Cpu  530 mb/s ( 176.983 sec), real 468 mb/s ( 200.728 sec) =  88%
+srep64g.exe -m3:   76,678,768,840: 77.91%.  Cpu  126 mb/s ( 745.045 sec), real 187 mb/s ( 502.844 sec) = 148%
+
+zpaq64 -threads 4: 80,348,890,003: 81.64%.  Cpu   51 mb/s (1912.509 sec), real  95 mb/s (1039.139 sec) = 192%
+</pre>
+<br>
+
+
+
+<p id="3.90-6">Finally, there are few minor changes. VMAC cryptographic hash is now used by default for verification
+of decompressed data, providing 10x better speed and improved security over old default hash, MD5.
+Also, i`ve realized that in some scenarios, simple printing to console significantly reduced the program speed,
+so now it`s performed only once every 0.2 seconds by default (-s0.2 option). These two changes alone made
+decompression 5x faster:</p>
+
+<pre>
+SREP 3.2 (default settings are -hash=md5 -s1e-30):
+srep64g.exe -d        4g.srep nul:  Cpu  543 mb/s (7.956 sec), real 356 mb/s (12.127 sec) = 66%
+srep64g.exe -d -nomd5 4g.srep nul:  Cpu 3112 mb/s (1.388 sec), real 752 mb/s  (5.747 sec) = 24%
+
+SREP 3.9 (defaults are -hash=vmac -s0.2):
+srep64g.exe -d        4g.srep nul:  Cpu 2638 mb/s (1.638 sec), real 1768 mb/s (2.444 sec) = 67%
+srep64g.exe -d -nomd5 4g.srep nul:  Cpu 3901 mb/s (1.108 sec), real 2263 mb/s (1.909 sec) = 58%
+</pre>
+<br>
+
+
+I have more plans for SREP 4.x line, in particular:
+<li>make -m1/-m2 modes multithreaded, raising deduplication speed up to 5 GB/s!!!</li>
+<li>reduce number of I/O operations in -m5 mode, making it almost as fast as -m4</li>
+<li>decrease memory usage in -m1/-m2 modes and split up large arrays into smaller chunks in all modes to deal with memory fragmentation</li>
+<li>reduce chunkarr/bitarr sizes by making them NOT a power of two</li>
+<li>further speed up -m3..-m5 modes by improving data prefetch and replacing SHA-1 hash with much faster VMAC</li>
+<li>add small (0.1-10 GB) RAM dictionary in -m3..-m5 modes thus combining REP and SREP benefits and improving both compression speed and ratio</li>
+<br>
+<br>
+
+
+<hr>
+
+
+<br>
+<h3 id="3.91">SREP 3.91 beta (June 27, 2013) - <a href="http://freearc.org/download/research/srep391.zip">download</a></h3>
+<li>-m1/-m2: speed have increased 4-5 times due to multithreading, up to 4.5 and 2.7 GB/s, respectively; option -tN - use N threads</li>
+<li>-m1/-m2: halved memory usage, now it's close to that of -m3 with the same L value</li>
+<li>-m3..-m5: blocks are compared by VMAC instead of SHA-1, that together with other optimizations improved speed by 10-40%</li>
+<li>-m5: added I/O accelerator that halved time overhead of -m5 compared to -m4 mode. It uses 4*filesize/L memory and can be disabled with -ia- option</li>
+<li>-a0: speed was doubled, now on huge files it's almost as fast as -a1</li>
+<li>Win7+ taskbar progress indicator (green bar)</li>
+<br>
+
+<p id="3.91-1">New -m1/-m2 speeds are simply unreal:</p>
+<pre>
+C:\<strong>SREP_3.9</strong>> for %a in (1 2 3) do @srep64g.exe -m%s -l4k -nomd5 -s- -v -mmap -b64m z:\4g nul
+-m1: 3,595,246,078: 79.35%.  Cpu 1131 mb/s ( 3.822 sec), real 1111 mb/s ( 3.890 sec) = 98%
+-m2: 3,530,338,479: 77.91%.  Cpu  568 mb/s ( 7.613 sec), real  563 mb/s ( 7.681 sec) = 99%
+-m3: 3,418,848,279: 75.45%.  Cpu  139 mb/s (30.982 sec), real  215 mb/s (20.075 sec) = 154%
+
+C:\<strong>SREP_3.91</strong>> for %a in (1 2 3) do @srep64g.exe -m%s -l4k -nomd5 -s- -v -mmap -b64m z:\4g nul
+-m1: 3,597,469,192: 79.40%.  Cpu  718 mb/s ( 6.022 sec), real <b>4540 mb/s</b> ( 0.952 sec) = 633%
+-m2: 3,519,660,195: 77.68%.  Cpu  370 mb/s (11.669 sec), real <b>2742 mb/s</b> ( 1.576 sec) = 741%
+-m3: 3,418,848,279: 75.45%.  Cpu  281 mb/s (15.397 sec), real  300 mb/s (14.418 sec) = 107%
+</pre>
+<br>
+
+
+<p id="3.91-2">This demonstrates improvements in -m5 speed (compare to -ia- mode, that's equivalent to the old implementation):</p>
+<pre>
+C:\> for %a in (3 4 5) do @srep64g.exe -m%a -nomd5 z:\22g nul    (input size 22,069,494,174 bytes)
+-m3:      memory used 1547 mb,  7,286,136,214: 33.01%.  Cpu 177 mb/s (118.935 sec), real 180 mb/s (116.826 sec) = 102%
+-m4:      memory used  724 mb,  7,080,694,996: 32.08%.  Cpu 182 mb/s (115.893 sec), real 132 mb/s (159.102 sec) = 73%
+-m5:      memory used 1730 mb,  7,008,819,284: 31.76%.  Cpu 129 mb/s (163.707 sec), real  96 mb/s (219.573 sec) = 75%
+-m5 -ia-: memory used 1401 mb,  7,008,819,284: 31.76%.  Cpu 129 mb/s (162.553 sec), real  74 mb/s (286.322 sec) = 57%
+</pre>
+<br>
+
+
+<p id="3.91-3">New optimizations in -m3 mode made it possible to catch out even 3.20 (except in -a1 submode), despite better compression:</p>
+
+<pre>
+Input size = 98,420,528,640 bytes; RAM used = 5-10 GB
+
+C:\<strong>SREP_3.2</strong>> for %a in (0 1 2 4 8 16) do @srep64g.exe -v -nomd5 -a%a z:\vhd nul
+-a0:  54,955,043,788: 55.84%.  Cpu  36 mb/s (2603.563 sec), real  39 mb/s (2389.254 sec) = 109%
+-a1:  54,924,894,768: 55.81%.  Cpu  64 mb/s (1465.692 sec), real  75 mb/s (1245.935 sec) = 118%
+-a2:  55,110,486,940: 55.99%.  Cpu  78 mb/s (1201.925 sec), real  97 mb/s ( 968.890 sec) = 124%
+<b>-a4:  55,184,111,872: 56.07%.  Cpu  88 mb/s (1070.962 sec), real 112 mb/s ( 838.906 sec) = 128%</b>
+-a8:  55,227,468,716: 56.11%.  Cpu  93 mb/s (1008.078 sec), real 121 mb/s ( 775.256 sec) = 130%
+-a16: 55,275,593,004: 56.16%.  Cpu 102 mb/s ( 917.223 sec), real 137 mb/s ( 684.306 sec) = 134%
+
+C:\<strong>SREP_3.9</strong>> for %a in (0 1 2 4 8 16) do @srep64g.exe -v -nomd5 -a%a z:\vhd nul
+-a0:  54,955,085,304: 55.84%.  Cpu  26 mb/s (3605.417 sec), real  27 mb/s (3415.846 sec) = 106%
+-a1:  54,955,085,304: 55.84%.  Cpu  45 mb/s (2067.949 sec), real  51 mb/s (1824.563 sec) = 113%
+-a2:  54,955,147,800: 55.84%.  Cpu  66 mb/s (1424.242 sec), real  80 mb/s (1172.893 sec) = 121%
+<b>-a4:  54,955,152,840: 55.84%.  Cpu  77 mb/s (1218.399 sec), real  98 mb/s ( 960.795 sec) = 127%</b>
+-a8:  54,955,157,912: 55.84%.  Cpu  85 mb/s (1105.033 sec), real 111 mb/s ( 847.091 sec) = 130%
+-a16: 54,955,159,352: 55.84%.  Cpu  91 mb/s (1031.494 sec), real 121 mb/s ( 773.344 sec) = 133%
+
+C:\<strong>SREP_3.91</strong>> for %a in (0 1 2 4 8 16) do @srep64g.exe -v -nomd5 -a%a z:\vhd nul
+-a0:  54,955,085,304: 55.84%.  Cpu  54 mb/s (1747.336 sec), real  54 mb/s (1745.163 sec) = 100%
+-a1:  54,955,085,304: 55.84%.  Cpu  61 mb/s (1539.121 sec), real  61 mb/s (1536.826 sec) = 100%
+-a2:  54,955,147,800: 55.84%.  Cpu  95 mb/s ( 983.633 sec), real  97 mb/s ( 972.167 sec) = 101%
+<b>-a4:  54,955,152,840: 55.84%.  Cpu 121 mb/s ( 778.819 sec), real 122 mb/s ( 767.934 sec) = 101%</b>
+-a8:  54,955,157,912: 55.84%.  Cpu 143 mb/s ( 657.341 sec), real 145 mb/s ( 648.973 sec) = 101%
+-a16: 54,955,159,352: 55.84%.  Cpu 158 mb/s ( 593.241 sec), real 160 mb/s ( 587.865 sec) = 101%
+</pre>
+<br>
+<br>
+
+
+<hr>
+
+
+<br>
+<h3 id="3.92">SREP 3.92 beta (July 23, 2013) - <a href="http://freearc.org/download/research/srep392.zip">download</a></h3>
+<li>-m3..-m5: made 1.5-2x faster, and -a2..-a64 accelerated modes now provide exactly the same compression ratio as -a0/-a1</li>
+<li>Cmdline supports free mixing of options and filenames, "--" means "no more options"</li>
+<li>Bugfix: restored stdin/stdout (de)compression support</li>
+<li>Bugfix: removing Win7+ taskbar progress indicator (green bar) on ^Break</li>
+<br>
+
+<p id="3.92-1">Speed improvement compared to the latest stable and beta versions:</p>
+<pre>
+C:\<strong>SREP_3.2</strong>> for %a in (0 1 2 4 8 16) do @srep64g.exe -v -nomd5 -a%a z:\vhd nul
+-a0:  54,955,043,788: 55.84%.  Cpu  38 mb/s (2471.602 sec), real  42 mb/s (2235.701 sec) = 111%
+-a1:  54,955,043,788: 55.84%.  Cpu  65 mb/s (1450.170 sec), real  78 mb/s (1208.758 sec) = 120%
+-a2:  55,140,921,436: 56.03%.  Cpu  79 mb/s (1182.909 sec), real 100 mb/s ( 941.700 sec) = 126%
+<b>-a4:  55,214,557,580: 56.10%.  Cpu  89 mb/s (1060.370 sec), real 114 mb/s ( 822.295 sec) = 129%</b>
+-a8:  55,257,883,420: 56.14%.  Cpu  94 mb/s ( 999.920 sec), real 124 mb/s ( 759.014 sec) = 132%
+-a16: 55,305,914,140: 56.19%.  Cpu 102 mb/s ( 916.443 sec), real 139 mb/s ( 676.805 sec) = 135%
+
+C:\<strong>SREP_3.91</strong>> for %a in (0 1 2 4 8 16) do @srep64g.exe -v -nomd5 -a%a z:\vhd nul
+-a0:  54,955,085,304: 55.84%.  Cpu  56 mb/s (1676.153 sec), real  56 mb/s (1674.798 sec) = 100%
+-a1:  54,955,085,304: 55.84%.  Cpu  61 mb/s (1528.482 sec), real  62 mb/s (1523.460 sec) = 100%
+-a2:  54,955,147,800: 55.84%.  Cpu  96 mb/s ( 979.608 sec), real  97 mb/s ( 967.662 sec) = 101%
+<b>-a4:  54,955,152,840: 55.84%.  Cpu 122 mb/s ( 771.550 sec), real 124 mb/s ( 759.226 sec) = 102%</b>
+-a8:  54,955,157,912: 55.84%.  Cpu 143 mb/s ( 654.736 sec), real 146 mb/s ( 640.953 sec) = 102%
+-a16: 54,955,159,352: 55.84%.  Cpu 159 mb/s ( 589.138 sec), real 164 mb/s ( 572.310 sec) = 103%
+
+C:\<strong>SREP_3.92</strong>> for %a in (0 1 2 4 8 16) do @srep64g.exe -v -nomd5 -a%a z:\vhd nul
+-a0:  54,955,090,744: 55.84%.  Cpu  56 mb/s (1674.187 sec), real  56 mb/s (1675.411 sec) = 100%
+-a1:  54,955,090,744: 55.84%.  Cpu  98 mb/s ( 955.896 sec), real  99 mb/s ( 943.952 sec) = 101%
+-a2:  54,955,090,744: 55.84%.  Cpu 151 mb/s ( 623.255 sec), real 154 mb/s ( 608.672 sec) = 102%
+<b>-a4:  54,955,090,744: 55.84%.  Cpu 179 mb/s ( 523.586 sec), real 185 mb/s ( 507.739 sec) = 103%</b>
+-a8:  54,955,090,744: 55.84%.  Cpu 202 mb/s ( 465.632 sec), real 210 mb/s ( 446.140 sec) = 104%
+-a16: 54,955,090,744: 55.84%.  Cpu 215 mb/s ( 437.505 sec), real 225 mb/s ( 416.889 sec) = 105%
+</pre>
+<br>
+
+
+
+<p id="3.92-2">The program works even faster with smaller files or with Large Pages enabled (-slp+ option):</p>
+<pre>
+C:\<strong>SREP_3.92</strong>> for %a in (0 1 2 4 8 16) do @srep64g.exe -v -nomd5 -a%a z:\vhd nul <b>-slp+</b>
+-a0:  54,955,090,744: 55.84%.  Cpu 100 mb/s (940.670 sec), real 100 mb/s (934.161 sec) = 101%
+-a1:  54,955,090,744: 55.84%.  Cpu 140 mb/s (671.366 sec), real 142 mb/s (661.089 sec) = 102%
+-a2:  54,955,090,744: 55.84%.  Cpu 224 mb/s (419.939 sec), real 229 mb/s (409.884 sec) = 102%
+<b>-a4:  54,955,090,744: 55.84%.  Cpu 333 mb/s (282.143 sec), real 352 mb/s (266.817 sec) = 106%</b>
+-a8:  54,955,090,744: 55.84%.  Cpu 437 mb/s (214.720 sec), real 446 mb/s (210.460 sec) = 102%
+
+C:\<strong>SREP_3.92</strong>> for %a in (0 1 2 4 8 16) do @srep64g.exe -v -nomd5 -a%a z:\4g nul
+-a0:  3,116,700,087: 68.79%.  Cpu  82 mb/s (52.619 sec), real  83 mb/s (52.287 sec) = 101%
+-a1:  3,116,700,087: 68.79%.  Cpu 148 mb/s (29.281 sec), real 153 mb/s (28.332 sec) = 103%
+-a2:  3,116,700,087: 68.79%.  Cpu 223 mb/s (19.360 sec), real 238 mb/s (18.146 sec) = 107%
+<b>-a4:  3,116,700,087: 68.79%.  Cpu 299 mb/s (14.461 sec), real 321 mb/s (13.463 sec) = 107%</b>
+-a8:  3,116,700,087: 68.79%.  Cpu 345 mb/s (12.511 sec), real 389 mb/s (11.109 sec) = 113%
+-a16: 3,116,700,087: 68.79%.  Cpu 371 mb/s (11.653 sec), real 413 mb/s (10.454 sec) = 111%
+</pre>
+<br>
+
+
+
+<p id="3.92-3">And finally - the traditional comparison with the latest competing models:</p>
+<pre>
+8kb chunk size:
+
+exdupe 0.4.2: 3,666,540,613: 80.92%.  Cpu  98 mb/s (46.441 sec), real  653 mb/s ( 6.942 sec) = 669%
+srep -m1:     3,673,122,253: 81.07%.  Cpu 607 mb/s ( 7.114 sec), real 2342 mb/s ( 1.845 sec) = 386%
+srep -m2:     3,602,354,558: 79.50%.  Cpu 366 mb/s (11.809 sec), real 2173 mb/s ( 1.988 sec) = 594%
+srep -m3:     3,512,594,487: 77.52%.  Cpu 459 mb/s ( 9.422 sec), real  524 mb/s ( 8.248 sec) = 114%
+srep -m4:     3,455,470,894: 76.26%.  Cpu 505 mb/s ( 8.564 sec), real  495 mb/s ( 8.738 sec) = 98%
+srep -m5:     3,427,332,943: 75.64%.  Cpu 142 mb/s (30.420 sec), real  159 mb/s (27.222 sec) = 112%
+
+
+64kb chunk size:
+
+zpaq 6.38: 3,862,006,107: 85.23%.  Cpu  55 mb/s (81.978 sec), real   99 mb/s (45.724 sec) = 179%
+srep -m1:  3,939,840,292: 86.95%.  Cpu 780 mb/s ( 5.538 sec), real 2295 mb/s ( 1.883 sec) = 294%
+srep -m2:  3,888,283,269: 85.81%.  Cpu 381 mb/s (11.341 sec), real 2144 mb/s ( 2.015 sec) = 563%
+srep -m3:  3,765,909,095: 83.11%.  Cpu 572 mb/s ( 7.550 sec), real  677 mb/s ( 6.382 sec) = 118%
+srep -m4:  3,677,525,824: 81.16%.  Cpu 624 mb/s ( 6.926 sec), real  610 mb/s ( 7.081 sec) = 98%
+srep -m5:  3,645,960,598: 80.47%.  Cpu  51 mb/s (84.069 sec), real   53 mb/s (81.898 sec) = 103%
+</pre>
+<br>
+<br>
+
+
+<hr>
+
+
+<br>
+<h3 id="3.93">SREP 3.93 beta (September 30, 2014) - <a href="http://freearc.org/download/research/srep393.zip">download</a></h3>
+<li>-m0: REP-like dictionary compressor</li>
+<li>-d -dh -dc -dl options set dictsize, hashsize, hashing chunk size, minimal match length</li>
+<li>Alternative syntax: -d1g:h256m:l512:c128 -d+ -d-</li>
+<li>Dictionaries &gt;4GB are supported</li>
+<li>Dictionary compressor also can be combined with -m3..-m5 algorithms, f.e. "srep -m3 -d4g ..."</li>
+<br>
+
+Information:
+<li>All operations now show in the window title percents completed, remaining time and name of processed file</li>
+<li>The remaining time is also printed to the console</li>
+<li>Once the compression operation is completed, it prints how much memory will be required for decompression plus a match statistics</li>
+<li>"srep -i file.srep" prints information about the compressed file</li>
+<li>In both operations, the decompression RAM is calculated with respect to the -mBYTES option</li>
+<br>
+
+Misc:
+<li>Linux: support for files &gt;4GB</li>
+<li>Reduced compression memory by 32 mb (for -m3 -b8mb)</li>
+<li>This time, full sources required for compilation on Windows and Linux, are shipped</li>
+<br>
+<br>
+
+
+<p id="3.93-1"><a href="#3.93-1">#</a> Example of session transcript demonstrating the new information features:</p>
+<pre>
+C:\>srep64g.exe Z:\4g Z:\4g.srep -m1m
+SREP 3.93 beta (September 28, 2014): input size 4321 mb, memory used 347 mb, -m3 -l512 -c512 -a4/4 -hash=vmac -b8mb
+100%: 4,531,060,447 -> 3,116,700,119: 68.79%.  Cpu 226 mb/s (19.141 sec), real 241 mb/s (17.898 sec) = 107%.  <b>Remains 00:00
+Decompression memory with -m1m is 131 mb.  310,517 matches = 4,968,272 bytes = 0.16% of file</b>
+
+C:\>srep64g.exe -i Z:\4g.srep -m1m
+<b>Index-LZ: -hash=vmac.  4,531,060,447 -> 3,116,702,743: 68.79%
+Decompression memory with -m1m is 131 mb.  310,517 matches = 4,968,272 bytes = 0.16% of file</b>
+
+C:\>srep64g.exe -d Z:\4g.srep Z:\outfile -m1m -pc
+100%: 3,116,702,743 -> 4,531,060,447: 68.79%.  Cpu 2022 mb/s (2.137 sec), real 814 mb/s (5.308 sec) = 40%.
+Matches 0 36220 310517, I/Os 185, RAM 0/131
+</pre>
+<br>
+<br>
+
+
+<p id="3.93-2"><a href="#3.93-2">#</a>
+The -m0 mode can be used to build compressed files that need less memory to decompress than -m1..-m5 modes.
+Or you can consider it as variant of REP algorithm that provides the same compression ratio but needs less memory to decompress by employing Future-LZ.</p>
+
+<p>-m3..-m5 modes, combined with dictionary compression, provide about the same final compression ratio (after LZMA compression) as without it,
+may be 0.1% more or less, but require less memory for decompression. The following tables show the compression stats on my data:
+</p>
+
+<table><caption>The LittleBigPlanet 2 game installation preprocessed by the precomp</caption>
+	<tr>
+        	<th><small style="font-size: x-small">Method</small></th>
+        	<th><small style="font-size: x-small">Dictionary</small></th>
+		<th><small style="font-size: x-small">Size after srep</small></th>
+        	<th><small style="font-size: x-small">Match table, bytes</small></th>
+        	<th><small style="font-size: x-small">Size after srep+delta+lzma:max:256m</small></th>
+        	<th><small style="font-size: x-small">Decompression RAM</small></th>
+	</tr>
+
+        <tr><td colspan=2>original</td><td>    22 069 494 174  </td><td>              </td><td>  6 146 122 000  </td><td>           </td></tr>
+        <tr><td class=cs6 colspan=6></td></tr>
+
+        <tr><td rowspan=5> -m0    </td>
+            <td class=c1>  -d256m </td><td>    10 405 333 735  </td><td>  25 712 192  </td><td>  5 855 896 087  </td><td>   115 mb  </td></tr>
+        <tr><td class=c1>  -d1g   </td><td>     9 101 945 185  </td><td>  24 320 240  </td><td>  5 414 249 348  </td><td>   374 mb  </td></tr>
+        <tr><td class=c1>  -d4g   </td><td>     7 637 594 636  </td><td>  23 620 528  </td><td>  4 474 669 989  </td><td>   998 mb  </td></tr>
+        <tr><td class=c1>  -d8g   </td><td>     7 339 315 151  </td><td>  23 567 424  </td><td>  4 290 311 418  </td><td>  1142 mb  </td></tr>
+        <tr><td class=c1>  -d21g  </td><td>     7 081 295 007  </td><td>  23 317 840  </td><td>  4 187 068 103  </td><td>  1450 mb  </td></tr>
+        <tr><td class=cs6 colspan=6></td></tr>
+
+        <tr><td rowspan=6> -m3    </td>
+            <td class=c1>  -d0    </td><td>     7 286 211 526  </td><td>  22 611 232  </td><td>  4 188 232 551  </td><td>  1846 mb  </td></tr>
+        <tr><td class=c1>  -d256m </td><td>     7 088 619 251  </td><td>  21 844 960  </td><td>  4 193 200 687  </td><td>  1504 mb  </td></tr>
+        <tr><td class=c1>  -d1g   </td><td>     7 067 201 084  </td><td>  21 545 120  </td><td>  4 192 422 720  </td><td>  1483 mb  </td></tr>
+        <tr><td class=c1>  -d4g   </td><td>     7 053 823 904  </td><td>  21 375 072  </td><td>  4 188 452 168  </td><td>  1475 mb  </td></tr>
+        <tr><td class=c1>  -d8g   </td><td>     7 049 443 670  </td><td>  21 406 240  </td><td>  4 186 677 788  </td><td>  1465 mb  </td></tr>
+        <tr><td class=c1>  -d21g  </td><td>     7 048 669 435  </td><td>  21 403 136  </td><td>  4 186 363 221  </td><td>  1477 mb  </td></tr>
+        <tr><td class=cs6 colspan=6></td></tr>
+
+        <tr><td rowspan=6> -m4    </td>
+            <td class=c1>  -d0    </td><td>     7 080 728 947  </td><td>  23 218 368  </td><td>  4 187 144 973  </td><td>  1876 mb  </td></tr>
+        <tr><td class=c1>  -d256m </td><td>     7 023 830 723  </td><td>  21 860 368  </td><td>  4 187 574 829  </td><td>  1504 mb  </td></tr>
+        <tr><td class=c1>  -d1g   </td><td>     7 017 746 162  </td><td>  21 456 576  </td><td>  4 187 083 407  </td><td>  1487 mb  </td></tr>
+        <tr><td class=c1>  -d4g   </td><td>     7 013 319 095  </td><td>  21 264 368  </td><td>  4 186 118 737  </td><td>  1476 mb  </td></tr>
+        <tr><td class=c1>  -d8g   </td><td>     7 011 915 799  </td><td>  21 293 232  </td><td>  4 185 756 184  </td><td>  1465 mb  </td></tr>
+        <tr><td class=c1>  -d21g  </td><td>     7 011 750 209  </td><td>  21 290 336  </td><td>  4 185 726 510  </td><td>  1472 mb  </td></tr>
+        <tr><td class=cs6 colspan=6></td></tr>
+
+        <tr><td rowspan=6> -m5    </td>
+            <td class=c1>  -d0    </td><td>     7 008 838 475  </td><td>  23 192 176  </td><td>  4 185 466 683  </td><td>  1906 mb  </td></tr>
+        <tr><td class=c1>  -d256m </td><td>     7 001 253 268  </td><td>  21 604 400  </td><td>  4 185 808 749  </td><td>  1497 mb  </td></tr>
+        <tr><td class=c1>  -d1g   </td><td>     6 999 853 888  </td><td>  21 265 088  </td><td>  4 185 596 011  </td><td>  1485 mb  </td></tr>
+        <tr><td class=c1>  -d4g   </td><td>     6 998 930 302  </td><td>  21 066 432  </td><td>  4 185 477 316  </td><td>  1462 mb  </td></tr>
+        <tr><td class=c1>  -d8g   </td><td>     6 998 897 567  </td><td>  21 063 888  </td><td>  4 185 424 831  </td><td>  1466 mb  </td></tr>
+        <tr><td class=c1>  -d21g  </td><td>     6 998 858 514  </td><td>  21 061 056  </td><td>  4 185 419 506  </td><td>  1470 mb  </td></tr>
+</table>
+<br>
+<br>
+
+
+<table><caption>VHD file of my primary drive</caption>
+	<tr>
+        	<th><small style="font-size: x-small">Method</small></th>
+        	<th><small style="font-size: x-small">Dictionary</small></th>
+		<th><small style="font-size: x-small">Size after srep</small></th>
+        	<th><small style="font-size: x-small">Match table, bytes</small></th>
+        	<th><small style="font-size: x-small">Size after srep+delta+lzma:max:256m</small></th>
+        	<th><small style="font-size: x-small">Decompression RAM</small></th>
+	</tr>
+
+        <tr><td colspan=2>original</td><td>    98 420 528 640  </td><td>               </td><td>  33 473 209 256  </td><td>           </td></tr>
+        <tr><td class=cs6 colspan=6></td></tr>
+
+        <tr><td rowspan=5> -m0    </td>
+            <td class=c1>  -d256m </td><td>    73 809 789 011  </td><td>  114 793 120  </td><td>  33 176 854 072  </td><td>   103 mb  </td></tr>
+        <tr><td class=c1>  -d1g   </td><td>    69 828 018 271  </td><td>  119 605 040  </td><td>  31 784 678 251  </td><td>   405 mb  </td></tr>
+        <tr><td class=c1>  -d4g   </td><td>    65 150 029 938  </td><td>  121 617 632  </td><td>  29 685 989 223  </td><td>   892 mb  </td></tr>
+        <tr><td class=c1>  -d8g   </td><td>    62 696 919 783  </td><td>  123 247 920  </td><td>  28 721 864 670  </td><td>  1322 mb  </td></tr>
+        <tr><td class=c1>  -d16g  </td><td>    60 539 000 330  </td><td>  126 052 816  </td><td>  27 905 344 101  </td><td>  1721 mb  </td></tr>
+        <tr><td class=cs6 colspan=6></td></tr>
+
+        <tr><td rowspan=6> -m3    </td>
+            <td class=c1>  -d0    </td><td>    54 955 170 184  </td><td>  120 675 520  </td><td>  25 001 132 938  </td><td>  9206 mb  </td></tr>
+        <tr><td class=c1>  -d256m </td><td>    53 639 634 735  </td><td>  127 143 424  </td><td>  25 010 856 099  </td><td>  8785 mb  </td></tr>
+        <tr><td class=c1>  -d1g   </td><td>    53 476 090 104  </td><td>  128 626 800  </td><td>  24 991 243 034  </td><td>  8656 mb  </td></tr>
+        <tr><td class=c1>  -d4g   </td><td>    53 345 711 887  </td><td>  129 888 768  </td><td>  24 960 791 173  </td><td>  8508 mb  </td></tr>
+        <tr><td class=c1>  -d8g   </td><td>    53 250 505 059  </td><td>  130 581 712  </td><td>  24 937 464 996  </td><td>  8423 mb  </td></tr>
+        <tr><td class=c1>  -d16g  </td><td>    53 150 671 242  </td><td>  131 464 784  </td><td>  24 914 847 890  </td><td>  8299 mb  </td></tr>
+</table>
+<br>
+<br>
+
+
+<hr>
+
+
+<br>
+<h3 id="3.93a">SREP 3.93a beta (October 11, 2014) - <a href="http://freearc.org/download/research/srep393a.zip">download</a></h3>
+<li>Fixed bug in processing options like -mem256m</li>
+<li>Fixed bug making srep*i.exe (ICL builds) crashdump in -m0 and -m3..-m5 modes</li>
+<br>
+<br>
+<hr>
+
+
+<br>
+<h3 id="3.9x">Future plans</h3>
+
+What's currently planned to implement in SREP 3.94:
+<li>options to produce patch files or fill matched areas with zeroes</li>
+<li>transposing match tables in order to improve compression ratio</li>
+<li>try to improve I/O accelerator in order to make -m5 mode almost as fast as -m4</li>
+<li>further plans are described in the file to-do.txt</li>
+<br>
+
+</body>
+</html>

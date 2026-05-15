@@ -1,0 +1,10 @@
+Comparators ISPP:
+&& - and
+|| - or
+! - not
+< - <
+> - >
+>= - >=
+<= - <=
+== - =
+!= - <> (different, not equal) 

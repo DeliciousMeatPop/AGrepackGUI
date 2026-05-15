@@ -1,0 +1,46 @@
+::To be used in CIU Setup.ini
+
+[CMDCommands]
+setlocal EnableDelayedExpansion EnableExtensions
+if exist "{app}\cp2077_snd.xtl" (
+	:WEMTool
+	cd /D "{app}"
+	"{app}\WemTool.exe" -d
+
+
+	:XToolDecode
+	"{tmp}\XTool_2020\XTool" decode "{app}\cp2077_snd.xtl" "{app}\archive\pc\content\audio_1_general_unp" "{app}\archive\pc\content\audio_1_general.archive"
+	"{tmp}\XTool_2020\XTool" decode "{app}\cp2077_snd.xtl" "{app}\archive\pc\content\audio_2_soundbanks_unp" "{app}\archive\pc\content\audio_2_soundbanks.archive"
+
+
+	:DeleteFolders
+	rd /s /q "{app}\archive\pc\content\audio_1_general_unp"
+	rd /s /q "{app}\archive\pc\content\audio_2_soundbanks_unp"
+)
+:End
+endlocal
+
+-------------------------------
+
+::To be used in other installer scripts like ASIS
+::XTool.exe is executed from application root folder
+
+@echo off
+setlocal EnableDelayedExpansion EnableExtensions
+if exist "cp2077_snd.xtl" (
+	:WEMTool
+	"WemTool.exe" -d
+
+
+	:XToolDecode
+	"XTool.exe" decode "cp2077_snd.xtl" "archive\pc\content\audio_1_general_unp" "archive\pc\content\audio_1_general.archive"
+	"XTool.exe" decode "cp2077_snd.xtl" "archive\pc\content\audio_2_soundbanks_unp" "archive\pc\content\audio_2_soundbanks.archive"
+
+
+	:DeleteFolders
+	rd /s /q "archive\pc\content\audio_1_general_unp"
+	rd /s /q "archive\pc\content\audio_2_soundbanks_unp"
+)
+:End
+endlocal
+del "%~f0"

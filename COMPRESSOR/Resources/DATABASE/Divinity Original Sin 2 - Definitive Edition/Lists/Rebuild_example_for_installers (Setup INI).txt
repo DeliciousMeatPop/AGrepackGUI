@@ -1,0 +1,63 @@
+::To be used in CIU Setup.ini
+
+[CMDCommands]
+cd /D "{app}"
+if exist "{app}\dos2ce_snd.xtl" (
+"{app}\WemTool.exe" -d
+
+:XToolDecode
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsound_Buildings.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsound_Buildings.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsound_Habitats.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsound_Habitats.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsound_SpecialAreas.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsound_SpecialAreas.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Animals.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Animals.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Birds.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Birds.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_CityFX.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_CityFX.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_DungeonFX.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_DungeonFX.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Fire.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Fire.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Gen_Nature_Surround_TEST.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Gen_Nature_Surround_TEST.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Insects.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Insects.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Lake.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Lake.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Lava.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Lava.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Objects_Magic.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Objects_Magic.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Objects_Standard.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Objects_Standard.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Ocean.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Ocean.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Reptiles.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Reptiles.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Rivers_Fountains_Sewers.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Rivers_Fountains_Sewers.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Waterfalls.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Waterfalls.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Wind_Gusts.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Wind_Gusts.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Pointsounds_Wind_Objects.pak_extract\*" "{app}\Data\Sound\Ambient_Pointsounds_Wind_Objects.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Soundvol_Gen_Nature.pak_extract\*" "{app}\Data\Sound\Ambient_Soundvol_Gen_Nature.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Soundvol_Gen_Underground.pak_extract\*" "{app}\Data\Sound\Ambient_Soundvol_Gen_Underground.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Soundvol_Habitats.pak_extract\*" "{app}\Data\Sound\Ambient_Soundvol_Habitats.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Soundvol_Indoors.pak_extract\*" "{app}\Data\Sound\Ambient_Soundvol_Indoors.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Soundvol_Specific.pak_extract\*" "{app}\Data\Sound\Ambient_Soundvol_Specific.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Ambient_Soundvol_Water.pak_extract\*" "{app}\Data\Sound\Ambient_Soundvol_Water.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Animals.pak_extract\*" "{app}\Data\Sound\Animals.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Creatures.pak_extract\*" "{app}\Data\Sound\Creatures.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Critters.pak_extract\*" "{app}\Data\Sound\Critters.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Items_Containers.pak_extract\*" "{app}\Data\Sound\Items_Containers.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Items_Inventory.pak_extract\*" "{app}\Data\Sound\Items_Inventory.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Items_Objects.pak_extract\*" "{app}\Data\Sound\Items_Objects.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Movement.pak_extract\*" "{app}\Data\Sound\Movement.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Music.pak_extract\*" "{app}\Data\Sound\Music.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Origin_Presentation.pak_extract\*" "{app}\Data\Sound\Origin_Presentation.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Player.pak_extract\*" "{app}\Data\Sound\Player.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Skills.pak_extract\*" "{app}\Data\Sound\Skills.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Status_FX.pak_extract\*" "{app}\Data\Sound\Status_FX.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Surfaces.pak_extract\*" "{app}\Data\Sound\Surfaces.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\UI.pak_extract\*" "{app}\Data\Sound\UI.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Vocals_Combat.pak_extract\*" "{app}\Data\Sound\Vocals_Combat.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Weapons.pak_extract\*" "{app}\Data\Sound\Weapons.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\Weather_FX.pak_extract\*" "{app}\Data\Sound\Weather_FX.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2ce_snd.xtl" "{app}\Data\Sound\z_TESTS.pak_extract\*" "{app}\Data\Sound\z_TESTS.pak"
+
+"{tmp}\XTool_2020\XTool" decode "{app}\dos2de_snd.xtl" "{app}\DefEd\Data\Patch5.pak_extract\*" "{app}\DefEd\Data\Patch5.pak"
+)
+
+:DeleteFolders
+for /f "delims=" %%i in ('dir /a:d /s /b *_extract') do rd /s /q "%%i"
+del /Q /F /S "{app}\dos2*.xtl"
+del /S /F "{app}\WemTool.exe"
+TIMEOUT 3
+)
+

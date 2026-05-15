@@ -1,0 +1,9 @@
+$Default
+
+$STOREPack
+MoguriFiles\StreamingAssets\ma\*
+MoguriVideo\*
+StreamingAssets\ma\*
+
+$OGGREPack
+MoguriSoundtrack\*

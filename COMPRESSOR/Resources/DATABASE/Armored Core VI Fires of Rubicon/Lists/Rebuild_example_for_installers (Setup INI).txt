@@ -1,0 +1,21 @@
+::To be used in CIU Setup.ini
+
+[CMDCommands]
+if exist "{app}\ac6for.xtl" (
+	"{tmp}\XTool_2020\XTool.exe" decode "{app}\ac6for.xtl" "{app}\Game\movie" "{app}\Game\Data0.bdt"
+	del /F /S /Q "{app}\ac6for.xtl"
+	TIMEOUT 3
+)
+
+-------------------------------
+
+::To be used in other installer scripts like ASIS
+::xtool.exe is executed from application root folder
+
+@echo off
+if exist "ac6for.xtl" (
+	"XTool.exe" decode "ac6for.xtl" "Game\movie" "Game\Data0.bdt"
+	del /F /S /Q "ac6for.xtl"
+	TIMEOUT 3
+)
+del "%~f0"

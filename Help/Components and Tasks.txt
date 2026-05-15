@@ -1,0 +1,514 @@
+With [ComponentsSettings] and [TasksSettings] you can add selectable items to your installation.
+
+I will give you a few examples on how to correctly use them.
+
+Also read "Help\Settings.txt" file to get further description of all the options.
+
+##################################################################################################################
+
+I would suggest to use [ComponentsSettings] if you want to give the choice to install different apps, like game collections and such.
+
+[ComponentsSettings]
+Enable=1
+FlatPageMode=0
+ShowComponentSize=1
+
+Component1.Name=Grand Theft Auto III The Definitive Edition
+Component1.ItemType=CHECK
+Component1.Size=4.15 GB
+Component1.Level=0
+Component1.Checked=1
+Component1.Enabled=1
+
+Component2.Name=Grand Theft Auto Vice City The Definitive Edition
+Component2.ItemType=CHECK
+Component2.Size=8.75 GB
+Component2.Level=0
+Component2.Checked=1
+Component2.Enabled=1
+
+Component3.Name=Grand Theft Auto San Andreas The Definitive Edition
+Component3.ItemType=CHECK
+Component3.Size=18.00 GB
+Component3.Level=0
+Component3.Checked=1
+Component3.Enabled=1
+
+
+records.ini example
+[Record1]
+Type=Freearc_Original
+Source={src}\GTA3DE.bin
+Output={app}\
+Disk=1
+Size=2.01 GB
+Component=1
+
+[Record2]
+Type=Freearc_Original
+Source={src}\GTAVCDE.bin
+Output={app}\
+Disk=1
+Size=3.1 GB
+Component=2
+
+[Record3]
+Type=Freearc_Original
+Source={src}\GTASADE.bin
+Output={app}\
+Disk=1
+Size=5.21 GB
+Component=3
+
+##################################################################################################################
+
+ItemType=CHECK means that users can check or uncheck regardless of any dependencies
+ItemType=RADIO means that only one item of a GROUP can be enabled (you don't need a GROUP for this item type)
+ItemType=GROUP creates a new group which contains all items which come after this and are set to Level=1 or greater (dependencies)
+
+Example:
+Component1.Name=Grand Theft Auto III The Definitive Edition
+Component1.ItemType=CHECK
+Component1.Size=4.15 GB
+Component1.Level=0
+Component1.Checked=1
+Component1.Enabled=1
+
+Component2.Name=More GTA games
+Component2.ItemType=GROUP
+Component2.Size=
+Component2.Level=0
+Component2.Checked=1
+Component2.Enabled=1
+
+Component3.Name=Grand Theft Auto Vice City The Definitive Edition
+Component3.ItemType=RADIO
+Component3.Size=8.75 GB
+Component3.Level=1
+Component3.Checked=1
+Component3.Enabled=1
+
+Component4.Name=Grand Theft Auto San Andreas The Definitive Edition
+Component4.ItemType=RADIO
+Component4.Size=18.00 GB
+Component4.Level=1
+Component4.Checked=1
+Component4.Enabled=1
+
+
+records.ini example
+[Record1]
+Type=Freearc_Original
+Source={src}\GTA3DE.bin
+Output={app}\
+Disk=1
+Size=2.01 GB
+Component=1
+
+[Record2]
+Type=Freearc_Original
+Source={src}\GTAVCDE.bin
+Output={app}\
+Disk=1
+Size=3.1 GB
+Component=3
+
+[Record3]
+Type=Freearc_Original
+Source={src}\GTASADE.bin
+Output={app}\
+Disk=1
+Size=5.21 GB
+Component=4
+
+As you can see above, Component=2 is not in records.ini because it's a GROUP. A GROUP type is meant to be including items, something like a box or a chest, which makes a visual dependency sort of.
+
+In the above example the user can always choose Component1 (ItemType=CHECK), but the user have to choose between Component3 and Component4 (ItemType=RADIO). The user can't choose both of them because of RADIO type.
+Component2 is reserved for the GROUP (ItemType=GROUP). A GROUP always needs a own Component number, but it will not be visible in records.ini file. It is not a component or task which can be installed.
+RADIO item types do not need a GROUP item type. For example you can make just two components or tasks which use the RADIO item type but are not in a GROUP item type.
+
+##################################################################################################################
+
+[TasksSettings] is literally the same principle as [ComponentsSettings], but is meant to be for additional game related stuff like soundtracks, wallpapers, extra stuff of any sorts, additional languages for games, etc.
+
+I will give you first a simple example for a single game.
+
+[TasksSettings]
+Enable=1
+FlatPageMode=0
+ShowTaskSize=1
+
+Task1.Name=Soundtrack
+Task1.ItemType=CHECK
+Task1.Size=100 mb
+Task1.Level=0
+Task1.Checked=1
+Task1.Enabled=1
+
+Task2.Name=Wallpapers
+Task2.ItemType=CHECK
+Task2.Size=20 mb
+Task2.Level=0
+Task2.Checked=1
+Task2.Enabled=1
+
+
+records.ini example
+[Record1]
+Type=Freearc_Original
+Source={src}\Main_Files.bin
+Output={app}\
+Disk=1
+Size=10 gb
+
+[Record2]
+Type=Freearc_Original
+Source={src}\Soundtrack.bin
+Output={app}\
+Disk=1
+Size=60 mb
+Task=1
+
+[Record3]
+Type=Freearc_Original
+Source={src}\Wallpapers.bin
+Output={app}\
+Disk=1
+Size=10 mb
+Task=2
+
+##################################################################################################################
+
+Here is another example with the above items + language packs
+
+[TasksSettings]
+Enable=1
+FlatPageMode=0
+ShowTaskSize=1
+
+Task1.Name=English Files
+Task1.ItemType=CHECK
+Task1.Size=750 mb
+Task1.Level=0
+Task1.Checked=1
+Task1.Enabled=1
+
+Task2.Name=French Files
+Task2.ItemType=CHECK
+Task2.Size=700 mb
+Task2.Level=0
+Task2.Checked=1
+Task2.Enabled=1
+
+Task3.Name=German Files
+Task3.ItemType=CHECK
+Task3.Size=695 mb
+Task3.Level=0
+Task3.Checked=1
+Task3.Enabled=1
+
+Task4.Name=Soundtrack
+Task4.ItemType=CHECK
+Task4.Size=100 mb
+Task4.Level=0
+Task4.Checked=1
+Task4.Enabled=1
+
+Task5.Name=Wallpapers
+Task5.ItemType=CHECK
+Task5.Size=20 mb
+Task5.Level=0
+Task5.Checked=1
+Task5.Enabled=1
+
+
+records.ini example
+[Record1]
+Type=Freearc_Original
+Source={src}\Main_Files.bin
+Output={app}\
+Disk=1
+Size=10 gb
+
+[Record2]
+Type=Freearc_Original
+Source={src}\English.bin
+Output={app}\
+Disk=1
+Size=500 mb
+Task=1
+
+[Record3]
+Type=Freearc_Original
+Source={src}\French.bin
+Output={app}\
+Disk=1
+Size=500 mb
+Task=2
+
+[Record4]
+Type=Freearc_Original
+Source={src}\German.bin
+Output={app}\
+Disk=1
+Size=500 mb
+Task=3
+
+[Record5]
+Type=Freearc_Original
+Source={src}\Soundtrack.bin
+Output={app}\
+Disk=1
+Size=60 mb
+Task=4
+
+[Record6]
+Type=Freearc_Original
+Source={src}\Wallpapers.bin
+Output={app}\
+Disk=1
+Size=10 mb
+Task=5
+
+If you want to include items for additional language packs, you can also use constants for the Name= keys.
+
+Example:
+Task1.Name=cm:en = will be visible in installer as "English" in the language the installer is active
+Task1.Name=cm:de = will be visible as "Allemand" if you start installer in french language and will be visible as "German" if you start the installer in english
+The same for all other supported languages
+
+Supported language constants are:
+cm:en = English
+cm:de = German
+cm:fr = French
+cm:es = Spanish
+cm:it = Italian
+cm:pl = Polish
+cm:ru = Russian
+cm:ptbr = Portuguese Brazil
+cm:cz = Czech
+
+##################################################################################################################
+
+Now a example if you want to give choices for soundtracks + wallpapers, but with limitation of language packs if the user only can choose one language.
+Take care of the Level= key if you use GROUP.
+
+Task1 is a GROUP with Level=0
+Task2, Task3, Task4 are RADIO but with Level=1. The Level= key basically gives a visual demarcation, so in installer surface you can see that the language tasks belongs to Task1 (Language Packs).
+Task5 and Task6 do not belong to Task1, so they Level= key is 0 again.
+
+[TasksSettings]
+Enable=1
+FlatPageMode=0
+ShowTaskSize=1
+
+Task1.Name=Language Packs
+Task1.ItemType=GROUP
+Task1.Size=750 mb
+Task1.Level=0
+Task1.Checked=1
+Task1.Enabled=1
+
+Task2.Name=cm:en
+Task2.ItemType=RADIO
+Task2.Size=750 mb
+Task2.Level=1
+Task2.Checked=1
+Task2.Enabled=1
+
+Task3.Name=cm:fr
+Task3.ItemType=RADIO
+Task3.Size=700 mb
+Task3.Level=1
+Task3.Checked=1
+Task3.Enabled=1
+
+Task4.Name=cm:de
+Task4.ItemType=RADIO
+Task4.Size=695 mb
+Task4.Level=1
+Task4.Checked=1
+Task4.Enabled=1
+
+Task5.Name=Soundtrack
+Task5.ItemType=CHECK
+Task5.Size=100 mb
+Task5.Level=0
+Task5.Checked=1
+Task5.Enabled=1
+
+Task6.Name=Wallpapers
+Task6.ItemType=CHECK
+Task6.Size=20 mb
+Task6.Level=0
+Task6.Checked=1
+Task6.Enabled=1
+
+
+records.ini example
+[Record1]
+Type=Freearc_Original
+Source={src}\Main_Files.bin
+Output={app}\
+Disk=1
+Size=10 gb
+
+[Record2]
+Type=Freearc_Original
+Source={src}\English.bin
+Output={app}\
+Disk=1
+Size=500 mb
+Task=2
+
+[Record3]
+Type=Freearc_Original
+Source={src}\French.bin
+Output={app}\
+Disk=1
+Size=500 mb
+Task=3
+
+[Record4]
+Type=Freearc_Original
+Source={src}\German.bin
+Output={app}\
+Disk=1
+Size=500 mb
+Task=4
+
+[Record5]
+Type=Freearc_Original
+Source={src}\Soundtrack.bin
+Output={app}\
+Disk=1
+Size=60 mb
+Task=5
+
+[Record6]
+Type=Freearc_Original
+Source={src}\Wallpapers.bin
+Output={app}\
+Disk=1
+Size=10 mb
+Task=6
+
+##################################################################################################################
+
+You can also make the main files visible in tasks or components, like this. 
+Just notice the Enabled= key, which I suggest you set to 0, otherwise users can disable installing of the main files, which does not make sense.
+Attention: If you use it like this where "Main Files" are a own Task or Component, you have to set it in Records.ini too.
+
+[TasksSettings]
+Enable=1
+FlatPageMode=0
+ShowTaskSize=1
+
+Task1.Name=Main Files
+Task1.ItemType=CHECK
+Task1.Size=20 GB
+Task1.Level=0
+Task1.Checked=1
+Task1.Enabled=0
+
+Task2.Name=Language Packs
+Task2.ItemType=GROUP
+Task2.Size=750 mb
+Task2.Level=0
+Task2.Checked=1
+Task2.Enabled=1
+
+Task3.Name=cm:en
+Task3.ItemType=RADIO
+Task3.Size=750 mb
+Task3.Level=1
+Task3.Checked=1
+Task3.Enabled=1
+
+Task4.Name=cm:fr
+Task4.ItemType=RADIO
+Task4.Size=700 mb
+Task4.Level=1
+Task4.Checked=1
+Task4.Enabled=1
+
+
+records.ini example
+[Record1]
+Type=Freearc_Original
+Source={src}\Main_Files.bin
+Output={app}\
+Disk=1
+Size=10 gb
+Task=1
+
+##################################################################################################################
+
+What if you want to install two games, and each of the games have additional stuff? 
+Answer: You have to use both [ComponentsSettings] and [TasksSettings]
+
+
+Component1.Name=Game 1
+Component1.ItemType=CHECK
+Component1.Size=4.15 GB
+Component1.Level=0
+Component1.Checked=1
+Component1.Enabled=1
+
+Component2.Name=Game 2
+Component2.ItemType=CHECK
+Component2.Size=8.75 GB
+Component2.Level=0
+Component2.Checked=1
+Component2.Enabled=1
+
+
+Task1.Name=Soundtrack Game 1
+Task1.ItemType=CHECK
+Task1.Size=100 Mb
+Task1.Level=0
+Task1.Checked=1
+Task1.Enabled=1
+
+Task2.Name=Soundtrack Game 2
+Task2.ItemType=CHECK
+Task2.Size=210 Mb
+Task2.Level=0
+Task2.Checked=1
+Task2.Enabled=1
+
+
+records.ini example
+[Record1]
+Type=Freearc_Original
+Source={src}\Game_1.bin
+Output={app}\
+Disk=1
+Size=10 gb
+Component=1
+
+[Record2]
+Type=Freearc_Original
+Source={src}\Game_2.bin
+Output={app}\
+Disk=1
+Size=10 gb
+Component=2
+
+[Record3]
+Type=Freearc_Original
+Source={src}\Soundtrack_Game_1.bin
+Output={app}\
+Disk=1
+Size=77 mb
+Component=1
+Task=1
+
+[Record4]
+Type=Freearc_Original
+Source={src}\Soundtrack_Game_2.bin
+Output={app}\
+Disk=1
+Size=77 mb
+Component=2
+Task=2

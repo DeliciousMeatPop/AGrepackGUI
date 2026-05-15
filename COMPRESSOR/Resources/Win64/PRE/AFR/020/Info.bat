@@ -1,0 +1,3 @@
+@echo off
+AFR
+pause

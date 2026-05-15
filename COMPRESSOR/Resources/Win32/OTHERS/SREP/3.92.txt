@@ -1,0 +1,48 @@
+SREP 3.92 beta: huge-dictionary LZ77 preprocessor   (c) Bulat.Ziganshin@gmail.com
+July 23, 2013    homepage: http://freearc.org/research/SREP.aspx
+
+Usage: SREP [options] infile [outfile]
+   infile/outfile can be specified as "-" for stdin/stdout
+   "SREP [options] somefile" compresses data from somefile to somefile.srep
+   "SREP [options] somefile.srep" decompresses data back to somefile
+   "SREP [options]" compresses and "SREP -d [options]" decompresses data from stdin to stdout
+
+Options are:
+   -m1: fixed-window content-defined chunking with matches checked by VMAC
+   -m2: order-1 content-defined chunking with matches checked by VMAC
+   -m3: check matches by VMAC digest (compression memory = 7-8% of filesize)
+   -m4: check matches by rereading old data (compression memory = 3-4% of filesize)
+   -m5/-mx: rereading with byte-accurate matches (compression memory = 7-9% of filesize)
+   -l: minimum LZ match length, default 512
+   -c: size of hash chunk, by default as small as required to find all these LZ matches
+   -aX/Y: alloc X bytes of those Y bits are set per L input bytes for compression
+          accelerator. Y=0/1/2/4/8/16/32/64, -a0 is slowest but requires least memory
+   -ia-: disable I/O acceleration to reduce memory usage (-m5* only)
+   -tN: use N compression threads (only for -m1/-m2)
+
+   -m1..-m5: index-LZ - list of matches saved at the end of compressed file
+   -m1f..-m5f: future-LZ - decompression dictionary will hold only future matches
+   -m1o..-m5o: I/O LZ - output file used as decompression dictionary
+   -memBYTES: amount of RAM used by future-LZ/index-LZ decompression (extra goes into VM file)
+      -mem75% AKA -mem75p means "use no more than 75% of RAM" - that's by default
+      -mem600mb means itself
+      -mem75%-600mb means "use no more than 75% of RAM minus 600 mb"
+   -mBYTES: don't store matches larger than BYTES on future-LZ/index-LZ decompression
+
+   -d: decompression (for -m1o..m5o requires only 24 mb of memory besides of OS I/O buffers)
+   -delete: delete source file after successful (de)compression
+   -sBYTES: explicitly specify filesize (for compression from stdin), default 25gb
+   -bBYTES: change compression block size, default 8mb
+   -index=FILENAME: read/write index of compressed data into separate file
+   -temp=[FILENAME]: keep uncompressed data in the file in stdin-to-stdout mode, default srep-data.tmp
+   -vmfile=FILENAME: temporary file used by Virtual Memory manager, default srep-virtual-memory.tmp
+   -vmblock=BYTES: size of one block in VM temporary file, default 8mb
+
+   -hash=vmac(default)/siphash/md5/sha1/sha512: store hash checksums in every block
+   -hash-: don't store/check block checksums
+   -mmap: use memory-mapped files for match checking
+   -slp[+/-/]: force/disable/try(default) large pages support
+   -pc[max_offset]: display performance counters [for matches closer than max_offset]
+   -s: save printed stats from overwriting; -s+/-s-/-sX.Y: update stats every X.Y seconds
+   -v[0..2]: verbosity level
+   -rem...: command-line remark

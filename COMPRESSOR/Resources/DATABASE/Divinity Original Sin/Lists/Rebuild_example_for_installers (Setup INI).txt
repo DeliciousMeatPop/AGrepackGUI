@@ -1,0 +1,19 @@
+::To be used in CIU Setup.ini
+
+[CMDCommands]
+cd /D "{app}"
+if exist "{app}\dos_snd.xtl" (
+"{app}\WemTool.exe" -d
+
+:XToolDecode
+"{tmp}\XTool_2020\XTool" decode "{app}\dos_snd.xtl" "{app}\Data\Sound.pak_extract\*" "{app}\Data\Sound.pak"
+"{tmp}\XTool_2020\XTool" decode "{app}\dos_snd.xtl" "{app}\Data\Sound.pak_extract\*" "{app}\Data\Sound_1.pak"
+)
+
+:DeleteFolders
+for /f "delims=" %%i in ('dir /a:d /s /b *_extract') do rd /s /q "%%i"
+del /Q /F /S "{app}\dos2*.xtl"
+del /S /F "{app}\WemTool.exe"
+TIMEOUT 3
+)
+

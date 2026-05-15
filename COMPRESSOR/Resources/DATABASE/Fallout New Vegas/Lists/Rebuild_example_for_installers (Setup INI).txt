@@ -1,0 +1,48 @@
+::To be used in CIU Setup.ini
+
+[CMDCommands]
+setlocal EnableDelayedExpansion EnableExtensions
+if not exist "{app}\falloutnv.xtl" goto End
+set /a "FileList.Count=7"
+set "FileList[1].Name=DeadMoney - Sounds.bsa"
+set "FileList[2].Name=Fallout - Sound.bsa"
+set "FileList[3].Name=Fallout - Voices1.bsa"
+set "FileList[4].Name=GunRunnersArsenal - Sounds.bsa"
+set "FileList[5].Name=HonestHearts - Sounds.bsa"
+set "FileList[6].Name=LonesomeRoad - Sounds.bsa"
+set "FileList[7].Name=OldWorldBlues - Sounds.bsa"
+for /L %%i in (1, 1, !FileList.Count!) do (
+	call "{tmp}\XTool_2020\XTool.exe" decode "{app}\falloutnv.xtl" "{app}\Data\!FileList[%%i].Name!_extract" "{app}\Data\!FileList[%%i].Name!"
+	rmdir /s /q "{app}\Data\!FileList[%%i].Name!_extract"
+)
+del /F /S /Q "{app}\falloutnv.xtl"
+TIMEOUT 3
+:End
+endlocal
+
+-------------------------------
+
+::To be used in other installer scripts like ASIS
+::WemTool.exe and xtool.exe is executed from application root folder
+
+@echo off
+setlocal EnableDelayedExpansion EnableExtensions
+if not exist "falloutnv.xtl" goto End
+set /a "FileList.Count=7"
+set "FileList[1].Name=DeadMoney - Sounds.bsa"
+set "FileList[2].Name=Fallout - Sound.bsa"
+set "FileList[3].Name=Fallout - Voices1.bsa"
+set "FileList[4].Name=GunRunnersArsenal - Sounds.bsa"
+set "FileList[5].Name=HonestHearts - Sounds.bsa"
+set "FileList[6].Name=LonesomeRoad - Sounds.bsa"
+set "FileList[7].Name=OldWorldBlues - Sounds.bsa"
+for /L %%i in (1, 1, !FileList.Count!) do (
+	call "XTool.exe" decode "falloutnv.xtl" "Data\!FileList[%%i].Name!_extract" "Data\!FileList[%%i].Name!"
+	rmdir /s /q "Data\!FileList[%%i].Name!_extract"
+)
+del /F /S /Q "falloutnv.xtl"
+del /S /F /Q "xtool.exe"
+TIMEOUT 3
+:End
+endlocal
+del "%~f0"

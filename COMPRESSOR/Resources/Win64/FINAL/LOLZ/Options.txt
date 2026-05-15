@@ -1,0 +1,39 @@
+Data detection options:
+-dt  [0..1] - enables / disables the pos_ctx / dxt / raw detection. no headers, everything is detected based on the analysis of data statistics. Default: -dt1;
+-dtp [0..1] - enables / disables transmission of statistics from previous blocks to subsequent blocks in the detector. Default: -dtp1;
+-dtb [0..1] - enables / disables enumeration of all options regardless of heuristics. Default: dtb0;
+-dto [0..1] - enables / disables detection of the best positional o1 context. Default: -dto1;
+-dtm [0..1] - enables / disables raw graphics multimedia detection. Default: -dtm1;
+-dtw [0..1] - enables / disables width detection for raw graphics and dxt textures;
+-dtd [0..1] - enables / disables detection of dxt textures;
+
+Multithreading options:
+-mtt [0..1]   - for multithreading, specifies the operating mode to be used. When set to 0, the dictionary size must be at least 2 times the block size. In this mode, data for each stream will be loaded alternately in block size. In this mode, in most cases, you can achieve better compression than in the second, however, decompression requires as many streams as in compression. When 1, each block is compressed separately, without dependencies on neighboring data, respectively, the compression here is usually worse than in the first mode, but you can specify any number of streams for unpacking. It is for this mode that the options from cls.ini MaxThreadsUsage and MaxMemoryUsage are used. Default: -mtt0;
+-mt  [1..16]  - sets the number of threads to process. With -mt1 and -mtt0, normal sequential lossless compression is obtained by dividing the stream into blocks. Default: -mt1;
+-mtb [2..512] - sets the block size in MB. When -mt1 -mtt0 also plays a role, but minimal. And more does not mean better. Usually, for -mtt0, the optimal value is about 32-64MB, respectively, the size of the dictionary should be more than 2 times larger. For mtt1 mode, the dictionary size must be no more than the block size;
+
+Main options:
+-d   [16..2032] - dictionary size in MB. Default: -d64;
+-tt  [1..256]   - the number of paths to consider in the optimal parser. It greatly affects the speed and compression ratio, but not unpacking. You shouldn't ask more than 16, I assure you it's not worth it. Default: -tt4;
+-oh  [8..14]    - sets the maximum number of bytes that the optimal parser will process at a time (2 ^ X). Default: -oh12;
+-os  [0 .. -oh] - sets the minimum number of bytes that the parser will process at a time (2 ^ X). Default: -os8;
+-fba [0..4096]  - sets the size of the minimum match, at which the parser will not bother much in the calculations. Compression is decently accelerated (2 times) with a small loss of compression. At 0, these simplifications are disabled. Default: -fba256;
+-fbb [0..4096]  - THIS OPTION DOES NOT WORK AT THE MOMENT. Asked for even greater simplifications;
+-al  [0..1]     - enables / disables the calculation of the literal price even if rep0 matches. Default: -al1;
+-x   [0..2]     - turns on the slow modes of the parser with the calculation of (almost) all lengths of the found match, as well as the options match + lit + rep0match. Very slow and merciless. And the benefit is very small. It's easier to add -tt; Default: -x0;
+
+Matchfinder options:
+-rt [0..2]    - THIS OPTION DOES NOT WORK AT THE MOMENT. I set the type of matchfinder - lz, rolz or hybrid mode, but rolz did not meet expectations and I made all the changes without taking it into account, so it does not work now; Default: -rt0;
+-mc [2..1023] - Specifies the maximum number of traversals of the binary tree of matches, after which matches for the given position are no longer searched; Default: -mc128;
+
+Model options:
+-cm  [0..1] - enables / disables a simple context mixer in some critical places, which mixes a couple of models in each place. When enabled, it improves compression, but slows down decompression. Default: -cm1;
+-bc  [0..8] - sets the level of influence of the previous byte on the mixer; Default: -bc4;
+-lm  [0..4] - THIS OPTION DOES NOT WORK AT THE MOMENT. Specifies the type of an "elementary" literal. Complex high-order models with cm did not perform well, so I abandoned them, as did rolz. Default: -lm0;
+-blo [0..8] - sets the degree of influence of the previous byte on the encoding of the upper part of the literal. Default: -blo8;
+-bll [0..8] - sets the degree of influence of the previous byte on the encoding of the lower part of the literal. Default: -bll8;
+-blr [0..8] - sets the degree of influence of the rep0lit byte on the encoding of the upper part of the literal. Default: -blr4;
+-bm  [0..8] - sets the degree of influence of the rep0lit byte on the encoding of the match type flag. Default: -bm4;
+-pc  [0..4] - sets the positional context for all encoding operations. It is automatically ignored when the detector is on. Default: -pc2;
+-dmXY(X [0..3], Y [0..4]) - sets the model for encoding color pairs (X) and alpha channel (Y) pairs. At the maximum value of each parameter, adaptive switching between models is used, while the decompression speed is reduced, but the compression is better in most cases. Default: -dm34;
+-gmXY(X [0..2], Y [0..1]) - X - sets the model for encoding raw graphics. at the maximum value, adaptive switching between models is enabled. However, in this case, it is rare to see a gain over the adaptive mode. Generally, mode 0 is in the lead, but its unpacking is 2 times slower than mode 1. Y - enables updating of statistics of models when they were not used (for example, there was a long match). For X0 and X1, it usually gives a small gain in compression, but the speed drops by a factor of 2 (it all depends on the data). In general, the most appropriate is -gm00, he - and the default mode; 

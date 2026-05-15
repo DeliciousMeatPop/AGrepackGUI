@@ -1,0 +1,5 @@
+Thanks to ⎝⎝✧GͥOͣDͫ✧⎠⎠ for the PSN Bonus stuff, got it here https://cs.rin.ru/forum/viewtopic.php?p=3252223#p3252223, simply extract anywhere and then run the bat file! This WILL overwrite your save if you already have one.
+
+and thanks to Goldberg as always for his emus, this is his coldclient loader based on rat431s and thanks to rin and all our staff at ARMGDDN Games!
+
+- DMP 4-3-25

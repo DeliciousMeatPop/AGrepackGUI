@@ -1,0 +1,45 @@
+::To be used in CIU Setup.ini
+
+[CMDCommands]
+if exist "{app}\anno1800.xtl" (
+	if exist "!GameDir!\maindata\data3.rda" "{tmp}\XTool_2020\XTool" decode "{app}\anno1800.xtl" "{app}\maindata\data3.rda_extract" "{app}\maindata\data3.rda"
+	if exist "!GameDir!\maindata\data11.rda" "{tmp}\XTool_2020\XTool" decode "{app}\anno1800.xtl" "{app}\maindata\data11.rda_extract" "{app}\maindata\data11.rda"
+	if exist "!GameDir!\maindata\data12.rda" "{tmp}\XTool_2020\XTool" decode "{app}\anno1800.xtl" "{app}\maindata\data12.rda_extract" "{app}\maindata\data12.rda"
+	if exist "!GameDir!\maindata\data13.rda" "{tmp}\XTool_2020\XTool" decode "{app}\anno1800.xtl" "{app}\maindata\data13.rda_extract" "{app}\maindata\data13.rda"
+	if exist "!GameDir!\maindata\data16.rda" "{tmp}\XTool_2020\XTool" decode "{app}\anno1800.xtl" "{app}\maindata\data16.rda_extract" "{app}\maindata\data16.rda"
+	if exist "!GameDir!\maindata\data18.rda" "{tmp}\XTool_2020\XTool" decode "{app}\anno1800.xtl" "{app}\maindata\data18.rda_extract" "{app}\maindata\data18.rda"
+
+	if exist "!GameDir!\maindata\data3.rda_extract\" rd /s /q "!GameDir!\maindata\data3.rda_extract"
+	if exist "!GameDir!\maindata\data11.rda_extract\" rd /s /q "!GameDir!\maindata\data11.rda_extract"
+	if exist "!GameDir!\maindata\data12.rda_extract\" rd /s /q "!GameDir!\maindata\data12.rda_extract"
+	if exist "!GameDir!\maindata\data13.rda_extract\" rd /s /q "!GameDir!\maindata\data13.rda_extract"
+	if exist "!GameDir!\maindata\data16.rda_extract\" rd /s /q "!GameDir!\maindata\data16.rda_extract"
+	if exist "!GameDir!\maindata\data18.rda_extract\" rd /s /q "!GameDir!\maindata\data18.rda_extract"
+	del /F /S /Q "{app}\anno1800.xtl"
+	TIMEOUT 3
+)
+
+-------------------------------
+
+::To be used in other installer scripts like ASIS
+::XTool.exe is executed from application root folder
+
+@echo off
+if exist "anno1800.xtl" (
+	if exist "maindata\data3.rda" "xtool.exe" decode "anno1800.xtl" "maindata\data3.rda_extract" "maindata\data3.rda"
+	if exist "maindata\data11.rda" "xtool.exe" decode "anno1800.xtl" "maindata\data11.rda_extract" "maindata\data11.rda"
+	if exist "maindata\data12.rda" "xtool.exe" decode "anno1800.xtl" "maindata\data12.rda_extract" "maindata\data12.rda"
+	if exist "maindata\data13.rda" "xtool.exe" decode "anno1800.xtl" "maindata\data13.rda_extract" "maindata\data13.rda"
+	if exist "maindata\data16.rda" "xtool.exe" decode "anno1800.xtl" "maindata\data16.rda_extract" "maindata\data16.rda"
+	if exist "maindata\data18.rda" "xtool.exe" decode "anno1800.xtl" "maindata\data18.rda_extract" "maindata\data18.rda"
+
+	if exist "maindata\data3.rda_extract\" rd /s /q "maindata\data3.rda_extract"
+	if exist "maindata\data11.rda_extract\" rd /s /q "maindata\data11.rda_extract"
+	if exist "maindata\data12.rda_extract\" rd /s /q "maindata\data12.rda_extract"
+	if exist "maindata\data13.rda_extract\" rd /s /q "maindata\data13.rda_extract"
+	if exist "maindata\data16.rda_extract\" rd /s /q "maindata\data16.rda_extract"
+	if exist "maindata\data18.rda_extract\" rd /s /q "maindata\data18.rda_extract"
+	del /F /S /Q "anno1800.xtl"
+	TIMEOUT 3
+)
+del "%~f0"

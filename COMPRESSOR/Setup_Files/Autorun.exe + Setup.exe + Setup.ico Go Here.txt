@@ -1,0 +1,4 @@
+
+NOTES:
+>> Autorun.exe is optional in this folder.
+>> The Redist folder for redist items must also be included if using Redist installation before game installation.

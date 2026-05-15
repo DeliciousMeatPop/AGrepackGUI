@@ -1,0 +1,165 @@
+
+DiskSpan_GUI 2.0.0.1 (x64) [2021.08.15]
+- Added tools page to DiskSpan GUI.
+  >> Currently only unpacking functionality for compressed conversions using DiskSpan GUI.
+  >> But in the future the function to "Extract" Setup.dll or create Setup.dll from a folder with items or method lines may be implemented.
+  >> The extraction is done using "IsDone.dll" and "UnArc.dll", simulating a normal installer with support DiskSpan GUI.
+  >> To extract a conversion look for the library Setup.dll created by DiskSpan GUI but Setup.dll must be with the files of the conversion without the need for Setup.exe.
+  >> You can also simply copy the DiskSpan GUI executable to the conversion folder and run it automatically load the "Setup.dll" file path. 
+- Added the CLS-SREP_NEW_x86.exe executable again to DiskSpan GUI to avoid some errors that happen randomly without this executable even on 64 bit system.
+- Added "Unreal Engine ucas Database maker" and "Dunia/Disrupt Engine Database maker" to "DiskSpan GUI".
+  >> Now the supported plugins database files are created from the end-user game folder before compression. 
+- Add new XTool plugin Cry Engine (R3)
+  >> Supported game Crysis 3 (for now).
+- Added back XTool plugin Ubisoft Dunia 2 Engine
+  >> Far Cry New Dawn (beta) 
+  >> Watch Dogs 2 (R4)
+  >> P.S: KaktoR has done some testing and seems to be working with the current dpo XTool version.
+- Fixed issues with MTX methods and some other minor bugs.
+- Updated DiskSpan GUI database with some new games presets (Thanks to KaktoR for all database updates 2021.07.26 .. 2021.08.14). 
+  
+DiskSpan_GUI 2.0.0.0 (x64) [2021.07.09] (U1)
+- Add new compression media "Brunsli" to DiskSpan_GUI.
+- Updated DiskSpan GUI database with some new game presets (Thanks to KaktoR for the database update 2021.07.16). 
+
+DiskSpan_GUI 2.0.0.0 (x64) [2021.06.30]
+- Changed CLS-DiskSpan.dll to a new modified version.
+  >> To install from conversions that are on HDD in consecutively renamed folder the next part is obtained automatically. 
+  >> Now DiskSpan_GUI supports other file extension formats like ".bin" or any other but needs a value of 1/#1 or #a/#A to increment the slices.
+  >> But for that it is necessary to have a number "1" in the filename that will be incremented at each slice of the splited file.
+  >> It also supports alphabetically incrementing using "#a" or "#1" in the data file name to force increment this value.
+  >> To use the "#" character and not increment the number "1"/"a" after "#" then double character "##" so that it is incremented leftmost.
+  >> Example: "Data#1.pc1" create slices "Data1.pc1", "Data2.pc1", "Data3.pc1", etc.
+  >> Example: "Data#A.001" create slices "DataA.001", "DataB.001", "DataC.001", etc.
+  >> Example: "Data1.bin" create slices "Data1.bin", "Data2.bin", "Data3.bin", etc.  
+  >> Example: "Data1-001.bin" create slices "Data1-001.bin", "Data1-002.bin", "Data1-003.bin", etc. 
+  >> Example: "Data#1-##1.bin" create slices "Data1-#1.bin", "Data2-#1.bin", "Data3-#1.bin", etc.   
+- Updated UnRAR.dll from v6.00 to v6.20 (6.2.100.3821)
+- Updated XTool 2020 to version 0.3.21
+- Updated XTool plugin Hitman (R4)
+- Updated XTool plugin Bethesda (R3)
+- Updated XTool plugin Unreal Engine (R5)
+- Updated XTool plugin EA Frostbite Engine (R4)
+- Updated XTool plugin Ubisoft Dunia 2 Engine 
+  >> Watch Dogs 2 (R4)
+- Added new XTool plugin Ubisoft Dunia 2 Engine
+  >> Far Cry 3 (R1)
+  >> Far Cry 4 (R1)
+- Removed temporarily XTool plugin Ubisoft Dunia 2 Engine (Until Razor12911 shares updated versions of them).
+  >> Far_Cry_5 (wait update)
+  >> Far_Cry_New_Dawn (wait update)
+  >> Far Cry Primal (wait update)
+  >> Watch Dogs Legion (wait update)
+- Added some new XTool plugins to DiskSpan_GUI.
+  >> Unravel 1 & 2 (R1)
+  >> Scarlet Nexus (R2)  
+  >> Haemimont Engine (R2)
+  >> Madness Engine (R1)
+  >> Unity Engine (R1)
+- Updated MTX executable fro v5.0.0.0 to version 5.0.0.2.
+- Checkbox added to enable file testing after compression.
+- Added possibility to paste a method directly in the Edit/ComboBox of the method and directories (Does not allow editing characters). 
+  >> On the Ready page, a check of the methods will be done and if it is not valid it will be deleted and the Edit/ComboBox field will be cleared.
+  >> If it is filled with a masked method in an Edit/ComboBox that is not related to the Data file, or if it is not in UltraARC mode, the masked part will be removed.
+- Added support for the inclusion and exclusion list of files internally on DiskSpan_GUI.
+- Added support for multiple predefined method items for each compressed file methods or game methods or global methods.
+- Added database with game presets with the best compression methods for each game.
+- Added a collection mode to insert game collections from games in the database including general conversion information. 
+- Added new password Edit for each data file (Press CTRL key to show password characters).
+- Removed password Edit from method selection page.
+  >> Now the end user cannot change or add a password.
+- Added checking of the names of the compressed files in the "Settings Mode" when saving the settings.
+  >> This avoids two or more compressed files having the same name during the configuration of DiskSpan_GUI and prevents displaying an error when performing the conversion. 
+- Changed the way of ordering the custom tab methods in the memo following a rule created in the [OrderRules.CATEGORY] section. 
+- Changed, it is now possible to configure which method selection ComboBox/Edit should be displayed. 
+- Changed, DiskSpan_GUI has been enhanced to facilitate configuration of the methods in ".ini" file.
+  >> Now the sections are treated as lines and it is no longer necessary to inform the key in each line (except the [Settings] section which remains working as before). 
+
+------------------------------------------------------------------------------------------------------------------------------------------
+DiskSpan_GUI 1.0.0.5 [2021.05.18]
+- Updated the XTool 2020 "Unreal Engine" plugin and included an option for the "Mass Effect Legendary Edition" game.
+- Updated UnRAR.dll from v6.00 to v6.10.
+- Fixed some minor bugs.
+
+DiskSpan_GUI 1.0.0.4 [2021.03.26]
+- Added "Unlimited" tab to disk selection in CONFIG page allowing to leave the "Unlimited" tab as the default for the end user.
+- Fixed error that did not compress when using the "xlz4" method (LZ4 from the old XTool).
+  >> The methods of ZTool and old XTool have all been reset to "zt_<method>" and "xt_<method>".
+  >> Such as: zt_zlib, xt_zlib, xt_lz4, xt_lzo, xt_zstd, xt_oodle, xt_crilayla.
+
+DiskSpan_GUI 1.0.0.3 [2021.03.12] (U1)
+- Added automatic LOG (summary) configurable only in CONFIG mode.
+- Fixed error when compress with pzlib3 method.
+- Fixed error when unpacking compression zzLib method.
+- Fixed MTX methods extraction error generated in the previous version of 2020.03.08 
+- Fixed examples files CallAfter/CallBefore !SourceDir! variable.
+
+DiskSpan_GUI 1.0.0.3 [2021.03.08]
+- Fixed DropDown on elevated systems.
+- Fixed the "Next" button that was enabled when the last tab was active after searching for a directory or method in config mode. 
+- Fixed the MergeRecordsButton so that it is disabled when merging "Records.ini" to DLL or extracting "Records.ini" from DLL. 
+- Added build check hash to check if the executable is compatible with "DS_Methods.ini" in the "Resources" folder when replacing only DiskSpan_GUI.exe. 
+- Fixed the OodleRec8 method so that the "oo2core_8_win64.dll" library is renamed to "oo2core_8_win64.dll" automatically.
+  >> The OodleRec executables do not support the name "oo2core_8_win64.dll"(8) so the need to automatically rename it to "oo2core_7_win64.dll" inside "Setup.dll". 
+- Added support for others OodleRec methods: "oo2reck3", "oo2recm3" and "oo2recs3".
+  >> The OodleRec executables do not support the name "oo2core_3_win64.dll"(3) so the need to automatically rename it to "oo2core_4_win64.dll" inside "Setup.dll". 
+- Added new "xtool_kraken3" method support with XTool 2020.
+  >> With XTool 2020 the library "oo2core_3_win64.dll" is included inside "Setup.dll" with its original name. 
+- Added new XTool 2020 "Bethesda" plugin (R1) currently only supporting the game "The Elder Scrolls V: Skyrim" using "xtool_skyrim" method.
+
+DiskSpan_GUI 1.0.0.2 [2021.02.13] (U2)
+- Changed XTool 2020 reflate method to setting -t75p.
+  >> Using -t100p values, -t90p compression errors occurred here, but using -t75p was great.
+- Fixed "xtool_dainquisition" (XTool 2020 plugin) method not found error.  
+- Fixed log file extension to ".log" (not longer ".txt"). 
+- Fixed merge records button to disable while unpack game files. 
+- Updated support a maximum of 255 data files and also 255 games.
+  >> Before it supported a maximum of 10 games and 11 data files for each game. 
+
+DiskSpan_GUI 1.0.0.2 [2021.02.07] (U1)
+- Updated XTool 2020 to version 0.3.9
+- Fixed calculation of the size of the first disk.
+- Fixed text of labels on the READY page. 
+- Fixed other minor bugs in DiskSpan_GUI.
+- Added global FreeArc progress (not step progress) on the taskbar button.
+- Added function that allows extracting "Records.ini" after merging into "Setup.dll" (Before closing DiskSpan_GUI). 
+- Added another 2 pixels in the size of the ComboBox to select the media size units (I hope you have corrected the cut in the text). 
+- Added a timer label to show the user how long the conversion/unpacking has started. 
+- Added version of DiskSpan_GUI to the program caption. 
+
+DiskSpan_GUI 1.0.0.2 [2021.01.31]
+- Updated XTool 2020 to version 0.3.8
+- Updated plugin Unreal Engine (R3)
+
+DiskSpan_GUI 1.0.0.1 [2021.01.30]
+- Updated XTool 2020 to version 0.3.7
+- Added default exclusion to uninstall files: uninstall.exe, uninstall.dat, uninstall.bin, unins???.exe, unins???.dat
+- Removed cp_2077 method (Now use XTool plugin method xtool_cp2077).
+- Added 26 XTool plugins to DiskSpan_GUI.
+  >> Unreal Engine (R2)
+     >> Unreal Engine 3 (lzna)
+     >> Mortal Mombat 11
+     >> Unreal Engine 4 (crypted)
+  >> Hitman 3 (R2)
+  >> Cyberpunk 2077 (R1)
+  >> Saints Row 3 Remastered (R1)
+  >> EA Forstbite Engine (R3) (15 games supported)
+     >> FIFA 18, FIFA 19, FIFA 20, FIFA 21
+     >> Battlefield 4, Battlefield 1, Battlefield Hardline, Battlefield V
+     >> Need For Speed Rivals, Need For Speed (2015), Need For Speed Payback, Need For Speed Heat
+     >> Mirror's Edge Catalyst
+     >> Mass Effect Andromeda
+     >> Dragon Age Inquisition
+  >> Ubisoft Dunia 2 Engine (6 plugins)
+     >> Far Cry 5 (R1)
+     >> Far Cry Primal (R3)
+     >> Far Cry New Dawn (beta)
+     >> The Crew 2 (R2)
+     >> Watch Dogs 2 (R3)
+     >> Watch Dogs Legion (R3)
+
+DiskSpan_GUI 1.0.0.0 [2021.01.22]
+- Updated XTool 2020 to version 0.3.4
+- Added support for the zstd (xtool_zst) and lz4 (xtool_lz4) method.
+  >> in some cases the included library works, in others replace the library in the "Libraries" folder with the library obtained in the game files.
+- Fixed method ZSDT in old XTool (32-bits)

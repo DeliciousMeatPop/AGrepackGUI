@@ -1,0 +1,380 @@
+CYBERPUNK 2077 – LICENČNÍ SMLOUVA S KONCOVÝM UŽIVATELEM
+Poslední aktualizace: 10. prosince 2020
+
+Zdravíme a děkujeme za zájem o Cyberpunk 2077! Tuto smlouvu jsme vytvořili, abychom vám vysvětlili, co se hrou Cyberpunk 2077 můžete dělat (a co dělat nesmíte). Sepsali jsme ji tak srozumitelně, jak to jen po právní stránce šlo, a přidali neformální krátká shrnutí, která vám pomohou porozumět jejímu významu. Autorem těchto krátkých shrnutí napravo je obyvatel Night City, skutečný kyberpunker, který se ve výkladu právních záležitostí opravdu vyzná. Ale jen pro jistotu připomínáme, že důležité a právně závazné je plné znění textu nalevo.
+ 
+KRÁTKÉ SHRNUTÍ:
+1.		Tato smlouva představuje právní ujednání mezi vámi, tedy hráčem, a námi, tedy společností CD PROJEKT RED, ke hře Cyberpunk 2077.
+2.		Máte právo hrát naši hru Cyberpunk 2077 a upřímně doufáme, že vás bude bavit. Pracovali jsme na ní několik let, takže jen dodáme, že je naším výtvorem a zůstává jako taková naším duševním vlastnictvím. To vám ale určitě nezabrání si ji patřičně užít, že ne? ;)
+3.		V této smlouvě najdete příklady toho, co nechceme, abyste se hrou Cyberpunk 2077 dělali. Najdete v ní také nezbytné právní náležitosti týkající se věcí, jako jsou rozhodčí řízení, odpovědnost a všechno ostatní, co právníci vyžadují (ale snažíme se k vám být tak vstřícní, jak jen to jde).
+4.		Jsme nadšeni tím, co naši fanoušci dokázali vytvořit, takže jsme pro vás připravili Zásady pro obsah vytvářený fanoušky[https://cdprojektred.com/fan-content], abychom vám lépe vysvětlili, co je v pořádku a co ne. Jen aby v tom měli jasno ti z vás, kteří natáčejí Let’s Play videa a streamují, nemáme s takovými činnostmi nejmenší problém (včetně jejich monetizace), pokud se u toho řídíte našimi Zásadami pro obsah vytvářený fanoušky [https://cdprojektred.com/fan-content] (například musí být přístupný zdarma).
+5.		Chceme jasně vymezit, jaké údaje shromažďujeme a jaké ne a k čemu takové údaje používáme. Bereme to velice vážně, takže se podívejte na naše Zásady ochrany osobních údajů [https://regulations.cdprojektred.com/privacy_policy].
+6.		V budoucnu tuto smlouvu můžeme aktualizovat, a pokud k tomu dojde, zveřejníme aktualizovanou verzi na internetu. Nejsme zrovna velkými příznivci pravidel, ale pokud tahle pravidla nějak ZÁSADNĚ porušíte, můžete přijít o přístup ke hře (dočasně nebo trvale). Víme, že k žádným problémům nedojde, ale právníci nás upozornili, že tuhle skutečnost zmínit musíme.
+
+PLNÉ ZNĚNÍ
+
+1	O TÉTO SMLOUVĚ
+
+1.1	Tato smlouva Tato licenční smlouva s koncovým uživatelem (nebo zkráceně pouze „smlouva“) představuje právně závaznou smlouvu mezi vámi a společností CD PROJEKT S.A. se sídlem na ul. Jagiellońska 74; 03-301, Varšava, Polsko.
+ 
+Abychom vše řádně vysvětlili, CD PROJEKT RED je název herního vývojářského studia, které je součástí společnosti CD PROJEKT S.A., takže na sebe v rámci této smlouvy budeme odkazovat jako „společnost CD PROJEKT RED“, „my“ nebo „nás“.
+ 
+Tato smlouva se týká naší hry Cyberpunk 2077, a to včetně herních klíčů/kódů (pod termíny „Cyberpunk 2077“ nebo „hra“ budeme rozumět všechny tyto související věci).
+
+1.2.	Přijetí smluvních podmínek. Tato smlouva je pro vás i pro nás závazná, jakmile si stáhnete nebo nainstalujete hru Cyberpunk 2077, nebo ji začnete užívat (podle toho, co nastane dříve). Pokud s ní nesouhlasíte, nemůžete hru Cyberpunk 2077 stahovat, instalovat ji nebo ji užívat.
+
+1.3.	Další dokumenty. Ujistěte se, že jste se také seznámili se: (a) Zásadami pro obsah vytvářený fanoušky[https://cdprojektred.com/fan-content] – které vysvětlují, jak smíte nebo nesmíte používat obsah odvozený nebo založený na hře Cyberpunk 2077; (b) obecnou Smlouvu s uživatelem [https://regulations.cdprojektred.com/user_agreement]  společnosti CD PROJEKT RED – která se zabývá obecnými právními záležitostmi týkajícími se věcí, jako je zákaznická a technická podpora, oficiální diskusní fóra, wiki, blogy a služby pro sociální média; a (c) Zásady ochrany osobních údajů [https://regulations.cdprojektred.com/privacy_policy] společnosti CD PROJEKT RED – které podrobně rozebírají to, jak společnost CD PROJEKT RED shromažďuje, používá a chrání vaše osobní údaje. Všechny uvedené dokumenty jsou součástí této smlouvy a příležitostně je můžeme aktualizovat.  Může být také třeba, abyste odsouhlasili a řídili se zásadami a podmínkami platformy pro distribuci digitálního obsahu, kterou pro stažení a hraní hry Cyberpunk 2077 používáte, jako je třeba naše úžasná sesterská společnost GOG.
+
+2	VĚKOVÁ OMEZENÍ A UPOZORNĚNÍ TÝKAJÍCÍ SE OBSAHU
+
+2.1	Věková omezení. Pro hru Cyberpunk 2077 byla stanovena omezení minimální věku (např. PEGI, ESRB), která se mohou lišit v závislosti na vaší lokalitě, a při zakoupení hry Cyberpunk 2077 se vám zobrazí. Hru Cyberpunk 2077 smíte hrát jen když, že splňujete tato omezení minimálního věku. Pokud tato omezení minimálního věku splňujete a jste: (a) starší 18 let (nebo věku, ve kterém je ve vaší zemi osoba považována za plnoletou) – pak vás srdečně vítáme ve hře Cyberpunk 2077; nebo (b) ve věku mezi 17–18 (nebo věku, ve kterém je ve vaší zemi osoba považována za plnoletou) – než vás obdobně srdečným způsobem přivítáme, požádejte své rodiče nebo zákonné opatrovníky, aby se ve vašem zastoupení s touto smlouvou seznámili a odsouhlasili ji (protože v některých zemích lidé mladší než je stanovený věk nemají právo plně uzavírat smlouvy, jako je tato), a kromě toho by měli také dohlížet na vaše užívání hry Cyberpunk 2077. Pokud je vám méně než 17 let nebo jste mladší, než určuje omezení minimálního věku pro vaši zemi, pak hru Cyberpunk 2077 stahovat, hrát nebo užívat nesmíte. Ale těšíme na to, že vás budeme do Night City moci někdy v budoucnu uvítat!
+
+2.2	Upozornění týkající se obsahu Hra Cyberpunk 2077 obsahuje scény a zobrazení násilí, sexuality a užívání drog, které mohou být pro někoho znepokojivé. Pokud jste na takový obsah citliví nebo ve vás vyvolává nežádoucí reakce, na tuto skutečnost před spuštěním hry nezapomínejte.
+
+3	UŽÍVÁNÍ HRY CYBERPUNK 2077
+
+3.1	Licence. Společnost CD PROJEKT RED vám poskytuje osobní, omezenou, odvolatelnou, neexkluzivní, nepřenosnou a nepřevoditelnou licenci k zobrazení, prohlížení, stažení, instalaci, hraní a užívání hry Cyberpunk 2077 na vašem osobním počítači, herní konzoli nebo jiných zařízeních/platformách, které jsou výslovně autorizovány společností CD PROJEKT RED (jejich seznam je uvedený zde[https://www.cyberpunk.net/]), v závislosti na konkrétním zařízení/systému/platformě, pro kterou jste si hru zakoupili. Tato licence je určena výhradně pro soukromé použití (takže ji nemůžete věnovat, „prodat“, zapůjčit, darovat, převést, sublicencovat nebo jakkoliv jinak přenášet na někoho jiného) a nemáte ke hře Cyberpunk 2077 žádná vlastnická práva.
+
+3.2	 Varování před epileptickým záchvatem. Hra Cyberpunk 2077 může obsahovat blikající světla a obraz, což může vyvolat epileptické záchvaty. Pokud vy sami nebo někdo ve vaší domácnosti trpí epilepsií, poraďte se před hraním hry Cyberpunk 2077 se svým ošetřujícím lékařem. Pokud během hraní zaznamenáte závratě, poruchy vidění, tiky v oku nebo ve svalech, pocity zmatení, dezorientaci, mimovolné pohyby nebo křeče, ihned přestaňte hrát a konzultujte to se svým ošetřujícím lékařem.
+
+4	MINIMÁLNÍ POŽADAVKY A MONITOROVÁNÍ
+
+4.1	Minimální požadavky. Hra Cyberpunk 2077 má minimální požadavky v závislosti na vašem zařízení/systému/platformě, o kterých budete informováni na příslušné stránce obchodu, kde hru Cyberpunk 2077 zakoupíte. Před zakoupením hry se ujistěte, že váš hardware tyto minimální požadavky splňuje! Hra Cyberpunk 2077 neobsahuje žádné systémy digitální správy práv (DRM) ani ochranu proti kopírování, ale někteří výrobci zařízení/systémů/platforem používají bezpečnostní technologie, které jsou mimo naši kontrolu.
+
+4.2	Monitorování. Abychom zlepšili váš herní zážitek, zabránili činnostem zakázaným v oddílu 7 níže a ochránili integritu hry Cyberpunk 2077, a mohli vynucovat uplatňování této smlouvy, můžeme používat softwarové nástroje, které během hraní hry Cyberpunk 2077 běží na pozadí na vašem zařízení nebo souvisejících zařízeních/periferiích. Některé z těchto softwarových nástrojů budou volitelné a používat je budeme pouze tehdy, pokud k tomu dáte svůj souhlas. Pokud budeme nuceni použít jakékoliv povinné softwarové nástroje, pak vám to nejprve oznámíme (například ve hře nebo na webových stránkách hry Cyberpunk 2077). Další informace o tomto tématu naleznete v našich Zásadách ochrany osobních údajů.
+
+5	OPRAVY, AKTUALIZACE A ZMĚNY
+
+Pro hru Cyberpunk 2077 můžeme (ale nejsme povinni) průběžně vydávat opravy, aktualizace nebo změny (například za účelem přidání nebo odebrání funkcí, vyřešení softwarových chyb nebo vyvážení herního zážitku). To bude mít za následek vydání povinných nebo automatických aktualizací a starší neaktualizované verze hry mohou přestat fungovat. Tato práva jsou nutná k tomu, abychom mohli zajistit efektivní chod hry Cyberpunk 2077 a vyhrazujeme si právo tak učinit bez povinnosti vám to oznámit a bez jakékoliv odpovědnosti.
+
+6	VLASTNICKÁ PRÁVA A PRÁVA K DUŠEVNÍMU VLASTNICTVÍ
+
+6.1	Vlastnická práva hry Cyberpunk 2077. Hra Cyberpunk 2077, včetně jejích vizuálních složek, postav, příběhových linií, uměleckých děl, animací, návrhů, položek, hudby a zvukových efektů, dialogů, grafiky, počítačového kódu, uživatelského rozhraní, stylizace a ovládání, herních mechanik, herního zážitku, zvuku, video, textu, rozvržení, databází, dat a veškerého dalšího obsahu a všech práv k duševnímu vlastnictví (definována níže) a dalších zákonných a užívacích práv s nimi souvisejících, jsou buď přímým vlastnictvím společnosti CD PROJEKT RED, nebo je licencujeme od třetích stran. Všechna práva pro hru Cyberpunk 2077 jsou vyhrazena, s výjimkou těch, která vysvětlujeme v této smlouvě. Nesmíte používat nebo užívat jakoukoliv část obsahu hry Cyberpunk 2077 s výjimkou ustanovení této smlouvy a našich Zásad pro obsah vytvářený fanoušky. Hra Cyberpunk 2077 a její práva k duševnímu vlastnictví jsou chráněny autorským zákonem, ochrannými známkami a dalšími zákony na ochranu duševního vlastnictví po celém světě.
+
+„Práva k duševnímu vlastnictví“ znamenají veškerá autorská práva, ochranné známky, značky služeb, charakteristické prvky, názvy značek, loga, goodwill, úpravy, obchod, obchodní názvy nebo názvy domén, práva k návrhům, práva k postavám, práva k úpravám, databázová práva, patenty, práva k vynálezům, know-how, obchodní tajemství a důvěrné informace, práva k počítačovému softwaru (včetně zdrojového kódu a objektového kódu), morální práva, práva autorů, práva pro publicitu, práva na výkon, synchronizační práva, práva k nosičům, publikační práva, práva na pronájem a půjčování a převodní práva a další práva na ochranu duševního vlastnictví a práva na užívání podobné nebo odpovídající povahy, která mohou nyní nebo v budoucnu vzniknout kdekoliv na světě, ve všech případech bez ohledu na to, zda jsou registrována či nikoliv, a to včetně veškerého garantovaného použití a použití pro registraci, dělení, pokračování, nové vydání, prodloužení, obnovení nebo zůstatky, týkající se čehokoliv z výše uvedeného.
+
+6.2	Vlastnictví třetích stran. Společnost CD PROJEKT RED respektuje práva k duševnímu vlastnictví jiných subjektů. Pokud jste přesvědčeni o tom, že hra Cyberpunk 2077 porušuje práva k vašemu dílu nebo se na jejich porušování podílí, kontaktujte nás na adrese legal@cdprojektred.com.
+
+7	PRAVIDLA UŽÍVÁNÍ HRY CYBERPUNK 2077
+
+Pokud chcete hrát hru Cyberpunk 2077, musíte se řídit několika dalšími pravidly. Přečtěte si níže uvedená pravidla a Zásady pro obsah vytvářený fanoušky[https://cdprojektred.com/fan-content], protože jejich porušení bude považováno za „závažné porušení“ této smlouvy, které by mohlo vést k pozastavení nebo ukončení vašeho přístupu do hry Cyberpunk 2077. V obzvláště závažných případech si vyhrazujeme právo zamezit vám v budoucím přístupu do hry Cyberpunk 2077 a do našich dalších her a k našim dalším službám.
+ 
+Zde jsou zmíněná pravidla:
+ 
+a)  Soukromá zábava. Hru Cyberpunk 2077 užívejte pro svou soukromou zábavu, nikoliv za jakýmkoliv komerčním účelem, s výjimkou takových účelů, které jsou výslovně povolené v našich Zásadách pro obsah vytvářený fanoušky.
+
+b)   Platné právní předpisy. Při užívání hry Cyberpunk 2077 se musíte řídit veškerými platnými právními předpisy a nařízeními.
+ 
+c)  Nepřenositelnost. Nepokoušejte se hru Cyberpunk 2077 kopírovat, pronajímat, nakupovat, prodávat, půjčovat, sdílet, nabízet za poplatek, sublicencovat, převádět, distribuovat, publikovat nebo veřejně předvádět, ani vůči ní v kontextu této smlouvy uplatňovat žádná jiná svá práva, která nejsou touto smlouvou výslovně udělena. Nepodílejte se ani na krádežích nebo přisvojování herních klíčů/kódů (které všechny zůstávají naším vlastnictvím). Pokud máte obavy, že se vám cokoliv z výše uvedeného přihodilo, kontaktujte https://support.cdprojektred.com/en/.
+ 
+d)   Technické zneužití. Neprovádějte úpravy, slučování, distribuci, překlad, zpětnou analýzu nebo pokusy o získání nebo použití zdrojového kódu, dekompilaci nebo rozdělení hry Cyberpunk 2077, pokud k tomu nejste výslovně oprávněni platnými právními předpisy.
+
+e) Hackování a podvádění. Nevytvářejte, nepoužívejte, nezpřístupňujte ani nedistribujte podvody (cheaty). Podvody máme na mysli věci jako jsou zneužití (exploity), automatizační software, roboti, boti, hacky, web crawlery (spidery), spyware, skripty, utility pro podvádění ve hře, extrakční nástroje nebo jakýkoliv jiný software, který se hrou Cyberpunk 2077 jakýmkoliv způsobem interaguje nebo ji ovlivňuje (včetně jakýchkoliv neautorizovaných programů třetích stran, které shromažďují informace o hře Cyberpunk 2077 čtením oblastí paměti, které hra využívá k ukládání informací).
+
+f) 	Služby společnosti CD PROJEKT RED. Záměrně nebo se zlým úmyslem nenarušujte nebo neovlivňujte služby společnosti CD PROJEKT RED, jako jsou zákaznická nebo technická podpora, ani se nevydávejte za zaměstnance společnosti CD PROJEKT RED.
+ 
+g) IT systémy společnosti CD PROJEKT RED. Záměrně nebo se zlým úmyslem neovlivňujte ani nenarušujte chod, ani se nepokoušejte o přístup k oblastem síťového softwaru nebo serverů společnosti CD PROJEKT RED nebo třetích stran, a to včetně tunelování, vložení nebo vsunutí kódu (code injection / insertion), odepření služby (denial of service), modifikací nebo úprav softwaru, souběžného používání jiného softwaru podobného softwaru společnosti CD PROJEKT RED, emulací protokolů, nebo prostřednictvím tvorby nebo použití soukromých serverů nebo jakýchkoliv analogických služeb souvisejících se hrou Cyberpunk 2077.
+
+h)   Vytěžování dat. Nezachycujte, nevytěžujte ani žádným jiným způsobem neshromažďujte ze hry Cyberpunk 2077 osobní či důvěrné údaje nebo informace.
+ 
+i) 	Názvy. Nepoužívejte názvy „CD PROJEKT RED“, „CYBERPUNK 2077“ nebo názvy, loga nebo ochranné známky jiných skupin společnosti CD PROJEKT RED za jakýmkoliv neschváleným účelem.
+ 
+j) 	Obsah porušující práva. Žádným způsobem se nepodílejte na činnostech souvisejících se hrou Cyberpunk 2077, které porušují jakákoliv autorská práva, ochranné známky, patenty, obchodní tajemství, ochranu soukromí, publikační práva nebo jiná práva.
+ 
+k)   Škodlivý kód. Nenahrávejte žádné soubory, které obsahují jakýkoliv škodlivý kód, včetně virů, spyware, trojských koňů, červů, časovaných bomb, záměrně poškozená data ani jakékoliv jiné soubory, které obsahují škodlivý kód nebo které mohou jakýmkoliv způsobem poškodit nebo ovlivnit chod hry Cyberpunk 2077.
+ 
+l) 	Geografická omezení. Žádáme vás, abyste se řídili veškerými platnými geografickými, regionálními nebo jazykovými omezeními, omezeními podle polohy a pravidly souvisejícími se hrou Cyberpunk 2077.
+ 
+m)  Chovejte se slušně! Nedělejte ani neříkejte nic, co je nebo by mohlo být považováno za rasistické, obtěžující, xenofobní, sexistické, diskriminační, vulgární, pomlouvačné nebo jakkoliv jinak urážlivé nebo nezákonné jednání, a žádným způsobem k takovým činnostem hru Cyberpunk 2077 nevyužívejte.
+
+8	OBSAH VYTVÁŘENÝ FANOUŠKY
+
+Informace o tom, kdy a jak můžete vytvářet komunitní obsah pro hru Cyberpunk 2077 (např. fanoušky vytvářené obrázky a texty, webové stránky, videa/streamy/Let‘s Play videa, modifikace atd.) a jak k takovému obsahu přistupujeme po stránce vlastnictví a licencování naleznete v našich Zásadách pro obsah vytvářený fanoušky[https://cdprojektred.com/fan-content].
+
+9	ZPĚTNÁ VAZBA A ZPRÁVY O HAVÁRII APLIKACE
+
+9.1	Zpětná vazba. Zpětnou vazbu velice vítáme, takže pokud se s námi chcete o své zkušenosti podělit, obraťte se na tým podpory na stránkách https://support.cdprojektred.com/en/. Upozorňujeme, že se můžeme rozhodnout návrhy hráčů použít nebo přijmout, nemůžeme za ně přijmout žádnou odpovědnost ani závazky, a, pokud nějaký návrh nebo obdobnou věc do hry nebo souvisejících materiálů nějakým způsobem zahrneme, nevzniká nám tím žádná povinnost vám poskytnout náhradu nebo kompenzaci (ať už finanční povahy nebo jiné).
+
+9.2	Zprávy o havárii aplikace. Pokud se hrou Cyberpunk 2077 nastane nějaký problém, můžeme vás požádat o to, abyste nám poslali vygenerovanou zprávu o havárii aplikace (crash log), abychom na jejím základě mohli kód hry vylepšit. Tyto zprávy jsou volitelné a mohou obsahovat některé osobní údaje (více informací naleznete v našich Zásadách ochrany osobních údajů).
+
+10	OBSAH TŘETÍCH STRAN A EXTERNÍ SLUŽBY
+
+Prostřednictvím hry Cyberpunk 2077 vám občas můžeme zasílat odkazy na webové stránky třetích stran nebo jejich obsah. Ke hře Cyberpunk 2077 můžete také přistupovat prostřednictvím různých zařízení/systémů/platforem. Jejich používání je na vás – nemůžeme vám garantovat, že budou fungovat, jaký zážitek vám poskytnou ani to, zda budou zdarma. Různá zařízení/systémy/platformy mohou také uplatňovat vlastní právní podmínky, se kterými byste se měli před užíváním daných zařízení/systémů/platforem seznámit.
+
+11	ZÁRUKY
+
+11.1 Naše záruky. Zaručujeme vám, že: (a) máme právo s vámi tuto smlouvu uzavřít a udělit vám v oddílu 3 licenci k užívání hry Cyberpunk 2077; (b) vynaložíme na hru Cyberpunk 2077 a vaše užívání této hry přiměřenou péči; a (c) vynaložíme přiměřené úsilí na to, abychom během plnění našich závazků vůči vám v rámci této smlouvy vyhověli všem platným právním nařízením.
+ 
+11.2 Vaše zastoupení a záruky. Zastupujete a zaručujete, že jste plně oprávněni a schopni tuto smlouvu uzavřít a budete se plně řídit jejími ustanoveními.
+
+12	ODPOVĚDNOST
+
+Tento oddíl 12 se na vás nevztahuje, pokud jste obyvatelem Evropské unie nebo zemí, jejichž zákony výslovně zakazují následující omezení odpovědnosti, ale vztahuje se na vás v případě, že jste obyvatelem jiné země, včetně Spojených států amerických.
+ 
+12.1 Prohlášení o vyloučení odpovědnosti. Hru Cyberpunk 2077 používáte na vlastní riziko. S výjimkou ustanovení v této smlouvě vylučuje společnost CD PROJEKT RED a její přidružené společnosti, partneři a poskytovatelé licencí jakékoliv výslovné či odvozené záruky nebo prohlášení, vztahující se ke hře Cyberpunk 2077. Hru Cyberpunk 2077 vám poskytujeme „tak, jak je“ a „tak, jak je dostupná“ bez jakýchkoliv záruk či prohlášení, ať už přímých nebo odvozených, a neneseme odpovědnost za jakékoliv ztráty, škody či újmy, které by z vašeho užívání nebo nemožnosti užívání hry Cyberpunk 2077 mohly vyplývat. V největší možné míře, jakou dovolují platná právní nařízení, se zříkáme veškerých záruk, ať už přímých či odvozených, které by se na hru Cyberpunk 2077 mohly vztahovat, včetně: odvozených záruk o titulu, nesplnění povinností, prodejnosti, uspokojivé kvality, vhodnosti pro konkrétní účel, jakýchkoliv záruk, vznikajících na základě prodeje nebo probíhajícího plnění nebo obchodního užití, absence virů nebo chyb či poškození, nebo jakýchkoliv záruk přesnosti, zákonnosti, spolehlivosti nebo kvality jakéhokoliv obsahu či informací, které hra Cyberpunk 2077 obsahuje. Nezaručujeme, že budete moci hru Cyberpunk 2077 užívat nepřerušeně nebo bez výskytu chyb, že budou problémy vyřešeny nebo že bude hra prostá virů či dalších škodlivých prvků.
+ 
+12.2 Omezení naší odpovědnosti. V maximálním možném rozsahu, který umožňují platná právní nařízení, nenese společnost CD PROJEKT RED ani její přidružené společnosti, partneři a poskytovatelé licencí odpovědnost za jakékoliv ztráty zisku, poplatky či výdaje, ztrátu dat či jakékoliv jiné poškození nebo ztrátu informací či jakoukoliv ztrátu obchodních příležitostí nebo jakékoliv zvláštní, nepřímé, sankční, nadměrné nebo následné ztráty či škody nebo narušení, za žádných okolností, ať už na základě porušení smlouvy, protiprávního jednání (včetně nedbalosti, porušení zákonných povinností, porušení smluvních podmínek, porušení záručních podmínek či nutné odpovědnosti), zkreslení okolností, odškodnění či dalších skutečností bez ohledu na to, zda byla příslušná strana o možnosti vzniku takové škody informována.
+ 
+12.3 HRANICE NAŠÍ ODPOVĚDNOSTI. V MAXIMÁLNÍ MOŽNÉ MÍŘE, KTEROU UMOŽŇUJÍ PLATNÁ PRÁVNÍ NAŘÍZENÍ, NEPŘEKROČÍ CELKOVÁ MÍRA ODPOVĚDNOSTI SPOLEČNOSTI CD PROJEKT RED ANI JEJÍCH PŘIDRUŽENÝCH SPOLEČNOSTÍ, PARTNERŮ ČI POSKYTOVATELŮ LICENCÍ VŮČI VÁM VE VZTAHU KE HŘE CYBERPUNK 2077 NEBO K TÉTO SMLOUVĚ ČÁSTKU, KTEROU JSTE NÁM SKUTEČNĚ UHRADILI (POKUD TAKOVÁ ČÁSTKA EXISTUJE) VE SPOJENÍ SE ZÁLEŽITOSTMI TÝKAJÍCÍMI SE JAKÝCHKOLIV MOŽNÝCH NÁROKŮ. VÝŠE UVEDENÉ USTANOVENÍ JE VAŠÍM JEDINÝM A VÝHRADNÍM OPRAVNÝM PROSTŘEDKEM VE SPOJENÍ S TOUTO SMLOUVOU
+ 
+12.4 Odškodnění z vaší strany. Poskytujete svůj souhlas s tím, že společnost CD PROJEKT RED, její přidružené společnosti, poskytovatele licencí a partnery odškodníte a zprostíte odpovědnosti (a budete v tom trvale pokračovat) za veškeré škody, odpovědnosti, nároky a výdaje, a to včetně poplatků za správní řízení, ve spojení s: (a) jakýmkoliv domnělým či skutečným porušením této smlouvy z vaší strany; (b) užíváním hry Cyberpunk 2077 vámi nebo jakoukoliv vás zastupující osobou; a (c) porušením práv na duševní vlastnictví společnosti CD PROJEKT RED, jejích přidružených společností, poskytovatelů licencí a partnerů. Pokud jsou vůči nám vzneseny jakékoliv nároky, zavazujete se s námi plně spolupracovat a my si vyhrazujeme právo převzít a vést jejich obhajobu. Zavazujete se žádné takové nároky nevyřizovat plně ani zčásti bez našeho předchozího písemného souhlasu.
+ 
+12.5 Nápravné soudní nařízení. Souhlasíte, že žádné ztráty, škody nebo újmy, které utrpíte, nejsou nenapravitelné, a budou odpovídající jiné náhrady, takže vám vůči společnosti CD PROJEKT RED, jejím přidruženým společnostem, poskytovatelům licencí a partnerům nevzniká nárok na nápravné soudní nařízení či jinou přiměřenou soudní pomoc.
+ 
+12.6 Obyvatelé státu Kalifornie. Pokud jste obyvatelem státu Kalifornie, máte nárok na následující konkrétní informace o spotřebitelských právech: můžete kontaktovat oddělení reklamací (Complaint Assistance Unit) úseku služeb spotřebitelů (Division of Consumer Services) kalifornského ministerstva pro spotřebitelské záležitosti (Department of Consumer Affairs), a to písemně poštou na adrese 400 R St., Suite 1080, Sacramento, Kalifornie, 95814 nebo telefonicky na čísle 916 445 1254. Obyvatelé státu Kalifornie výslovně souhlasí s tím, že se vzdávají práv dle odstavce 1542 kalifornského Občanského zákoníku, který uvádí: „Všeobecné zproštění nerozšiřuje nároky, o jejichž existenci nemá v době provedení tohoto zproštění věřitel povědomí nebo jejich existenci nepředpokládá, které by v případě, že by mu byly známy, musely podstatně ovlivnit jeho vypořádání s dlužníkem.“
+
+13	UKONČENÍ
+
+13.1 Vaše práva na ukončení smlouvy. Tuto smlouvu můžete ukončit tím, že kdykoliv trvale zastavíte užívání hry Cyberpunk 2077. Ukončení smlouvy nebude mít vliv na již existující práva nebo závazky, jak naše, tak i vaše.
+
+13.2 Naše práva na ukončení smlouvy. Váš přístup ke hře Cyberpunk 2077 a tuto smlouvu můžeme pozastavit nebo ukončit v případě, že z vaší strany dojde k závažnému porušení této smlouvy, což zahrnuje porušení, které je vážné nebo by mohlo způsobit skutečnou újmu hře Cyberpunk 2077, uživatelům hry Cyberpunk 2077 nebo společnosti CD PROJEKT RED a jejím přidruženým společnostem, poskytovatelům licencí a partnerům. Zejména se to týká pravidel pro hru Cyberpunk 2077, která rozvádíme v oddílu 7 výše. Pokud to bude přiměřeně možné, pokusíme se vás kontaktovat, abychom vám vysvětlili, proč jsme k takovému kroku přistoupili a co (pokud něco) můžete v důsledku tohoto kroku dělat. Pokud váš přístup ke hře Cyberpunk 2077 a tuto smlouvu v souladu s ustanoveními v tomto oddílu pozastavíme nebo ukončíme, pak vůči vám neponeseme žádné závazky ani žádnou odpovědnost.
+
+13.3 Ukončení provozování hry Cyberpunk 2077. Zdá se to velice nepravděpodobné, ale pokud bychom byli nuceni trvale ukončit poskytování přístupu ke hře Cyberpunk 2077 (a to úplně nebo částečně – například na konkrétní platformě) a ne z důvodu jakéhokoliv vašeho porušení podmínek, pokusíme se vám tuto skutečnost oznámit alespoň sto dvacet (120) dní předem tím, že na našich webových stránkách zveřejníme upozornění. V takovém případě se na vás z naší strany nebudou vztahovat žádné budoucí závazky ani odpovědnosti (toto se nevztahuje na žádné již existující závazky či odpovědnosti).
+
+14	VYŠŠÍ MOC
+Ani jedna ze stran nenese vůči té druhé žádnou odpovědnost, úplnou ani částečnou, týkající se fungování nebo nefungování, nebo prodlení, pokud k nim dojde z důvodu vyšší moci.
+
+„Vyšší moc“ znamená jakoukoliv příčinu, která brání smluvní straně v plnění některých nebo veškerých smluvních závazků a která je způsobena nebo je přiřaditelná činům, událostem, opomenutí nebo nehodám nad rámec přiměřené kontroly, kterou nad nimi daná smluvní strana může mít, včetně stávek, výluk či dalších průmyslových sporů (jiných než takových, které zahrnují pracovníky dané smluvní strany), jaderných havárií nebo vyšší vůle, války nebo teroristických aktivit, demonstrací, občanských nepokojů, úmyslného poškození (mimo úmyslného poškození ze strany zaměstnanců poškozené smluvní strany nebo jejích subdodavatelů), shody s právními či vládními nařízeními, pravidel, nařízení nebo směrnic, průmyslových činností zaměstnanců kteréhokoliv poskytovatele elektrické energie, poruchy technického vybavení, hackování, odepření služby nebo dalších IT útoků, rozšíření IT virů a malware či podobných technologií, pandemií (např. COVID-19), požáru, povodně nebo bouře, nebo nesplnění povinností dodavatelů nebo subdodavatelů.
+
+15	ROZHODNÉ PRÁVO
+
+15.1 Pokud jste obyvatelem Evropské unie nebo dalších států světa (s výjimkou Spojených států amerických):
+
+Společně se zavazujeme k tomu, že vaše užívání hry Cyberpunk 2077 a plnění této smlouvy a veškeré problémy, které mohou v souvislosti s nimi vzniknout, se budou řídit a budou vykládány podle polského právního řádu a veškeré s nimi související spory budou probíhat výhradně v jurisdikci polského soudního systému. V případě jakéhokoliv právního nároku týkajícího se ustanovení této smlouvy bude strana, která nárok vyhraje, oprávněna k tomu, aby jí byly uhrazeny soudní poplatky a výdaje.
+
+Pokud jste obyvatelem Spojených států amerických:
+
+V rozsahu, který nepokrývají ustanovení řešení sporů a závazného rozhodčího řízení v oddílu 16 níže, se společně zavazujeme k tomu, že vaše užívání hry Cyberpunk 2077 a plnění této smlouvy a veškeré problémy, které mohou v souvislosti s nimi vzniknout, budou považovány za vzniklé v Los Angeles v Kalifornii a budou se řídit a budou vykládány podle právního řádu státu Kalifornie ve Spojených státech amerických (a případně federálním právním řádem USA) bez ohledu na volbu právních zásad. Jakýkoliv právní nárok vůči společnosti CD PROJEKT RED z vaší strany v rozsahu nepokrytém ustanoveními řešení sporů a závazného rozhodčího řízení v oddílu 16 níže, bude vznesen výhradně u státního nebo federálního soudu v Los Angeles v Kalifornii, který bude mít jurisdikci o rozhodování v daném sporu mezi námi, a proto tímto společně souhlasíme s výhradní jurisdikcí těchto soudů. Kromě toho se zříkáte veškerých práv na tvrzení, že státní a federální soudy v Los Angeles v Kalifornii nejsou odpovídajícím místem pro řešení takových sporů. V případě jakéhokoliv právního nároku týkajícího se ustanovení této smlouvy bude strana, která nárok vyhraje, oprávněna k tomu, aby jí byly uhrazeny soudní poplatky a výdaje.
+
+16	ŘEŠENÍ SPORŮ A ZÁVAZNÉ ROZHODČÍ ŘÍZENÍ
+
+16.1 Spory. Pokud máte vůči nám nějaké výhrady nebo s námi máte nějaké neshody, doufáme, že je budeme moci vyřešit rychle a smírně prostřednictvím služby podpory pro hru Cyberpunk 2077, která je dostupná na adrese https://support.cdprojektred.com/en/. Nicméně si uvědomujeme, že se občas mohou vyskytnout soudní spory, které nelze vyřešit takto snadno. V tomto oddílu vysvětlujeme, co se stane v případě soudního sporu.
+
+16.2 Neformální řešení sporů.
+Společně se zavazujeme učinit v dobré víře přiměřené kroky k neformálnímu vyřešení veškerých sporů, které mezi námi mohou vzniknout. Za normálních okolností bychom navrhovali, aby byla lhůta na takové vyřešení sporů třicet (30) dní, pokud neexistují výjimečné okolnosti. Pokud k vyřešení sporu během této lhůty nedojde, závisí další kroky na tom, kde žijete. Pokud jste obyvatelem Evropské unie, můžete mít právo podat stížnost prostřednictvím platformy pro online řešení sporů, kterou provozuje Evropská komise a o které najdete další informace na adrese ec.europa.eu/consumers/odr/.
+ 
+16.3 Další kroky řešení sporů (pokud jste obyvatelem Evropské unie nebo dalších států světa (s výjimkou Spojených států amerických).
+
+Pokud to budeme považovat za nezbytné, máme vzájemně právo vůči druhé smluvní straně vznést právní nároky. Pokud proti společnosti CD PROJEKT RED vznesete právní nárok, měli byste poslat jeho fyzickou kopii na adresu „Legal Team, CD PROJEKT S.A., ul. Jagiellońska 74, 03-301, Varšava, Polsko”, a také digitální kopii na e-mailovou adresu legal@cdprojektred.com.
+
+16.4 Další kroky řešení sporů (pokud jste obyvatelem Spojených států amerických).
+ 
+Rozhodčí řízení:
+Společně se zavazujeme řešit veškeré spory a nároky, které mezi námi mohou vzniknout, v individuálním rozhodčím řízení. To zahrnuje bez omezení veškeré nároky vznikající na základě této smlouvy a jakoukoliv část vztahu mezi vámi a společností CD PROJEKT RED. Společně se zavazujeme k tomu, že veškeré nároky, vznikající na základě hry Cyberpunk 2077 nebo s ní související, musejí být vzneseny do jednoho (1) roku od chvíle, kdy takový nárok nastal. V opačném případě je tento nárok považován za trvale promlčený. Tento oddíl platí bez ohledu na to, zda se jedná o spor nebo nárok na základě smlouvy, protiprávního jednání, statutu, nekalé soutěže, zkreslení okolností nebo jakékoliv jiné právní doktríny.
+
+Několik poznámek na vysvětlenou z naší strany: „rozhodčí řízení“ je proces řešení sporů na základě dohody, ve kterém obě strany předkládají případ neutrálnímu rozhodci (nikoliv soudci nebo porotě). Rozhodčí řízení je méně formální než soudní řízení a má méně formální pravidla (která rozebíráme níže). Abychom v tom měli jasno: volbou rozhodčího řízení se společně vzdáváme práva na to, abychom jakýkoliv vzájemný spor mohli předložit soudu (tedy soudci nebo porotě). Souhlasíte s tím, že ustanovení v tomto odstavci přetrvávají po případném ukončení vašeho přístupu do hry Cyberpunk 2077 nebo této smlouvy.
+
+Jak zahájit rozhodčí řízení:
+Pokud chce kterýkoliv z nás zahájit rozhodčí řízení, pak je strana zahajující toto řízení povinna zaslat straně druhé písemné oznámení, které definuje základní podstatu nároku a to, jakou nápravu tato strana od druhé strany požaduje. Tištěná verze této smlouvy a jakýchkoliv oznámení předložených v elektronické podobě je přípustná ve stejném rozsahu a podléhá stejným podmínkám jako další obchodní dokumenty a záznamy, které byly původně vygenerovány a uchovávány v tištěné podobě. Pokud nám zašlete oznámení, pošlete ho v papírové podobě poštou (na adresu Legal Team, CD PROJEKT S.A., ul. Jagiellońska 74, 03-301, Varšava, Polsko), a také e-mailem (na adresu legal@cdprojektred.com). Společně máme možnost rozhodčí řízení vést v kterékoliv odpovídající lokaci AAA v rámci Spojených států, které je pro vás pohodlně dostupné.
+
+16.5 Pravidla rozhodčího řízení:
+
+Na tento oddíl se vztahuje americký federální zákon o rozhodčím řízení (US Federal Arbitration Act). Rozhodčí řízení se bude řídit pravidly pro obchodní rozhodčí řízení Americké asociace pro rozhodčí řízení (American Arbitration Association, „AAA“), a případně doplňkovými postupy AAA pro spotřebitelské spory (Supplementary Procedures for Consumer Related Disputes), jak upravuje tato smlouva (http://www.adr.org). Rozhodce je vázán touto smlouvou.
+
+Rozhodčí řízení bude vedeno jediným rozhodcem s dostatečnými zkušenostmi v řešení sporů o duševním vlastnictví a obchodních smlouvách, který bude vybrán z odpovídajícího seznamu rozhodců AAA. Rozhodnutí o tom, zda spor podléhá rozhodčímu řízení, se bude řídit federálním zákonem o rozhodčím řízení a provede ho rozhodce, nikoliv soud. AAA vykoná rozhodčí řízení, které bude vedeno v anglickém jazyce. Může probíhat odesláním dokumentů, telefonicky nebo osobně na místě, na kterém se zúčastněné strany dohodly. Slyšení rozhodčího řízení musejí být zahájena do třiceti (30) dní od jmenování rozhodce, pokud se společně nedohodneme na jiné lhůtě. AAA bude v rámci tohoto konkrétního rozhodčího řízení udělena pravomoc pouze pro vykonání rozhodčího řízení mezi námi a vámi, nikoliv ve vztahu k dalším osobám. Rozsudek na základě rozhodčího nálezu, vynesený rozhodcem, může být následně předložen kterémukoliv soudu s odpovídající jurisdikcí, nebo je možno takovému soudu podat žádost o soudní přijetí jakéhokoliv rozhodčího nálezu a nařízení jeho vynucení, v závislosti na okolnostech.
+
+Pokud požadujete náhradu ve výši 10 000 USD nebo nižší, zavazuje se společnost CD PROJEKT RED k tomu, že uhradí váš poplatek za podání žádosti a váš podíl nákladů rozhodčího řízení (ale nikoliv včetně nákladů na právní zastoupení nebo soudního znalce), včetně vašeho podílu náhrady rozhodci, a to po skončení rozhodčího řízení, s výjimkou případů, kdy rozhodce dojde k závěru, že jsou vaše nároky neopodstatněné nebo jsou vaše náklady nepřiměřené. Zavazujeme se, že nebudeme v rámci rozhodčího řízení požadovat úhradu nákladů na právní zastoupení nebo nákladů na rozhodčí řízení, s výjimkou případů, kdy rozhodce dojde k závěru, že jsou vaše nároky neopodstatněné nebo jsou vaše náklady nepřiměřené. Pokud požadujete náhradu vyšší než 10 000 USD, pak se náklady na rozhodčí řízení včetně náhrady rozhodci rozdělí mezi nás a vás v souladu s pravidly komerčních rozhodčích řízení AAA a doplňkovými postupy pro spotřebitelské spory, je-li to relevantní.
+
+Na co se oddíly o řešení sporů a rozhodčím řízení nevztahují:
+Požadavky na řešení sporů a rozhodčí řízení se nevztahují na nároky nebo spory vznesené z naší nebo vaší strany, které souvisejí s nároky na porušení práv k duševnímu vlastnictví, nebo s nároky na neoprávněné užívání, pirátství, krádeže nebo zneužití.
+
+Tento oddíl vám nebrání v předložení vašeho sporu kterékoliv federální, státní nebo místní agentuře, která, pokud to zákon dovoluje, po nás může ve vašem zastoupení vymáhat odškodnění.
+ 
+16.6 Zřeknutí se práva na skupinovou žalobu.
+
+V maximální možné míře, přípustné platnými národními nebo státními právními nařízeními, se společně zavazujeme, že za žádných okolností nezahájíme skupinovou nebo zástupnou žalobu, žalobu vedenou soukromým právním zástupcem nebo kolektivní rozhodčí řízení, ani se na nich nebudeme podílet. To znamená, že v úplném možném rozsahu, který dovolují právní nařízení: (a) nedojde ke sloučení žádného rozhodčího řízení s jakýmkoliv jiným; (b) nevznikají žádná práva ani pravomoci k tomu, aby byl kterýkoliv ze sporů rozhodován na bázi skupinové žaloby nebo aby využíval postupů skupinové žaloby; a (c) nevznikají žádná práva ani pravomoci k tomu, aby byl kterýkoliv ze sporů veden v domnělém zastoupení jménem veřejnosti nebo jiných osob.
+
+Pokud nastane situace, kdy by dohoda v tomto oddíle smlouvy o nepředkládání nebo nepodílení se na skupinové nebo zástupné žalobě, žalobě vedené soukromým právním zástupcem nebo kolektivním rozhodčím řízení byla shledána nezákonná nebo nevynutitelná, zavazujeme se společně, že bude od zbytku tohoto oddílu neoddělitelná: celý tento oddíl bude tedy považován za nevynutitelný a jakýkoliv nárok nebo spor bude řešen soudní cestou.
+
+17	DALŠÍ PRÁVNÍ ZÁLEŽITOSTI
+
+Zde najdete některé další „právní záležitosti“, které nám naši právníci doporučili uvést!
+ 
+17.1 Oddělitelnost. Pokud je kterákoliv část této smlouvy shledána zákonně nevynutitelnou, nebude to mít vliv na žádnou další část smlouvy.
+ 
+17.2 Absence třetích stran. Tato smlouva upravuje náš vztah s vámi (a naopak). Na jejím základě nevznikají žádná práva nikomu jinému, s výjimkou situací, kdy je to v této smlouvě výslovně uvedeno.
+
+17.3 Další právní nařízení. Upozorňujeme, že podléháme celé řadě různých právních nařízení a můžeme být nuceni řídit se vynucovaným právem nebo dalšími právními požadavky, včetně systémů kontroly importu/exportu. Společně se zavazujeme, že na hru Cyberpunk 2077 nebo na tuto smlouvu se nevztahuje Úmluva OSN o smlouvách o mezinárodním prodeji zboží.
+
+17.4 Přenositelnost. V případě, že je to nutné z důvodů podpory hry Cyberpunk 2077, máme právo tuto smlouvu přidělit, pověřit v jejím kontextu subdodavatele nebo ji přenést na třetí stranu nebo dalšího člena naší skupiny, a to v rámci reorganizace nebo fúze nebo z jiných obchodních důvodů. Pokud k tomu dojde, budeme vás informovat.
+
+17.5 Prodleva. Žádná nesplnění nebo prodlevy při uplatňování práva nebo zjednání nápravy v rozsahu této smlouvy nebo platných právních předpisů z naší nebo vaší strany nepředstavují zřeknutí se daného práva nebo nápravy či jakýchkoliv jiných práv nebo náprav, ani nebrání nebo neomezují další uplatňování daného práva nebo náhrady, pokud tak není v této smlouvě výslovně uvedeno. Žádné jednotlivé nebo částečné vymáhání takového práva nebo nápravy z naší nebo vaší strany nepředstavuje ani neomezuje další vymáhání daného či jakéhokoliv jiného práva nebo nápravy.
+ 
+17.6 Úplnost smlouvy. Tato smlouva, společně s dalšími dokumenty, na které je v jejím rámci odkazováno, představuje úplnou dohodu mezi námi a vámi, týkající se této smlouvy, a nahrazuje jakékoliv předchozí ústní nebo písemné dohody.
+
+18	ZMĚNY TÉTO SMLOUVY
+
+18.1 Změny. Pokud usoudíme, že to je nezbytné (například z právních důvodů nebo abychom reagovali na změny ve hře Cyberpunk 2077), máme právo tuto smlouvu upravit. Pokud se tak stane, zpřístupníme upravené znění smlouvy na internetu a vynaložíme přiměřené úsilí na to, abychom vám tuto skutečnost oznámili (například tak, že vás na to upozorníme ve hře).
+
+18.2 Závazné datum. Jakmile tuto smlouvu změníme, stane se pro vás právně závaznou třicet (30) dní poté, co ji zveřejníme na internetu. V průběhu této lhůty nás můžete kontaktovat na e-mailové adrese legal@cdprojektred.com, pokud máte ke změnám konkrétní dotazy. Pokud s těmito změnami nebudete souhlasit (bez ohledu na to, zda nás kontaktujete e-mailem), pak vás bohužel budeme muset požádat, abyste hru Cyberpunk 2077 přestali užívat. Mrzí nás, že vám to musíme říci, ale doufáme, že budete chápat, že aby hra Cyberpunk 2077 fungovala tak, jak má, je nezbytně nutné, aby pro všechny platila stejná pravidla, nikoliv aby se na různé osoby vztahovala pravidla různá. Právě z toho důvodu vám v případě dotazů nebo nejasností doporučujeme nás kontaktovat.
+
+KRÁTKÉ SHRNUTÍ
+
+1	O TÉTO SMLOUVĚ
+
+OK, takže tahleta dávka korporátních tlachů nalevo je vlastně úplně jednoduchá. Je to krapet jako bezpečnostní příručka k novýmu kusu kyberwaru (ty tak někdo čte, co?). Takže jsem tady proto, abych ti to vyložil úplně jednoduše. Ale bacha na to, ta dlouhá verze nalevo je ta, o kterou se budou opírat právníci, kdybys něco projel. Ta moje verze… no, já se prostě jenom snažím pomoct.
+
+Celá smlouva se týká jenom hry Cyberpunk 2077. Jestli tě zajímají další hry od stejný firmy, budeš muset mrknout na právnický plky k tý konkrétní hře, jasný?
+Hele, jestli tě tak hrozně baví čtení, tak si projdi ještě Zásady pro obsah, co vytvářej fanoušci, Smlouvu s uživatelem společnosti CD PROJEKT RED a taky Zásady ochrany osobních údajů společnosti CD PROJEKT RED. Užij si to.
+
+2	VĚKOVÁ OMEZENÍ A UPOZORNĚNÍ TÝKAJÍCÍ SE OBSAHU
+
+Tohle je děsně roztomilý. Takže… tahle hra má cosi, čemu se říká „omezení minimálního věku“, jasný? Jestli se teda chceš vydat do Night City – a fakt mám co dělat, abych nevyprsknul smíchy, přísahám – tak musíš bejt starší, než říká to omezení. Většinou je to 18 a víc, ale jestli třeba žiješ někde, kde to může bejt 17+, a tobě je jenom 17, tak na tebe v Night City musej dávat bacha rodiče. Jako fakt. Nedělám si srandu, fakt ne!
+
+Ajo, a taky je tady varování, že Cyberpunk 2077 „může bejt občas docela dost drsnej a znepokojivej“. To zní slibně.
+
+3	UŽÍVÁNÍ HRY CYBERPUNK 2077
+
+Hra je tvoje, takže máš právo ji hrát na tom systému/zařízení/platformě, pro kterou ji máš – ale jenom na tom konkrétním systému/zařízení/platformě, ne na jiným. Jednoduchý.
+
+Další varování a tohle je fakt důležitý! Jestli ty nebo někdo, kdo s tebou bydlí, trpíte epilepsií, tak si promluvte s doktorem, než se do hry Cyberpunk 2077 napojíte.
+
+4	MINIMÁLNÍ POŽADAVKY A MONITOROVÁNÍ
+
+První pravidlo ulice: Než začneš běhat, nauč se nejdřív chodit. Hra Cyberpunk 2077 má minimální požadavky podle toho, na jakým systému/zařízení/platformě hraješ. Takže si to pořádně prověř, než za ni vysolíš prachy, jasný?
+
+Oukej, takže tady říkaj, že možná budou muset nasadit nějaký nástroje nebo prográmky na pozadí, který budou hru monitorovat a zajistěj, že je Cyberpunk 2077 pořád ve špičkovým stavu. Když jsou volitelný, poběžej jenom tehdy, pokud na to kejvneš. Je to jenom na tobě. No a když budou náhodou povinný, tak ti to na rovinu řeknou a daj ti předem vědět. Fakt tě nezačnou najednou jen tak špiclovat nebo tak něco.
+
+5	OPRAVY, AKTUALIZACE A ZMĚNY
+
+I ten nejfajnovější kyberware občas potřebuje trošku poladit. Cyberpunk 2077 dostane nějaký záplaty a aktualizace, aby hra běžela líp. A to přece chceš, no ne?
+
+6	VLASTNICKÁ PRÁVA A PRÁVA K DUŠEVNÍMU VLASTNICTVÍ
+
+Jenom taková připomínka, že hra Cyberpunk 2077 je vlastněná/licencovaná společností CD PROJEKT RED. Jasně, můžeš na ulicích Night City vyvádět psí kusy, ale kdyby tě napadlo provádět něco ze hry i mimo ni – tak se koukej řídit korporátníma nařízeníma tadyhle v tom textu a taky v pár dalších, jasný?
+
+7	PRAVIDLA UŽÍVÁNÍ HRY CYBERPUNK 2077
+
+Stejně jako když se připojíš do nějaký kábr psychovize, je hra Cyberpunk 2077 taky určená jenom pro tvou soukromou zábavu. Takže nebuď hemr a nenič tu zábavu tím, že by ses zapletl do něčeho z toho, co tadyhle vedle vysvětlujou hoši z korporátu.
+
+8	OBSAH VYTVÁŘENÝ FANOUŠKY
+
+Chceš vytvořit nějakou super věc, která je motivovaná hrou Cyberpunk 2077? Trochu přibrzdi a nejdřív si to prověř. Přečti si Zásady pro obsah, co vytvářej fanoušci, aby ti bylo jasný, co a jak.
+
+9	ZPĚTNÁ VAZBA A ZPRÁVY O HAVÁRII APLIKACE
+
+Hele, korporát, co ti naslouchá. Kdo by to čekal, co? Zajímá je, co si o hře Cyberpunk 2077 myslíš, ale nezaručujou ti, že se tím budou nějak řídit. Zkus to ale nebrat osobně, kámo, občas věci prostě nedopadnou tak, jak bysme chtěli. 
+
+Jestli se ti ve hře Cyberpunk 2077 něco podělá (jako třeba kdyby síťař od Voodoo Boys celej systém položil nebo něco podobně šílenýho), klidně jim z toho crashe pošli volitelnou zprávu. Posloužíš tím dobrý věci, fakt.
+
+10	OBSAH TŘETÍCH STRAN A EXTERNÍ SLUŽBY
+
+Síť je zatraceně velká. Dokonce i ty nejlepší síťaře občas zaskočej věci, na který na něm narazej. Takže si zapiš za uši jedno: Když klikneš na odkaz, kterej tě zavede mimo svět temný budoucnosti – no, ani všemocnej korporát ti možná nebude schopnej pomoct. Tak koukej dávat bacha, kyberpunkere.
+
+11	ZÁRUKY
+
+Druhý pravidlo ulice: Dohoda je dohoda.
+
+Tadyta část říká, že s tebou o hře Cyberpunk 2077 uzavíraj „závaznou smlouvu“. Nenechaj tě ve štychu a vynaložej „přiměřenou péči“ na to, abys hru mohl hrát. Fakt dojemný. Až mi zvlhly oči. Skočím si pro kapesníček, moment.
+
+12	ODPOVĚDNOST
+
+Tahleta část je celá o právních odpovědnostech mezi tebou a korporátem. Obě strany si musej ujasnit, na čem jsou, no ne?
+
+I když se všichni fakt snažej, občas i ten nejvíc kábr software nefunguje úplně tak, jak bysme si představovali – i když to všichni testovali jak vzteklí a tak podobně.
+
+Korporát ti tady dost jasně říká, že nenese odpovědnost za to, jak hra Cyberpunk 2077 funguje, a ani ti nedává žádný právně závazný sliby, který by se k těmhle věcem obecně vztahovaly. 
+
+Ale kdyby se něco fakt *hodně* podělalo a měl bys na krku fakt velký porušení týhle smlouvy, tak po tobě budou chtít, abys je „odškodnil“. To je takový fajnový korporátní slovo, který znamená, že pokud se semele něco velkýho, budeš se s nima muset finančně vyrovnat. Takže bych ti osobně radil radši nic neporušovat.
+
+Oukej, tady je ještě pár dalších informací: tyhle ustanovení se nevztahujou na lidi, co bydlej v EU nebo v některejch dalších relevantních zemích.
+
+13	UKONČENÍ
+
+Chceš s touhle smlouvou skoncovat nadobro? Je to snadný, prostě přestaň hrát Cyberpunk 2077. Moje zkušenost je taková, že korpošové tě normálně nenechaj jen tak odkráčet bez dalších řečí, takže upřímně, tohle je podle mě zatraceně fajnová nabídka.
+
+Pokud se budeš chovat jak hemr a tuhle smlouvu jakože vážně porušíš, tak se můžeš se svým přístupem ke hře Cyberpunk 2077 pěkně rozloučit (buď dočasně, nebo úplně definitivně). A to by bylo fakt na houby, tak nedělej vylomeniny a sekej latinu.
+
+Tohle nejspíš vůbec nenastane, ale kdyby snad náhodou jo a hra Cyberpunk 2077 přestala definitivně fungovat, tak se to předem dozvíš. 
+
+14	VYŠŠÍ MOC
+
+Třetí pravidlo ulice: Občas šlápneš do h***a.
+
+Ve světě se dějou nepředvídatelný věci. Pokud se stane něco šílenýho a neočekávanýho (válka, zemětřesení, povodeň, divoká umělá inteligence, která se vymkne kontrole a zotročí si celou lidskou rasu, a tak podobně – no dobře, s tím posledním si dělám srandu… teda aspoň doufám…), tak to nebudeš mít na krku ani ty, ani tadyhle korporát, když nějaký povinnosti nebudete moct splnit. Prostě jak říkám: občas šlápneš do h***a. 
+
+15	ROZHODNÉ PRÁVO
+
+Co se práva týče, všechny dotazy, stížnosti nebo nároky, který vůči týhle smlouvě máš, se říděj polskejma zákonama. To platí pro každýho na celým světě – teda pokud náhodou nežiješ ve Spojenejch státech americkejch. Pokud jo, tak se to všechno místo toho řídí kalifornským právem. Ty musej mít pořád něco extra, co?
+ 
+16	ŘEŠENÍ SPORŮ A ZÁVAZNÉ ROZHODČÍ ŘÍZENÍ
+
+Máš nějaký problémy nebo nejasnosti? Pobav se o tom s podporou hry Cyberpunk 2077. Pěkně to spolu proklábosíte a v ideálním případě to celý vyřešíte, aniž by museli naběhnout hoši z právního. Upřímně, fakt bych se nezlobil, kdybysme takovouhle možnost měli i u nás v Night City…
+
+Jo a tady je jejich adresa: 
+https://support.cdprojektred.com/en/  
+
+DŮLEŽITÝ: Další háček, kterej záleží na konkrétní zemi. Jestli žiješ ve Spojenejch státech, tak se tě tenhle oddíl týká a společně se s firmou domlouváte na „povinným rozhodčím řízení“ – prostě že si svoje neshody vyřešíte bez toho, abyste chodili k soudu. Pokud žiješ v nějaký jiný zemi, pak je tenhle rozhodčí postup „volitelnej“, ne „povinnej“.
+
+Podle toho, kde přesně bydlíš, si tady s korporátem navzájem slibujete, že proti sobě nepoužijete skupinovou žalobu nebo nějakou jinou hromadnou žalobu, na který by se podíleli další tvoji kumbové. Právní zádrhele se budou řešit podle postupu, co ti tady vedle lidi z korporátu sepsali.
+
+17	DALŠÍ PRÁVNÍ ZÁLEŽITOSTI
+
+Oukej, tohle je dost triviální.
+
+Celej tenhle oddíl řeší nějaký další pravidla pro tuhle smlouvu. Nemusíš se bát, není to nic hroznýho, prostě jenom pár dalších polopatickejch věcí, který si vydupali kravaťáci, že je tady chtějí mít. Holt musej mít vždycky poslední slovo, no ne?
+
+18	ZMĚNY TÉTO SMLOUVY
+
+Čtvrtý pravidlo ulice: Všechno se mění. Tahle smlouva se může někdy časem změnit, ale když na to dojde, tak se budou moct na tu upravenou verzi všichni pěkně mrknout na Síti. Změny začnou platit brzo potom, co ti o nich řeknou. Fakt na tebe nehodlaj chystat žádný neohlášený finty, jasný?
+
+Pokud ti některý z těch změn nedaj spát a chceš se na to přeptat, tak se nežinýruj a napiš na legal@cdprojektred.com – oni si to s tebou rádi proklepnou, a to fakt nemyslím ironicky.
+
+
+
+Důležité: upozorňujeme, že právně závazné je plné znění smlouvy – stručná shrnutí napravo slouží jen pro lepší pochopení právně závazné verze smlouvy.
+
+Tak si to v Night City užij, kumba.
+
+REDmod END USER LICENSE AGREEMENT
+Last updated: September 6th, 2022
+
+Hello, we are CD PROJEKT RED and we are happy that you are interested in using REDmod! REDmod is a software tool which allows creation and development, as well as in-game use of modifications ("Mods") for our video game - Cyberpunk 2077. These are the legal rules (we’ll call them “Rules”) which we ask you to follow if you download, install or use REDmod in any way.
+
+We’ve also included some informal short summaries of each of these Rules (although remember that it’s the full version which is legally binding).
+
+FULL TEXT
+
+1. ABOUT THESE RULES
+These Rules are a legally binding contract between you and CD PROJEKT S.A, with its seat at ul. Jagiellonska 74; 03-301, Warsaw, Poland (we may further call ourselves “CD PROJEKT RED” as CD PROJEKT S.A. is the legal entity CD PROJEKT RED is part of) regarding your use of REDmod. 
+
+IMPORTANT: please also read our [https://regulations.cdprojektred.com/user_agreement] CD PROJEKT RED User Agreement which sets out the basic legal rules for most of our games and services, including REDmod. Our [https://regulations.cdprojektred.com/privacy_policy] Privacy Policy describes how we collect, use and protect any personal information gathered from users. These Rules also supplement any terms and conditions of any digital distribution platforms, which you might use to download and use REDmod. In order to use the Mods in Cyberpunk 2077, you also have to accept our [https://www.cyberpunk.net/user-agreement/] Cyberpunk 2077 End User License Agreement
+
+2. WHAT YOU GET WITH REDMOD
+We (meaning CD PROJEKT RED) give you the personal right (called a 'license' legally) to download, install and use REDmod on your personal device as long as you follow these Rules. This license is for your personal and non-commercial use only and doesn't give you ownership rights.
+
+At all times we continue to own the entirety of REDmod, its documentation, any updates or additional content for REDmod, manuals or other materials about them and the intellectual property rights in them, including all copyright, trademarks, patents and other legal things like that.
+
+REDmod might contain open source libraries. Your use of REDmod may therefore be subject to applicable open source licenses, to which you agree. You will find these licenses within REDmod.
+
+3. WHAT YOU CAN'T DO WITH REDMOD
+Please act reasonably and don’t do anything with REDmod that is against the law, these Rules or CD PROJEKT RED User Agreement. A general list of what you should not do with any of our games and services may be found in the [https://regulations.cdprojektred.com/user_agreement] CD PROJEKT RED User Agreement.
+
+4. A FEW WORDS ABOUT MODS
+You may use Mods created and developed with REDmod only as part of Cyberpunk 2077 (and not with other games or on a standalone basis) and only for non-commercial purposes. At the same time we do not claim any ownership of Mods. We do not monitor or endorse any Mods, nor are we responsible for any problems caused by Mods. You are responsible for the Mods you create. You retain the right to your original Mods, but you grant us a license to use your Mod (explained in detail in our [https://cdprojektred.com/fan-content/] Fan content Guidelines, further as "FCG") so that we can let others use your Mods together with REDmod and Cyberpunk 2077.
+
+Please refer to our FCG to learn about other rules that apply to your Mods - for example that the Mods must not infringe anyone's intellectual property rights or be offensive. We may block the access to Mods that breach those rules.
+
+Sometime in the future we may, independently from your Mod, create and publish content for Cyberpunk 2077 which may be similar or identical to the content of your Mod. You waive any intellectual property (or other) claims you may have against us in relation to such content.
+
+5. OTHER LEGAL STUFF
+As you see, this is a short document and we may amend these Rules over time. If so, we'll post an updated version and make reasonable efforts to notify you, where possible. Once we change these Rules, it will become legally binding on you 30 days after we post it online. Please also remember that these Rules are supplemented by CD PROJEKT RED User Agreement [https://regulations.cdprojektred.com/user_agreement] [https://regulations.cdprojektred.com/user_agreement].
+
+These Rules are here for a reason. As a result, if you break any of them or CD PROJEKT RED User Agreement, we reserve the right to cancel or suspend your access to REDmod.
+
+SHORT SUMMARY
+
+1. ABOUT THESE RULES
+This is a legal agreement between you, dear community member, and us - CD PROJEKT RED - regarding REDmod. There is also another document called CD PROJEKT RED User Agreement that sets out the rules for our games and services that will apply to your use of REDmod. Don't forget that in order to use the Mods in Cyberpunk 2077, you need to accept Cyberpunk 2077 End User License Agreement as well.
+
+2. WHAT YOU GET WITH REDMOD
+We grant you the right to use REDmod and we sincerely hope you will enjoy it. Please remember that it is our creation and remains our ownership. REDmod may contain open source libraries and you have to agree to those open source licenses if you want to use REDmod.
+
+3. WHAT YOU CAN'T DO WITH REDMOD
+There are some things that we are not okay with, such as reverse engineering or repurposing REDmod – you will find more examples of things you should not do in our [https://regulations.cdprojektred.com/user_agreement]CD PROJEKT RED User Agreement.
+
+4. A FEW WORDS ABOUT MODS
+Mods can only be used together with Cyberpunk 2077. If you create a Mod, you own it and you are responsible for it. Go to our [https://cdprojektred.com/fan-content/] Fan Content Guidelines to learn what other rules may apply to your Mods (e.g. you cannot sell your Mods). We may develop some content for Cyberpunk 2077 which will be similar to the content of your Mod, but will be created independently (we won't use the source code or assets from your Mod) - in such case you agree to not bring any legal claims against us.
+
+5. OTHER LEGAL STUFF
+We are not huge fans of rules but if you go against those, you may lose access to REDmod (temporarily or permanently). We are sure that nothing bad will happen, but the legal folks said this point has to be made here. Last thing - we may update this document in the future, but in such case we will post an updated version.

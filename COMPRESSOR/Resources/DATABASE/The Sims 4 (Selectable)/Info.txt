@@ -1,0 +1,4 @@
+Configuration created for the game v1.104.58.1030 with all languages installed.
+
+Need update to:
+updated...

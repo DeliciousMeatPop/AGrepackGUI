@@ -1,0 +1,2 @@
+Requires lz4dunia.dll found in: 
+Resources\PRE\XTool_2020\Plugins\Ubisoft_Dunia_2_Engine.7z \\ Libraries\LZ4Dunia\

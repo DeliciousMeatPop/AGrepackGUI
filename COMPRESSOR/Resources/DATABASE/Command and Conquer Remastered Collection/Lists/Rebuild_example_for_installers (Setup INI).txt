@@ -1,0 +1,47 @@
+::To be used in CIU Setup.ini
+
+[CMDCommands]
+if exist "{app}\cncrc.xtl" (
+	"{tmp}\XTool_2020\XTool" decode "{app}\cncrc.xtl" "{app}\Data\MOVIES.MEG_extract" "{app}\Data\MOVIES.MEG"
+	"{tmp}\XTool_2020\XTool" decode "{app}\cncrc.xtl" "{app}\Data\MOVIES_BONUS_CD1.MEG_extract" "{app}\Data\MOVIES_BONUS_CD1.MEG"
+	"{tmp}\XTool_2020\XTool" decode "{app}\cncrc.xtl" "{app}\Data\MOVIES_BONUS_CD2.MEG_extract" "{app}\Data\MOVIES_BONUS_CD2.MEG"
+	"{tmp}\XTool_2020\XTool" decode "{app}\cncrc.xtl" "{app}\Data\MOVIES_BONUS_CD3.MEG_extract" "{app}\Data\MOVIES_BONUS_CD3.MEG"
+	"{tmp}\XTool_2020\XTool" decode "{app}\cncrc.xtl" "{app}\Data\MOVIES_RA.MEG_extract" "{app}\Data\MOVIES_RA.MEG"
+	"{tmp}\XTool_2020\XTool" decode "{app}\cncrc.xtl" "{app}\Data\MOVIES_TD.MEG_extract" "{app}\Data\MOVIES_TD.MEG"
+
+	rd /s /q "!GameDir!\Data\MOVIES.MEG_extract"
+	rd /s /q "!GameDir!\Data\MOVIES_BONUS_CD1.MEG_extract"
+	rd /s /q "!GameDir!\Data\MOVIES_BONUS_CD2.MEG_extract"
+	rd /s /q "!GameDir!\Data\MOVIES_BONUS_CD3.MEG_extract"
+	rd /s /q "!GameDir!\Data\MOVIES_RA.MEG_extract"
+	rd /s /q "!GameDir!\Data\MOVIES_TD.MEG_extract"
+	del /F /S /Q "{app}\cncrc.xtl"
+	TIMEOUT 3
+)
+
+
+-------------------------------
+
+::To be used in other installer scripts like ASIS
+::xtool.exe is executed from application root folder
+
+@echo off
+if exist "cncrc.xtl" (
+	"xtool.exe" decode "cncrc.xtl" "Data\MOVIES.MEG_extract" "Data\MOVIES.MEG"
+	"xtool.exe" decode "cncrc.xtl" "Data\MOVIES_BONUS_CD1.MEG_extract" "Data\MOVIES_BONUS_CD1.MEG"
+	"xtool.exe" decode "cncrc.xtl" "Data\MOVIES_BONUS_CD2.MEG_extract" "Data\MOVIES_BONUS_CD2.MEG"
+	"xtool.exe" decode "cncrc.xtl" "Data\MOVIES_BONUS_CD3.MEG_extract" "Data\MOVIES_BONUS_CD3.MEG"
+	"xtool.exe" decode "cncrc.xtl" "Data\MOVIES_RA.MEG_extract" "Data\MOVIES_RA.MEG"
+	"xtool.exe" decode "cncrc.xtl" "Data\MOVIES_TD.MEG_extract" "Data\MOVIES_TD.MEG"
+
+	rd /s /q "Data\MOVIES.MEG_extract"
+	rd /s /q "Data\MOVIES_BONUS_CD1.MEG_extract"
+	rd /s /q "Data\MOVIES_BONUS_CD2.MEG_extract"
+	rd /s /q "Data\MOVIES_BONUS_CD3.MEG_extract"
+	rd /s /q "Data\MOVIES_RA.MEG_extract"
+	rd /s /q "Data\MOVIES_TD.MEG_extract"
+
+	del /F /S /Q "cncrc.xtl"
+	TIMEOUT 3
+)
+del "%~f0"

@@ -113,6 +113,44 @@ def ini_get(lines: list, key: str, default: str = "", occurrence: int = 0) -> st
     return default
 
 
+def ini_get_in_section(lines: list, section: str, key: str, default: str = "") -> str:
+    """Read the first key=value within a specific [Section] block."""
+    in_target = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            in_target = (stripped[1:-1].strip().lower() == section.lower())
+            continue
+        if in_target and stripped.lower().startswith(key.lower() + "="):
+            return stripped.split("=", 1)[1].strip()
+    return default
+
+
+def parse_exe_sections(lines: list) -> list:
+    """
+    Return a list of dicts, one per [ExecutableN] block found in the file.
+    Handles duplicate section names (as used in the VR Optional template).
+    """
+    sections = []
+    current  = None
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            sec = stripped[1:-1].strip()
+            if sec.lower().startswith("executable"):
+                current = {}
+                sections.append(current)
+            else:
+                current = None
+        elif (current is not None
+              and "=" in stripped
+              and not stripped.startswith(";")
+              and not stripped.startswith("//")):
+            k, _, v = stripped.partition("=")
+            current[k.strip().lower()] = v.strip()
+    return sections
+
+
 def ini_set_in_section(lines: list, section: str, key: str, value: str) -> list:
     """Replace key=value within a specific named [Section] block only."""
     in_target = False
@@ -627,6 +665,56 @@ def work_archive_art(log) -> bool:
     return True
 
 
+# ── Recompile Fix ─────────────────────────────────────────────────────────────
+
+def work_recompile_fix(log) -> bool:
+    """
+    Recompile Fix workflow (mirrors RecompileFix.ps1).
+    Expects in Setup/: data.bin, settings.ini, AGRepackInstaller.dll
+    Moves them into place, compiles, merges, zips, archives art.
+    """
+    setup_data   = SETUP_DIR / "data.bin"
+    setup_ini    = SETUP_DIR / "settings.ini"
+    setup_dll    = SETUP_DIR / "AGRepackInstaller.dll"
+
+    missing = [p.name for p in (setup_data, setup_ini, setup_dll) if not p.exists()]
+    if missing:
+        log(f"[ERROR] Missing from Setup/ folder: {', '.join(missing)}")
+        log("        Place data.bin, settings.ini, and AGRepackInstaller.dll in the Setup folder first.")
+        return False
+
+    log("  Moving files from Setup/ into place...")
+    CONVERSION_DIR.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(setup_data), str(CONVERSION_DIR / "data.bin"))
+    shutil.move(str(setup_ini),  str(SETTINGS_INI))
+    shutil.move(str(setup_dll),  str(CONVERSION_DIR / "AGRepackInstaller.dll"))
+    log("  Files moved.")
+
+    log("  Compiling Inno Setup script...")
+    ok = work_compile_blocking(log)
+    if not ok:
+        log("[ERROR] Compile failed — stopping recompile fix.")
+        return False
+
+    exe_src  = SETUP_FILES / "AGRepackInstaller.exe"
+    exe_dest = CONVERSION_DIR / "AGRepackInstaller.exe"
+    if exe_src.exists():
+        shutil.move(str(exe_src), str(exe_dest))
+        log(f"  AGRepackInstaller.exe  →  {exe_dest}")
+    else:
+        log("[WARN] AGRepackInstaller.exe not found after compile.")
+
+    log("  Merging DLL into EXE...")
+    work_internal_dll(log, blocking_compile=True)
+
+    log("  Zipping final package...")
+    work_zip_and_name(log)
+
+    log("  Archiving game art...")
+    work_archive_art(log)
+    return True
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 #  GUI
 # ═══════════════════════════════════════════════════════════════════════════
@@ -643,6 +731,8 @@ class RepackApp:
         self._apply_styles()
         self._build_ui()
         self.repacker_var.set(get_repacker())
+        # Run startup check after the window is fully drawn
+        self.root.after(150, self._check_existing_settings)
 
     # ── tk.Variables ─────────────────────────────────────────────────────────
 
@@ -718,6 +808,130 @@ class RepackApp:
             relief="flat", bd=0, selectbackground=ACCENT)
         self.log_box.pack(fill="both", expand=True)
         self.log_box.config(state="disabled")
+
+    # ══════════════════════════════════════════════════════════════════════════
+    #  Startup: detect existing settings.ini
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def _check_existing_settings(self):
+        if not SETTINGS_INI.exists():
+            return
+
+        # Offer to load existing values into the form
+        load = messagebox.askyesno(
+            "Existing settings.ini Found",
+            "Found an existing settings.ini next to the tool.\n\n"
+            "Load its values into the form?\n"
+            "(Useful when resuming an interrupted repack)",
+            icon="question",
+        )
+        if load:
+            self._load_settings_ini()
+
+        # Check for data.bin (both possible locations)
+        data_conv  = CONVERSION_DIR / "data.bin"
+        data_setup = SETUP_DIR / "data.bin"
+        if not data_conv.exists() and not data_setup.exists():
+            messagebox.showwarning(
+                "data.bin Not Found",
+                "settings.ini is present but data.bin is missing.\n\n"
+                f"Expected at:\n"
+                f"  {data_conv}\n"
+                f"  — or —\n"
+                f"  {data_setup}\n\n"
+                "Make sure the compressed game data is in place before building.",
+            )
+
+        # Ask about the Recompile Fix workflow
+        do_fix = messagebox.askyesno(
+            "Run Recompile Fix?",
+            "Would you like to run the Recompile Fix workflow?\n\n"
+            "Use this when you already have compressed data and just need\n"
+            "to recompile / repackage (e.g. after a settings change).\n\n"
+            "Before clicking YES, make sure the Setup\\ folder contains:\n"
+            "  •  data.bin\n"
+            "  •  settings.ini\n"
+            "  •  AGRepackInstaller.dll\n"
+            "  •  All game art files",
+            icon="question",
+        )
+        if do_fix:
+            self._run_recompile_fix()
+
+    def _load_settings_ini(self):
+        """Parse settings.ini and populate every form field."""
+        lines = ini_read(SETTINGS_INI)
+        if not lines:
+            messagebox.showerror("Load Failed", "Could not read settings.ini.")
+            return
+
+        # ── Basic settings ───────────────────────────────────────────
+        self.name_var.set(ini_get(lines, "Name"))
+        self.appid_var.set(ini_get(lines, "APPID"))
+        self.build_var.set(ini_get(lines, "Buildversion"))
+        self.size_var.set(ini_get(lines, "Size"))
+        rep = ini_get(lines, "REPACKER") or get_repacker()
+        self.repacker_var.set(rep)
+        self.compact_var.set(ini_get(lines, "CompactMode",    "0") == "1")
+        self.admin_var.set(  ini_get(lines, "RunAppAsAdmin",  "0") == "1")
+
+        # ── InfoBefore / Batch (section-aware) ───────────────────────
+        self.infobefore_var.set(
+            ini_get_in_section(lines, "InfoBefore", "Enable", "0") == "1")
+        self.enablebat_var.set(
+            ini_get_in_section(lines, "Batch", "Enable", "0") == "1")
+        self.batfile_var.set(
+            ini_get_in_section(lines, "Batch", "BatchFile", ""))
+
+        # ── Executables ──────────────────────────────────────────────
+        exes   = parse_exe_sections(lines)
+        names  = [e.get("shortcutname", "").lower() for e in exes]
+        has_flat = any("(flat)"    in n for n in names)
+        has_vr   = any("(steamvr)" in n for n in names)
+
+        def _exe(keyword):
+            return next(
+                (e for e in exes if keyword in e.get("shortcutname","").lower()),
+                {}
+            )
+
+        if has_flat:
+            gt = "VR Optional"
+            flat    = _exe("(flat)")
+            steamvr = _exe("(steamvr)")
+            vd      = _exe("(vd)")
+            meta    = _exe("(meta)")
+            self.exe1_var.set(flat.get("exe",      ""));  self.exe1p_var.set(flat.get("exeparam",    ""))
+            self.exe2_var.set(steamvr.get("exe",   ""));  self.exe2p_var.set(steamvr.get("exeparam", ""))
+            self.exe3_var.set(vd.get("exe",        ""));  self.exe3p_var.set(vd.get("exeparam",      ""))
+            if meta:
+                self.meta_var.set(True)
+                self.exe4_var.set(meta.get("exe",  ""));  self.exe4p_var.set(meta.get("exeparam",    ""))
+        elif has_vr:
+            gt = "VR"
+            steamvr = _exe("(steamvr)") or (exes[0] if exes else {})
+            vd      = _exe("(vd)")      or (exes[1] if len(exes) > 1 else {})
+            meta    = _exe("(meta)")
+            self.exe1_var.set(steamvr.get("exe",   ""));  self.exe1p_var.set(steamvr.get("exeparam", ""))
+            self.exe2_var.set(vd.get("exe",        ""));  self.exe2p_var.set(vd.get("exeparam",      ""))
+            if meta:
+                self.meta_var.set(True)
+                self.exe3_var.set(meta.get("exe",  ""));  self.exe3p_var.set(meta.get("exeparam",    ""))
+        else:
+            gt  = "PC"
+            exe = exes[0] if exes else {}
+            self.exe1_var.set(exe.get("exe",       ""));  self.exe1p_var.set(exe.get("exeparam",     ""))
+
+        self.game_type_var.set(gt)
+        self._refresh_exe_fields()   # redraw exe rows to match type
+        self.log(f"settings.ini loaded  [{gt}]: {ini_get(lines, 'Name')}")
+
+    def _run_recompile_fix(self):
+        self.log("=" * 56)
+        self.log("  RECOMPILE FIX STARTED")
+        self.log("=" * 56)
+        self._run(lambda: work_recompile_fix(self.log)
+                  and self.log("\n  RECOMPILE FIX COMPLETE!"))
 
     # ══════════════════════════════════════════════════════════════════════════
     #  TAB 1 — Game Settings
@@ -966,7 +1180,20 @@ class RepackApp:
         tk.Label(frame,
                  text="Pre-Process  →  Save INI  →  Compile  →  Compress  "
                       "→  Create DLL  →  Merge  →  Zip  →  Archive Art",
-                 bg=BG, fg=FG2, font=("Segoe UI", 8)).pack(pady=(2, 8))
+                 bg=BG, fg=FG2, font=("Segoe UI", 8)).pack(pady=(2, 4))
+
+        # ── Recompile Fix ─────────────────────────────────────────────
+        sep2 = tk.Frame(frame, bg=BORDER, height=1)
+        sep2.pack(fill="x", padx=12, pady=(8, 4))
+        fix_outer = tk.Frame(frame, bg=BG)
+        fix_outer.pack(pady=2)
+        _big_btn(fix_outer, "  ↺  Recompile Fix  ",
+                 self._run_recompile_fix, bg=WARN, fg="#000000",
+                 font=("Segoe UI", 10, "bold"), width=26, pady=7)
+        tk.Label(frame,
+                 text="Use when data.bin + DLL are already done — moves files from Setup\\, "
+                      "recompiles, merges, zips, archives.",
+                 bg=BG, fg=FG2, font=("Segoe UI", 8), wraplength=680).pack(pady=(0, 10))
 
     # ══════════════════════════════════════════════════════════════════════════
     #  Action helpers

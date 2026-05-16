@@ -81,7 +81,10 @@ def ini_read(path: Path) -> list:
 
 
 def ini_write(path: Path, lines: list):
-    path.write_text("".join(lines), encoding="utf-8-sig")
+    # Normalise to Windows line endings so GetPrivateProfileString reads reliably
+    content = "".join(lines)
+    content = content.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\r\n")
+    path.write_bytes(content.encode("utf-8-sig"))
 
 
 def ini_set(lines: list, key: str, value: str, occurrence: int = 0) -> list:
@@ -108,6 +111,20 @@ def ini_get(lines: list, key: str, default: str = "", occurrence: int = 0) -> st
                 return s.split("=", 1)[1].strip()
             count += 1
     return default
+
+
+def ini_set_in_section(lines: list, section: str, key: str, value: str) -> list:
+    """Replace key=value within a specific named [Section] block only."""
+    in_target = False
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            in_target = (stripped[1:-1].strip().lower() == section.lower())
+            continue
+        if in_target and stripped.lower().startswith(key.lower() + "="):
+            lines[i] = f"{key}={value}\r\n"
+            return lines
+    return lines
 
 
 def ini_uncomment_block(lines: list, header: str) -> list:
@@ -230,54 +247,55 @@ def work_build_settings(game_type: str, fields: dict, log) -> bool:
     lines = ini_set(lines, "CompactMode",   "1" if fields.get("compact")    else "0")
     lines = ini_set(lines, "RunAppAsAdmin", "1" if fields.get("admin")      else "0")
 
+    infobefore_val = "1" if fields.get("infobefore") else "0"
+    enablebat_val  = "1" if fields.get("enablebat")  else "0"
+
     if game_type == "PC":
-        lines = ini_set(lines, "ShortcutName", name,                     0)
-        lines = ini_set(lines, "Exe",          fields.get("exe1", ""),   0)
-        lines = ini_set(lines, "ExeParam",     fields.get("exe1p", ""),  0)
-        # InfoBefore [Enable] is occurrence 0, Batch [Enable] is occurrence 1
-        lines = ini_set(lines, "Enable", "1" if fields.get("infobefore") else "0", 0)
-        lines = ini_set(lines, "Enable", "1" if fields.get("enablebat")  else "0", 1)
+        lines = ini_set(lines, "ShortcutName", name,                    0)
+        lines = ini_set(lines, "Exe",          fields.get("exe1", ""),  0)
+        lines = ini_set(lines, "ExeParam",     fields.get("exe1p", ""), 0)
+        lines = ini_set_in_section(lines, "InfoBefore", "Enable", infobefore_val)
+        lines = ini_set_in_section(lines, "Batch",      "Enable", enablebat_val)
         if fields.get("enablebat"):
-            lines = ini_set(lines, "BatchFile", fields.get("batfile", ""), 0)
+            lines = ini_set_in_section(lines, "Batch", "BatchFile", fields.get("batfile", ""))
 
     elif game_type == "VR":
-        lines = ini_set(lines, "ShortcutName", f"{name} (SteamVR)",      0)
-        lines = ini_set(lines, "Exe",          fields.get("exe1", ""),   0)
-        lines = ini_set(lines, "ExeParam",     fields.get("exe1p", ""),  0)
-        lines = ini_set(lines, "ShortcutName", f"{name} (VD)",           1)
-        lines = ini_set(lines, "Exe",          fields.get("exe2", ""),   1)
-        lines = ini_set(lines, "ExeParam",     fields.get("exe2p", ""),  1)
+        lines = ini_set(lines, "ShortcutName", f"{name} (SteamVR)",     0)
+        lines = ini_set(lines, "Exe",          fields.get("exe1", ""),  0)
+        lines = ini_set(lines, "ExeParam",     fields.get("exe1p", ""), 0)
+        lines = ini_set(lines, "ShortcutName", f"{name} (VD)",          1)
+        lines = ini_set(lines, "Exe",          fields.get("exe2", ""),  1)
+        lines = ini_set(lines, "ExeParam",     fields.get("exe2p", ""), 1)
         if fields.get("meta"):
             lines = ini_uncomment_block(lines, "[Executable3]")
-            lines = ini_set(lines, "ShortcutName", f"{name} (Meta)",     2)
+            lines = ini_set(lines, "ShortcutName", f"{name} (Meta)",    2)
             lines = ini_set(lines, "Exe",          fields.get("exe3", ""), 2)
             lines = ini_set(lines, "ExeParam",     fields.get("exe3p",""), 2)
-        lines = ini_set(lines, "Enable", "1" if fields.get("infobefore") else "0", 0)
-        lines = ini_set(lines, "Enable", "1" if fields.get("enablebat")  else "0", 1)
+        lines = ini_set_in_section(lines, "InfoBefore", "Enable", infobefore_val)
+        lines = ini_set_in_section(lines, "Batch",      "Enable", enablebat_val)
         if fields.get("enablebat"):
-            lines = ini_set(lines, "BatchFile", fields.get("batfile", ""), 0)
+            lines = ini_set_in_section(lines, "Batch", "BatchFile", fields.get("batfile", ""))
 
     elif game_type == "VR Optional":
-        # Trigger file for subsequent steps
         (BASE_DIR / "vroptional.txt").write_text("1", encoding="utf-8")
-        lines = ini_set(lines, "ShortcutName", f"{name} (Flat)",         0)
-        lines = ini_set(lines, "Exe",          fields.get("exe1", ""),   0)
-        lines = ini_set(lines, "ExeParam",     fields.get("exe1p", ""),  0)
-        lines = ini_set(lines, "ShortcutName", f"{name} (SteamVR)",      1)
-        lines = ini_set(lines, "Exe",          fields.get("exe2", ""),   1)
-        lines = ini_set(lines, "ExeParam",     fields.get("exe2p", ""),  1)
-        lines = ini_set(lines, "ShortcutName", f"{name} (VD)",           2)
-        lines = ini_set(lines, "Exe",          fields.get("exe3", ""),   2)
-        lines = ini_set(lines, "ExeParam",     fields.get("exe3p", ""),  2)
+        lines = ini_set(lines, "ShortcutName", f"{name} (Flat)",        0)
+        lines = ini_set(lines, "Exe",          fields.get("exe1", ""),  0)
+        lines = ini_set(lines, "ExeParam",     fields.get("exe1p", ""), 0)
+        lines = ini_set(lines, "ShortcutName", f"{name} (SteamVR)",     1)
+        lines = ini_set(lines, "Exe",          fields.get("exe2", ""),  1)
+        lines = ini_set(lines, "ExeParam",     fields.get("exe2p", ""), 1)
+        lines = ini_set(lines, "ShortcutName", f"{name} (VD)",          2)
+        lines = ini_set(lines, "Exe",          fields.get("exe3", ""),  2)
+        lines = ini_set(lines, "ExeParam",     fields.get("exe3p", ""), 2)
         if fields.get("meta"):
             lines = ini_uncomment_block(lines, "[Executable3]")
-            lines = ini_set(lines, "ShortcutName", f"{name} (Meta)",     3)
+            lines = ini_set(lines, "ShortcutName", f"{name} (Meta)",    3)
             lines = ini_set(lines, "Exe",          fields.get("exe4", ""), 3)
             lines = ini_set(lines, "ExeParam",     fields.get("exe4p",""), 3)
-        lines = ini_set(lines, "Enable", "1" if fields.get("infobefore") else "0", 0)
-        lines = ini_set(lines, "Enable", "1" if fields.get("enablebat")  else "0", 1)
+        lines = ini_set_in_section(lines, "InfoBefore", "Enable", infobefore_val)
+        lines = ini_set_in_section(lines, "Batch",      "Enable", enablebat_val)
         if fields.get("enablebat"):
-            lines = ini_set(lines, "BatchFile", fields.get("batfile", ""), 0)
+            lines = ini_set_in_section(lines, "Batch", "BatchFile", fields.get("batfile", ""))
     else:
         log(f"[ERROR] Unknown game type: {game_type}")
         return False
@@ -452,9 +470,9 @@ def work_internal_dll(log, blocking_compile: bool = False) -> bool:
     log("  InternalDLL enabled — compiling...")
 
     if blocking_compile:
-        work_compile_blocking(log)
+        compile_ok = work_compile_blocking(log)
     else:
-        work_compile_gui(log)
+        compile_ok = work_compile_gui(log)
         time.sleep(2)   # brief pause so the compile has a moment to start
 
     # Re-disable InternalDLL
@@ -480,7 +498,7 @@ def work_internal_dll(log, blocking_compile: bool = False) -> bool:
         log("[WARN] AGRepackInstaller.exe not found in Setup_Files/ after compile.")
 
     log("  DLL merge complete.")
-    return True
+    return compile_ok
 
 
 # ── Zip & Name ───────────────────────────────────────────────────────────────
@@ -966,6 +984,28 @@ class RepackApp:
         """Run fn(*args) in a daemon thread."""
         threading.Thread(target=fn, args=args, daemon=True).start()
 
+    def _ask_continue(self, step: str, detail: str) -> bool:
+        """
+        Show a blocking warning dialog from a background thread.
+        Returns True if the user chooses to continue, False to stop.
+        """
+        result = [False]
+        event  = threading.Event()
+        def _show():
+            ans = messagebox.askquestion(
+                f"Step Failed — {step}",
+                f"{detail}\n\n"
+                "This error may produce a broken repack.\n\n"
+                "Continue to the next step anyway?\n"
+                "(Choosing NO will stop the full repack here.)",
+                icon="warning",
+            )
+            result[0] = (ans == "yes")
+            event.set()
+        self.root.after(0, _show)
+        event.wait()
+        return result[0]
+
     def _fields(self) -> dict:
         return {
             "repacker":   self.repacker_var.get().strip(),
@@ -1073,6 +1113,16 @@ class RepackApp:
             messagebox.showwarning("Required", "Game Directory is required.")
             return
 
+        # ── Capture ALL GUI values HERE on the main thread ──────────────────
+        # tkinter StringVar / BooleanVar are not thread-safe; reading them
+        # inside a background thread can silently return empty strings.
+        fields    = self._fields()
+        gt        = self.game_type_var.get()
+        preset    = self.preset_var.get()
+        do_rename = self.do_rename_var.get()
+        do_dlc    = self.do_dlc_var.get()
+        # ────────────────────────────────────────────────────────────────────
+
         def _full():
             self.log("=" * 56)
             self.log("  FULL REPACK STARTED")
@@ -1080,11 +1130,11 @@ class RepackApp:
 
             # 1 — Pre-process
             did_pre = False
-            if self.do_rename_var.get():
+            if do_rename:
                 self.log("\n[1/8] Renaming _o / (Original) files...")
                 work_rename_originals(gd, self.log)
                 did_pre = True
-            if self.do_dlc_var.get():
+            if do_dlc:
                 self.log("\n[1/8] Sorting DLC.txt...")
                 work_sort_dlc(gd, self.log)
                 did_pre = True
@@ -1093,46 +1143,68 @@ class RepackApp:
 
             # 2 — Settings
             self.log("\n[2/8] Writing settings.ini...")
-            gt = self.game_type_var.get()
-            if not work_build_settings(gt, self._fields(), self.log):
-                self.log("[ABORT] Failed to write settings.ini.")
+            if not work_build_settings(gt, fields, self.log):
+                self.log("[STOP] settings.ini could not be written — aborting.")
                 return
 
-            # 3 — Compile (blocking via ISCC)
+            # Verify the name was actually written before we compile
+            verify_lines = ini_read(SETTINGS_INI)
+            written_name = ini_get(verify_lines, "Name")
+            if not written_name:
+                self.log("[STOP] settings.ini Name field is empty after write — aborting.")
+                self.log("       Check that the template INI file exists and is readable.")
+                return
+            self.log(f"  Verified: Name = '{written_name}'")
+
+            # 3 — Compile
             self.log("\n[3/8] Compiling Inno Setup script...")
-            if not ISCC.exists():
-                # ISCC not available — use GUI compiler and pause for user
-                work_compile_gui(self.log)
-                self.root.after(0, lambda: messagebox.showinfo(
-                    "Compile Step",
-                    "Inno Setup compiler was launched.\n\n"
-                    "Wait for compilation to finish, then click OK to continue."
-                ))
-                # Block this thread while the dialog is open
-                import time as _t
-                _t.sleep(30)    # user has 30 s to click OK (generous)
-            else:
-                work_compile_blocking(self.log)
+            ok = work_compile_blocking(self.log)
+            if not ok:
+                if not self._ask_continue(
+                    "Step 3 — Compile",
+                    "The Inno Setup compiler returned an error.\n"
+                    "The Setup EXE may not have been built correctly."
+                ):
+                    self.log("[STOP] Repack stopped at user request after compile failure.")
+                    return
 
             # 4 — Compress
-            preset = self.preset_var.get()
             self.log(f"\n[4/8] Compressing game data (preset {preset})...")
-            if not work_compress(preset, gd, self.log):
-                self.log("[ABORT] Compression failed.")
-                return
+            ok = work_compress(preset, gd, self.log)
+            if not ok:
+                if not self._ask_continue(
+                    "Step 4 — Compress",
+                    "The compression step failed or returned an error."
+                ):
+                    self.log("[STOP] Repack stopped at user request after compression failure.")
+                    return
 
             # 5 — Records + DLL
             self.log("\n[5/8] Creating AGRepackInstaller.dll...")
-            if not work_records(preset, self.log):
-                self.log("[ABORT] Records step failed.")
-                return
-            if not work_create_dll(preset, self.log):
-                self.log("[ABORT] DLL creation failed.")
-                return
+            ok = work_records(preset, self.log)
+            if not ok:
+                if not self._ask_continue("Step 5 — Records", "Records.ini could not be created."):
+                    self.log("[STOP] Repack stopped at user request.")
+                    return
+            ok = work_create_dll(preset, self.log)
+            if not ok:
+                if not self._ask_continue(
+                    "Step 5 — Create DLL",
+                    "AGRepackInstaller.dll could not be built by Arc."
+                ):
+                    self.log("[STOP] Repack stopped at user request.")
+                    return
 
-            # 6 — Merge (blocking compile)
+            # 6 — Merge DLL into EXE
             self.log("\n[6/8] Merging DLL into Setup EXE...")
-            work_internal_dll(self.log, blocking_compile=True)
+            ok = work_internal_dll(self.log, blocking_compile=True)
+            if not ok:
+                if not self._ask_continue(
+                    "Step 6 — Merge DLL",
+                    "The DLL merge step encountered an error."
+                ):
+                    self.log("[STOP] Repack stopped at user request.")
+                    return
 
             # 7 — Zip
             self.log("\n[7/8] Zipping final package...")

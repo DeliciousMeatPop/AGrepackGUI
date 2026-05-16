@@ -213,6 +213,16 @@ def sanitize_name(name: str) -> str:
     return re.sub(r"\s+", " ", name).strip()
 
 
+def dir_size_str(folder: Path) -> str:
+    """Return a human-readable size string for a directory (e.g. '14.23 GB')."""
+    total = sum(f.stat().st_size for f in folder.rglob("*") if f.is_file())
+    for unit in ("bytes", "KB", "MB", "GB", "TB"):
+        if total < 1024 or unit == "TB":
+            return f"{total:.2f} {unit}" if unit != "bytes" else f"{total} bytes"
+        total /= 1024
+    return ""
+
+
 def write_temp(filename: str, value: str):
     import tempfile
     p = Path(tempfile.gettempdir()) / filename
@@ -1036,6 +1046,21 @@ class RepackApp:
                            activeforeground=FG, selectcolor=ENTRY,
                            font=("Segoe UI", 10)).pack(anchor="w")
 
+        def _pick_game_dir():
+            chosen = filedialog.askdirectory(title="Game Directory")
+            if not chosen:
+                return
+            self.game_dir_var.set(chosen)
+            # Calculate size in background so the UI doesn't freeze
+            def _calc():
+                try:
+                    sz = dir_size_str(Path(chosen))
+                    self.size_var.set(sz)
+                    self.log(f"  Game directory size: {sz}")
+                except Exception:
+                    pass
+            threading.Thread(target=_calc, daemon=True).start()
+
         # ── Repacker identity ────────────────────────────────────────
         section("REPACKER IDENTITY")
         fr = row("Repacker Name", self.repacker_var, width=26)
@@ -1043,7 +1068,8 @@ class RepackApp:
 
         # ── Game info ────────────────────────────────────────────────
         section("GAME INFO")
-        browse_row("Game Directory", self.game_dir_var, isdir=True)
+        gd_f = row("Game Directory", self.game_dir_var, width=32)
+        _btn(gd_f, "Browse", _pick_game_dir)
         row("Game Name",        self.name_var)
         row("App ID (Steam)",   self.appid_var)
         row("Build / Version",  self.build_var)

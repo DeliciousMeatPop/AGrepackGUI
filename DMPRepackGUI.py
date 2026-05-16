@@ -385,19 +385,56 @@ def work_compile_blocking(log) -> bool:
 
 # ── Compress ─────────────────────────────────────────────────────────────────
 
-def work_compress(preset: str, game_dir: str, log) -> bool:
+_ARC_PROGRESS_RE = re.compile(
+    r"^(\d+)%:\s+[\d,]+\s+->\s+[\d,]+:\s+([\d.]+)%.*Remains\s+([\d:]+)"
+)
+_ARC_BAR_WIDTH = 20
+_ARC_SAMPLE_INTERVAL = 12   # seconds between progress updates
+
+
+def _arc_bar(pct: int, ratio: str, remains: str) -> str:
+    filled = int(_ARC_BAR_WIDTH * pct / 100)
+    bar    = "█" * filled + "░" * (_ARC_BAR_WIDTH - filled)
+    return f"  [{bar}] {pct:3d}%  ratio {ratio}%  ⏱ {remains} left"
+
+
+def work_compress(preset: str, game_dir: str, log, log_progress=None) -> bool:
     bat = COMPRESSION_BATS.get(preset)
     if not bat or not bat.exists():
         log(f"[ERROR] Compression bat not found for preset {preset}: {bat}")
         return False
-    # Write temp files the bats expect
     write_temp("dir.tmp",       game_dir)
     write_temp("directory.tmp", str(BASE_DIR))
     write_temp("preset.tmp",    preset)
     log(f"  Running compression preset {preset} — this will take a while...")
-    r = subprocess.run(str(bat), cwd=str(BASE_DIR), shell=True)
-    if r.returncode != 0:
-        log(f"[WARN] Compression bat returned code {r.returncode}")
+
+    if log_progress is None:
+        r = subprocess.run(str(bat), cwd=str(BASE_DIR), shell=True)
+        if r.returncode != 0:
+            log(f"[WARN] Compression bat returned code {r.returncode}")
+        else:
+            log("  Compression complete.")
+        return True
+
+    # Stream Arc output; sample a progress bar every ~12 s
+    proc = subprocess.Popen(
+        str(bat), cwd=str(BASE_DIR), shell=True,
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL,
+        text=True, errors="replace", bufsize=1,
+    )
+    last_sample = time.time()
+    for line in proc.stdout:
+        m = _ARC_PROGRESS_RE.match(line.rstrip())
+        if m:
+            now = time.time()
+            if now - last_sample >= _ARC_SAMPLE_INTERVAL:
+                log_progress(_arc_bar(int(m.group(1)), m.group(2), m.group(3)))
+                last_sample = now
+    proc.wait()
+
+    if proc.returncode != 0:
+        log(f"[WARN] Compression bat returned code {proc.returncode}")
     else:
         log("  Compression complete.")
     return True
@@ -727,6 +764,7 @@ class RepackApp:
         self.root.configure(bg=BG)
         self.root.minsize(860, 700)
         self._busy = False
+        self._progress_active = False
 
         self._init_vars()
         self._apply_styles()
@@ -1203,7 +1241,28 @@ class RepackApp:
     def log(self, msg: str):
         def _write():
             self.log_box.config(state="normal")
+            if self._progress_active:
+                # Terminate the dangling progress line before appending
+                self._progress_active = False
+                self.log_box.insert("end", "\n")
             self.log_box.insert("end", msg + "\n")
+            self.log_box.see("end")
+            self.log_box.config(state="disabled")
+        self.root.after(0, _write)
+
+    def log_progress(self, msg: str):
+        """Overwrite the last progress line in the log box (no spam)."""
+        def _write():
+            self.log_box.config(state="normal")
+            if self._progress_active:
+                self.log_box.delete("arc_prog", "end")
+            else:
+                # Mark where the progress line starts (LEFT gravity = stays
+                # put when text is inserted at / after this position)
+                self.log_box.mark_set("arc_prog", "end")
+                self.log_box.mark_gravity("arc_prog", "left")
+                self._progress_active = True
+            self.log_box.insert("arc_prog", msg)
             self.log_box.see("end")
             self.log_box.config(state="disabled")
         self.root.after(0, _write)
@@ -1309,7 +1368,8 @@ class RepackApp:
             return
         preset = self.preset_var.get()
         self.log(f"Compressing game data (preset {preset}) — this takes a while...")
-        self._run(work_compress, preset, gd, self.log)
+        lp = self.log_progress
+        self._run(lambda: work_compress(preset, gd, self.log, lp))
 
     def _step_create_dll(self):
         preset = self.preset_var.get()
@@ -1398,7 +1458,7 @@ class RepackApp:
 
             # 4 — Compress
             self.log(f"\n[4/8] Compressing game data (preset {preset})...")
-            ok = work_compress(preset, gd, self.log)
+            ok = work_compress(preset, gd, self.log, self.log_progress)
             if not ok:
                 if not self._ask_continue(
                     "Step 4 — Compress",

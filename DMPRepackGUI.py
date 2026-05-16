@@ -81,10 +81,11 @@ def ini_read(path: Path) -> list:
 
 
 def ini_write(path: Path, lines: list):
-    # Normalise to Windows line endings so GetPrivateProfileString reads reliably
+    # Write UTF-8 WITHOUT BOM — GetPrivateProfileString / ISPP ReadIni
+    # reads the BOM bytes as literal text and corrupts the first section header.
     content = "".join(lines)
     content = content.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\r\n")
-    path.write_bytes(content.encode("utf-8-sig"))
+    path.write_bytes(content.encode("utf-8"))
 
 
 def ini_set(lines: list, key: str, value: str, occurrence: int = 0) -> list:

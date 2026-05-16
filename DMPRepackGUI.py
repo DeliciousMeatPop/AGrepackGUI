@@ -544,15 +544,17 @@ def work_internal_dll(log, blocking_compile: bool = False) -> bool:
     shutil.move(str(dll_src), str(dll_beside))
 
     # Enable ;#define InternalDLL in Script.iss
-    iss_text = SCRIPT_ISS.read_bytes()
-    bom = iss_text[:3] == b"\xef\xbb\xbf"
-    text = (iss_text[3:] if bom else iss_text).decode("utf-8")
-    lines = text.splitlines(keepends=True)
+    iss_raw = SCRIPT_ISS.read_bytes()
+    bom = iss_raw[:3] == b"\xef\xbb\xbf"
+    iss_body = iss_raw[3:] if bom else iss_raw
+    lines = iss_body.decode("utf-8").splitlines(keepends=True)
     for i, ln in enumerate(lines):
         if "InternalDLL" in ln and ln.strip().startswith(";"):
-            lines[i] = ln.lstrip(";").lstrip()
+            eol = "\r\n" if ln.endswith("\r\n") else "\n"
+            lines[i] = f"#define InternalDLL{eol}"
             break
-    SCRIPT_ISS.write_text("".join(lines), encoding="utf-8-sig")
+    iss_out = "".join(lines).encode("utf-8")
+    SCRIPT_ISS.write_bytes((b"\xef\xbb\xbf" if bom else b"") + iss_out)
     log("  InternalDLL enabled — compiling...")
 
     if blocking_compile:
@@ -562,12 +564,17 @@ def work_internal_dll(log, blocking_compile: bool = False) -> bool:
         time.sleep(2)   # brief pause so the compile has a moment to start
 
     # Re-disable InternalDLL
-    lines2 = SCRIPT_ISS.read_text(encoding="utf-8-sig").splitlines(keepends=True)
+    iss_raw2 = SCRIPT_ISS.read_bytes()
+    bom2 = iss_raw2[:3] == b"\xef\xbb\xbf"
+    iss_body2 = iss_raw2[3:] if bom2 else iss_raw2
+    lines2 = iss_body2.decode("utf-8").splitlines(keepends=True)
     for i, ln in enumerate(lines2):
         if "InternalDLL" in ln and not ln.strip().startswith(";"):
-            lines2[i] = ";" + ln
+            eol2 = "\r\n" if ln.endswith("\r\n") else "\n"
+            lines2[i] = f";#define InternalDLL{eol2}"
             break
-    SCRIPT_ISS.write_text("".join(lines2), encoding="utf-8-sig")
+    iss_out2 = "".join(lines2).encode("utf-8")
+    SCRIPT_ISS.write_bytes((b"\xef\xbb\xbf" if bom2 else b"") + iss_out2)
 
     # Move DLL to Setup folder for archiving
     dll_setup = SETUP_DIR / "AGRepackInstaller.dll"

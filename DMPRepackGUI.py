@@ -398,7 +398,7 @@ def work_compile_blocking(log) -> bool:
 _ARC_PROGRESS_RE = re.compile(
     r"^(\d+)%:\s+[\d,]+\s+->\s+[\d,]+:\s+([\d.]+)%.*Remains\s+([\d:]+)"
 )
-_ARC_BAR_WIDTH = 20
+_ARC_BAR_WIDTH = 30
 _ARC_SAMPLE_INTERVAL = 12   # seconds between progress updates
 
 
@@ -880,6 +880,15 @@ class RepackApp:
         self.log_box.pack(fill="both", expand=True)
         self.log_box.config(state="disabled")
 
+        # Single-line progress bar (shown only during compression)
+        self._prog_var = tk.StringVar()
+        self._prog_label = tk.Label(
+            log_outer, textvariable=self._prog_var,
+            bg="#0a0f1e", fg="#00e5ff",
+            font=("Cascadia Code", 9), anchor="w", padx=4,
+        )
+        # not packed yet — shown on demand
+
     # ══════════════════════════════════════════════════════════════════════════
     #  Startup: detect existing settings.ini
     # ══════════════════════════════════════════════════════════════════════════
@@ -1289,31 +1298,23 @@ class RepackApp:
 
     def log(self, msg: str):
         def _write():
-            self.log_box.config(state="normal")
             if self._progress_active:
-                # Terminate the dangling progress line before appending
                 self._progress_active = False
-                self.log_box.insert("end", "\n")
+                self._prog_var.set("")
+                self._prog_label.pack_forget()
+            self.log_box.config(state="normal")
             self.log_box.insert("end", msg + "\n")
             self.log_box.see("end")
             self.log_box.config(state="disabled")
         self.root.after(0, _write)
 
     def log_progress(self, msg: str):
-        """Overwrite the last progress line in the log box (no spam)."""
+        """Update the single-line progress bar below the log."""
         def _write():
-            self.log_box.config(state="normal")
-            if self._progress_active:
-                self.log_box.delete("arc_prog", "end")
-            else:
-                # Mark where the progress line starts (LEFT gravity = stays
-                # put when text is inserted at / after this position)
-                self.log_box.mark_set("arc_prog", "end")
-                self.log_box.mark_gravity("arc_prog", "left")
+            if not self._progress_active:
+                self._prog_label.pack(fill="x", pady=(2, 0))
                 self._progress_active = True
-            self.log_box.insert("arc_prog", msg)
-            self.log_box.see("end")
-            self.log_box.config(state="disabled")
+            self._prog_var.set(msg)
         self.root.after(0, _write)
 
     def dump_log_to_file(self) -> None:

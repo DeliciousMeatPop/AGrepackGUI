@@ -399,7 +399,7 @@ _ARC_PROGRESS_RE = re.compile(
     r"^(\d+)%:\s+[\d,]+\s+->\s+[\d,]+:\s+([\d.]+)%.*Remains\s+([\d:]+)"
 )
 _ARC_BAR_WIDTH = 30
-_ARC_SAMPLE_INTERVAL = 12   # seconds between progress updates
+_ARC_SAMPLE_INTERVAL = 2    # seconds between progress label updates
 
 
 def _arc_bar(pct: int, ratio: str, remains: str) -> str:
@@ -426,20 +426,26 @@ def work_compress(preset: str, game_dir: str, log, log_progress=None) -> bool:
             log("  Compression complete.")
         return True
 
-    # Stream Arc output; sample a progress bar every ~12 s
+    # Stream Arc output; update progress label every ~2 s, reset on new sub-pass
     proc = subprocess.Popen(
         str(bat), cwd=str(BASE_DIR), shell=True,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         stdin=subprocess.DEVNULL,
         text=True, errors="replace", bufsize=1,
     )
-    last_sample = time.time()
+    last_sample = 0.0   # force first update immediately
+    last_pct    = -1
     for line in proc.stdout:
         m = _ARC_PROGRESS_RE.match(line.rstrip())
         if m:
+            pct = int(m.group(1))
             now = time.time()
+            # Reset timer on new sub-pass (percentage went back down)
+            if pct < last_pct:
+                last_sample = 0.0
+            last_pct = pct
             if now - last_sample >= _ARC_SAMPLE_INTERVAL:
-                log_progress(_arc_bar(int(m.group(1)), m.group(2), m.group(3)))
+                log_progress(_arc_bar(pct, m.group(2), m.group(3)))
                 last_sample = now
     proc.wait()
 

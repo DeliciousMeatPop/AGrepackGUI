@@ -674,12 +674,17 @@ def work_archive_art(log) -> bool:
         "logo_2x.png", "library_hero_2x.jpg", "AGRepackInstaller.dll",
     ]
     for fname in art_files:
-        src = SETUP_DIR / fname
-        if src.exists():
-            shutil.move(str(src), str(bg_dir / fname))
+        for search_dir in (SETUP_DIR, BASE_DIR):
+            src = search_dir / fname
+            if src.exists():
+                shutil.move(str(src), str(bg_dir / fname))
+                break  # found in first location, don't look further
 
-    if SETTINGS_INI.exists():
-        shutil.move(str(SETTINGS_INI), str(bg_dir / "settings.ini"))
+    # Collect settings.ini from either location
+    for ini_src in (SETTINGS_INI, SETUP_DIR / "settings.ini"):
+        if ini_src.exists():
+            shutil.move(str(ini_src), str(bg_dir / "settings.ini"))
+            break
 
     zip_path = BASE_DIR / f"{arc_name}.7z"
     cmd = [str(SEVEN_ZIP), "a", "-t7z", "-mx=9", "-sdel",
@@ -691,10 +696,6 @@ def work_archive_art(log) -> bool:
     if zip_path.exists():
         shutil.move(str(zip_path), str(old_art / zip_path.name))
         log(f"  Art archive saved: {old_art / zip_path.name}")
-
-    leftover = SETUP_DIR / "settings.ini"
-    if leftover.exists():
-        leftover.unlink()
 
     return True
 
@@ -851,18 +852,19 @@ class RepackApp:
     # ══════════════════════════════════════════════════════════════════════════
 
     def _check_existing_settings(self):
-        if not SETTINGS_INI.exists():
+        setup_ini = SETUP_DIR / "settings.ini"
+        if not setup_ini.exists():
             return
 
-        # Offer to load existing values into the form
+        # Offer to copy it to the main folder and load into the form
         load = messagebox.askyesno(
-            "Existing settings.ini Found",
-            "Found an existing settings.ini next to the tool.\n\n"
-            "Load its values into the form?\n"
-            "(Useful when resuming an interrupted repack)",
+            "settings.ini Found in Setup\\",
+            "Found settings.ini in the Setup\\ folder.\n\n"
+            "Copy it to the main folder and load its values into the form?",
             icon="question",
         )
         if load:
+            shutil.copy2(str(setup_ini), str(SETTINGS_INI))
             self._load_settings_ini()
 
         # Ask about the Recompile Fix workflow

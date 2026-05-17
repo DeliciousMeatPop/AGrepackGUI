@@ -753,6 +753,8 @@ def work_recompile_fix(log, pre_archive_hook=None) -> bool:
     shutil.move(str(setup_dll),  str(CONVERSION_DIR / "AGRepackInstaller.dll"))
     log("  Files moved.")
 
+    work_copy_finish_bmp(log)
+
     log("  Compiling Inno Setup script...")
     ok = work_compile_blocking(log)
     if not ok:
@@ -1394,10 +1396,10 @@ class RepackApp:
         if self.do_dlc_var.get():
             self.log("Sorting DLC.txt...")
             self._run(work_sort_dlc, gd, self.log)
-        self.log("Checking Finish.bmp...")
-        self._run(work_copy_finish_bmp, self.log)
 
     def _step_compile(self):
+        self.log("Checking Finish.bmp...")
+        self._run(work_copy_finish_bmp, self.log)
         self.log("Launching Inno Setup compiler...")
         self._run(work_compile_gui, self.log)
 
@@ -1485,6 +1487,7 @@ class RepackApp:
 
             # 3 — Compile
             self.log("\n[3/8] Compiling Inno Setup script...")
+            work_copy_finish_bmp(self.log)
             ok = work_compile_blocking(self.log)
             if not ok:
                 if not self._ask_continue(

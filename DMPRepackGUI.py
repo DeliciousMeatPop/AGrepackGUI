@@ -38,7 +38,7 @@ CONVERSION_DIR = COMPRESSOR / "Conversion_Output" / "CONVERSION"
 SETUP_FILES    = COMPRESSOR / "Setup_Files"
 ISCC           = BASE_DIR / "Resources" / "IS_Files" / "ISCC.exe"
 COMPIL32       = BASE_DIR / "Resources" / "IS_Files" / "Compil32Ex.exe"
-ARC_EXE        = BASE_DIR / "Resources" / "Arc.exe"
+ARC_EXE        = COMPRESSOR / "Resources" / "Win64" / "Arc.exe"
 
 INI_TEMPLATES = {
     "PC":          RESOURCE_DIR / "2.ini",

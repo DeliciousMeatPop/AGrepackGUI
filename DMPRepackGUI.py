@@ -405,6 +405,10 @@ def work_compress(preset: str, game_dir: str, log) -> bool:
     write_temp("preset.tmp",    preset)
     log(f"  Running compression preset {preset} — this will take a while...")
     log("  (watch the CMD window for Arc progress; press any key when it shows PAUSE)")
+    # Re-create the destination folders right before launching the bat so the
+    # final move/copy succeed even if the user (or a previous run) wiped them.
+    CONVERSION_DIR.mkdir(parents=True, exist_ok=True)
+    (COMPRESSOR / "Conversion_Output").mkdir(parents=True, exist_ok=True)
     r = subprocess.run(str(bat), cwd=str(BASE_DIR), shell=True)
     if r.returncode != 0:
         log(f"[WARN] Compression bat returned code {r.returncode}")
@@ -1203,14 +1207,14 @@ class RepackApp:
         grid.columnconfigure(1, weight=1)
 
         step_defs = [
-            ("Pre-Process Files",       self._step_preprocess,   BTN),
-            ("Save Settings → INI",     self._action_save_settings, BTN),
-            ("Compile Script  (IS)",    self._step_compile,      BTN),
-            ("Compress Game Data",      self._step_compress,     BTN),
-            ("Create DLL",             self._step_create_dll,   BTN),
-            ("Merge DLL into EXE",     self._step_internal_dll, BTN),
-            ("Zip & Name Package",     self._step_zip,          BTN),
-            ("Archive Game Art",       self._step_archive_art,  BTN),
+            ("1.  Pre-Process Files",        self._step_preprocess,     BTN),
+            ("2.  Save Settings → INI",      self._action_save_settings, BTN),
+            ("3.  Compile Script  (IS)",     self._step_compile,        BTN),
+            ("4.  Compress Game Data",       self._step_compress,       BTN),
+            ("5.  Create DLL (+ Records)",   self._step_create_dll,     BTN),
+            ("6.  Merge DLL into EXE",       self._step_internal_dll,   BTN),
+            ("7.  Zip & Name Package",       self._step_zip,            BTN),
+            ("8.  Archive Game Art",         self._step_archive_art,    BTN),
         ]
         for i, (label, cmd, color) in enumerate(step_defs):
             r, c = divmod(i, 2)

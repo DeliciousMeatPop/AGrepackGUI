@@ -436,7 +436,12 @@ def work_compress(preset: str, game_dir: str, log, log_progress=None) -> bool:
     last_sample = 0.0   # force first update immediately
     last_pct    = -1
     for line in proc.stdout:
-        m = _ARC_PROGRESS_RE.match(line.rstrip())
+        stripped = line.strip()
+        # The bat echoes "Compression Complete" immediately before PAUSE.
+        # Break here so we never block on PAUSE waiting for a keypress.
+        if stripped.lower() == "compression complete":
+            break
+        m = _ARC_PROGRESS_RE.match(stripped)
         if m:
             pct = int(m.group(1))
             now = time.time()
@@ -447,12 +452,15 @@ def work_compress(preset: str, game_dir: str, log, log_progress=None) -> bool:
             if now - last_sample >= _ARC_SAMPLE_INTERVAL:
                 log_progress(_arc_bar(pct, m.group(2), m.group(3)))
                 last_sample = now
+    # Kill the bat process — if we hit "Compression Complete" it's stuck on
+    # PAUSE; if we hit EOF it's already done. Either way, clean up.
+    try:
+        proc.kill()
+    except OSError:
+        pass
     proc.wait()
 
-    if proc.returncode != 0:
-        log(f"[WARN] Compression bat returned code {proc.returncode}")
-    else:
-        log("  Compression complete.")
+    log("  Compression complete.")
     return True
 
 

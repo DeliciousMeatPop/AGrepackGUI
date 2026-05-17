@@ -400,6 +400,8 @@ def work_compress(preset: str, game_dir: str, log) -> bool:
     if not bat or not bat.exists():
         log(f"[ERROR] Compression bat not found for preset {preset}: {bat}")
         return False
+    # Ensure destination folders exist before the bat tries to move/copy into them
+    CONVERSION_DIR.mkdir(parents=True, exist_ok=True)
     write_temp("dir.tmp",       game_dir)
     write_temp("directory.tmp", str(BASE_DIR))
     write_temp("preset.tmp",    preset)

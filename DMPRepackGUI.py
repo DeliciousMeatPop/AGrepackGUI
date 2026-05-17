@@ -899,20 +899,6 @@ class RepackApp:
         if load:
             self._load_settings_ini()
 
-        # Check for data.bin (both possible locations)
-        data_conv  = CONVERSION_DIR / "data.bin"
-        data_setup = SETUP_DIR / "data.bin"
-        if not data_conv.exists() and not data_setup.exists():
-            messagebox.showwarning(
-                "data.bin Not Found",
-                "settings.ini is present but data.bin is missing.\n\n"
-                f"Expected at:\n"
-                f"  {data_conv}\n"
-                f"  — or —\n"
-                f"  {data_setup}\n\n"
-                "Make sure the compressed game data is in place before building.",
-            )
-
         # Ask about the Recompile Fix workflow
         do_fix = messagebox.askyesno(
             "Run Recompile Fix?",
@@ -927,6 +913,21 @@ class RepackApp:
             icon="question",
         )
         if do_fix:
+            # Only warn about missing data.bin when they actually intend to run a fix
+            data_conv  = CONVERSION_DIR / "data.bin"
+            data_setup = SETUP_DIR / "data.bin"
+            if not data_conv.exists() and not data_setup.exists():
+                proceed = messagebox.askokcancel(
+                    "data.bin Not Found",
+                    "data.bin is missing from the expected locations:\n\n"
+                    f"  {data_conv}\n"
+                    f"  — or —\n"
+                    f"  {data_setup}\n\n"
+                    "Fix that first, then click OK to continue.\n"
+                    "Click Cancel if you need more time.",
+                )
+                if not proceed:
+                    return
             self._run_recompile_fix()
 
     def _load_settings_ini(self):

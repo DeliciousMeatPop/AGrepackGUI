@@ -231,6 +231,19 @@ def write_temp(filename: str, value: str):
 
 # ── Pre-processing ───────────────────────────────────────────────────────────
 
+def work_copy_finish_bmp(log) -> None:
+    """Copy Welcome.bmp → Finish.bmp in Setup/ if Welcome exists but Finish doesn't."""
+    welcome = SETUP_DIR / "Welcome.bmp"
+    finish  = SETUP_DIR / "Finish.bmp"
+    if welcome.exists() and not finish.exists():
+        shutil.copy2(str(welcome), str(finish))
+        log("  Finish.bmp created from Welcome.bmp")
+    elif finish.exists():
+        log("  Finish.bmp already exists — skipped")
+    else:
+        log("[WARN] Welcome.bmp not found in Setup/ — Finish.bmp not created")
+
+
 def work_rename_originals(game_dir: str, log) -> bool:
     folder = Path(game_dir)
     if not folder.is_dir():
@@ -702,6 +715,10 @@ def work_archive_art(log) -> bool:
            "-xr!*\\*", "-xr!_OldGameArt", "-xr!_OldGameArt\\*"]
     log(f"  Archiving game art as: {arc_name}.7z")
     subprocess.run(cmd, cwd=str(BASE_DIR))
+
+    log_file = bg_dir / "repack_log.txt"
+    if log_file.exists():
+        log_file.unlink()
 
     if zip_path.exists():
         shutil.move(str(zip_path), str(old_art / zip_path.name))
@@ -1377,6 +1394,8 @@ class RepackApp:
         if self.do_dlc_var.get():
             self.log("Sorting DLC.txt...")
             self._run(work_sort_dlc, gd, self.log)
+        self.log("Checking Finish.bmp...")
+        self._run(work_copy_finish_bmp, self.log)
 
     def _step_compile(self):
         self.log("Launching Inno Setup compiler...")

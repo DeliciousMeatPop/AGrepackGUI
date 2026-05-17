@@ -417,12 +417,23 @@ def work_compress(preset: str, game_dir: str, log) -> bool:
     write_temp("directory.tmp", str(BASE_DIR))
     write_temp("preset.tmp",    preset)
     log(f"  Running compression preset {preset} — this will take a while...")
-    log("  (watch the CMD window for Arc progress; press any key when it shows PAUSE)")
-    # Re-create the destination folders right before launching the bat so the
-    # final move/copy succeed even if the user (or a previous run) wiped them.
+    log("  (watch the CMD window for Arc progress)")
     CONVERSION_DIR.mkdir(parents=True, exist_ok=True)
     (COMPRESSOR / "Conversion_Output").mkdir(parents=True, exist_ok=True)
-    r = subprocess.run(str(bat), cwd=str(BASE_DIR), shell=True)
+
+    # Write a temp bat with PAUSE removed so the window closes automatically.
+    bat_lines = bat.read_bytes().decode("utf-8", errors="replace").splitlines(keepends=True)
+    no_pause  = "".join(ln for ln in bat_lines if ln.strip().upper() != "PAUSE")
+    tmp_bat   = bat.parent / f"_tmp_{bat.name}"
+    tmp_bat.write_bytes(no_pause.encode("utf-8"))
+    try:
+        r = subprocess.run(str(tmp_bat), cwd=str(BASE_DIR), shell=True)
+    finally:
+        try:
+            tmp_bat.unlink()
+        except OSError:
+            pass
+
     if r.returncode != 0:
         log(f"[WARN] Compression bat returned code {r.returncode}")
     else:

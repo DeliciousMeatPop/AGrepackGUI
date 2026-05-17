@@ -674,17 +674,27 @@ def work_archive_art(log) -> bool:
         "logo_2x.png", "library_hero_2x.jpg", "AGRepackInstaller.dll",
     ]
     for fname in art_files:
+        moved = False
         for search_dir in (SETUP_DIR, BASE_DIR):
             src = search_dir / fname
-            if src.exists():
+            if not src.exists():
+                continue
+            if not moved:
                 shutil.move(str(src), str(bg_dir / fname))
-                break  # found in first location, don't look further
+                moved = True
+            else:
+                src.unlink()   # duplicate — drop it so nothing's left behind
 
-    # Collect settings.ini from either location
+    # Collect settings.ini from either location, drop any duplicates
+    moved_ini = False
     for ini_src in (SETTINGS_INI, SETUP_DIR / "settings.ini"):
-        if ini_src.exists():
+        if not ini_src.exists():
+            continue
+        if not moved_ini:
             shutil.move(str(ini_src), str(bg_dir / "settings.ini"))
-            break
+            moved_ini = True
+        else:
+            ini_src.unlink()
 
     zip_path = BASE_DIR / f"{arc_name}.7z"
     cmd = [str(SEVEN_ZIP), "a", "-t7z", "-mx=9", "-sdel",

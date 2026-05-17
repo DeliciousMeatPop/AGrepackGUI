@@ -594,6 +594,18 @@ def work_internal_dll(log, blocking_compile: bool = False) -> bool:
     return compile_ok
 
 
+# ── Repack log dump ──────────────────────────────────────────────────────────
+
+def save_repack_log(log_text: str, log) -> None:
+    """Write the session log to Background/repack_log.txt so it gets bundled
+    into the art archive by work_archive_art()."""
+    bg_dir = SETUP_DIR / "Background"
+    bg_dir.mkdir(parents=True, exist_ok=True)
+    out = bg_dir / "repack_log.txt"
+    out.write_text(log_text, encoding="utf-8")
+    log(f"  Repack log saved: {out.name}")
+
+
 # ── Zip & Name ───────────────────────────────────────────────────────────────
 
 def work_zip_and_name(log) -> bool:
@@ -722,11 +734,12 @@ def work_archive_art(log) -> bool:
 
 # ── Recompile Fix ─────────────────────────────────────────────────────────────
 
-def work_recompile_fix(log) -> bool:
+def work_recompile_fix(log, pre_archive_hook=None) -> bool:
     """
     Recompile Fix workflow (mirrors RecompileFix.ps1).
     Expects in Setup/: data.bin, settings.ini, AGRepackInstaller.dll
     Moves them into place, compiles, merges, zips, archives art.
+    pre_archive_hook: optional callable() run just before work_archive_art.
     """
     setup_data   = SETUP_DIR / "data.bin"
     setup_ini    = SETUP_DIR / "settings.ini"
@@ -766,6 +779,8 @@ def work_recompile_fix(log) -> bool:
     work_zip_and_name(log)
 
     log("  Archiving game art...")
+    if pre_archive_hook:
+        pre_archive_hook()
     work_archive_art(log)
     return True
 
@@ -986,7 +1001,7 @@ class RepackApp:
         self.log("=" * 56)
         self.log("  RECOMPILE FIX STARTED")
         self.log("=" * 56)
-        self._run(lambda: work_recompile_fix(self.log)
+        self._run(lambda: work_recompile_fix(self.log, self._dump_log_blocking)
                   and self.log("\n  RECOMPILE FIX COMPLETE!"))
 
     # ══════════════════════════════════════════════════════════════════════════
@@ -1300,6 +1315,21 @@ class RepackApp:
             self.log_box.config(state="disabled")
         self.root.after(0, _write)
 
+    def dump_log_to_file(self) -> None:
+        """Grab log_box text on the main thread and save it for archiving.
+        Must be called from the main thread (or via root.after)."""
+        self.log_box.config(state="normal")
+        text = self.log_box.get("1.0", "end")
+        self.log_box.config(state="disabled")
+        save_repack_log(text, self.log)
+
+    def _dump_log_blocking(self) -> None:
+        """Call dump_log_to_file on the main thread and block until it runs.
+        Safe to call from a background worker thread."""
+        done = threading.Event()
+        self.root.after(0, lambda: (self.dump_log_to_file(), done.set()))
+        done.wait()
+
     def _run(self, fn, *args):
         """Run fn(*args) in a daemon thread."""
         threading.Thread(target=fn, args=args, daemon=True).start()
@@ -1531,8 +1561,10 @@ class RepackApp:
             self.log("\n[7/8] Zipping final package...")
             work_zip_and_name(self.log)
 
-            # 8 — Archive art
+            # 8 — Archive art (log saved first so it's bundled in)
             self.log("\n[8/8] Archiving game art...")
+            self.log("  Saving repack log...")
+            self._dump_log_blocking()
             work_archive_art(self.log)
 
             self.log("\n" + "=" * 56)

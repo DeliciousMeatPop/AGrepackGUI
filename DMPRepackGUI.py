@@ -400,13 +400,15 @@ def work_compress(preset: str, game_dir: str, log) -> bool:
     if not bat or not bat.exists():
         log(f"[ERROR] Compression bat not found for preset {preset}: {bat}")
         return False
-    # Ensure destination folders exist before the bat tries to move/copy into them
-    CONVERSION_DIR.mkdir(parents=True, exist_ok=True)
     write_temp("dir.tmp",       game_dir)
     write_temp("directory.tmp", str(BASE_DIR))
     write_temp("preset.tmp",    preset)
     log(f"  Running compression preset {preset} — this will take a while...")
     log("  (watch the CMD window for Arc progress; press any key when it shows PAUSE)")
+    # Re-create the destination folders right before launching the bat so the
+    # final move/copy succeed even if the user (or a previous run) wiped them.
+    CONVERSION_DIR.mkdir(parents=True, exist_ok=True)
+    (COMPRESSOR / "Conversion_Output").mkdir(parents=True, exist_ok=True)
     r = subprocess.run(str(bat), cwd=str(BASE_DIR), shell=True)
     if r.returncode != 0:
         log(f"[WARN] Compression bat returned code {r.returncode}")

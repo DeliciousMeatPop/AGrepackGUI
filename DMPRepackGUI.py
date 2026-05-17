@@ -231,6 +231,19 @@ def write_temp(filename: str, value: str):
 
 # ── Pre-processing ───────────────────────────────────────────────────────────
 
+def work_copy_finish_bmp(log) -> None:
+    """Copy Welcome.bmp → Finish.bmp in Setup/ if Welcome exists but Finish doesn't."""
+    welcome = SETUP_DIR / "Welcome.bmp"
+    finish  = SETUP_DIR / "Finish.bmp"
+    if welcome.exists() and not finish.exists():
+        shutil.copy2(str(welcome), str(finish))
+        log("  Finish.bmp created from Welcome.bmp")
+    elif finish.exists():
+        log("  Finish.bmp already exists — skipped")
+    else:
+        log("[WARN] Welcome.bmp not found in Setup/ — Finish.bmp not created")
+
+
 def work_rename_originals(game_dir: str, log) -> bool:
     folder = Path(game_dir)
     if not folder.is_dir():
@@ -703,6 +716,10 @@ def work_archive_art(log) -> bool:
     log(f"  Archiving game art as: {arc_name}.7z")
     subprocess.run(cmd, cwd=str(BASE_DIR))
 
+    log_file = bg_dir / "repack_log.txt"
+    if log_file.exists():
+        log_file.unlink()
+
     if zip_path.exists():
         shutil.move(str(zip_path), str(old_art / zip_path.name))
         log(f"  Art archive saved: {old_art / zip_path.name}")
@@ -735,6 +752,8 @@ def work_recompile_fix(log, pre_archive_hook=None) -> bool:
     shutil.move(str(setup_ini),  str(SETTINGS_INI))
     shutil.move(str(setup_dll),  str(CONVERSION_DIR / "AGRepackInstaller.dll"))
     log("  Files moved.")
+
+    work_copy_finish_bmp(log)
 
     log("  Compiling Inno Setup script...")
     ok = work_compile_blocking(log)
@@ -1379,6 +1398,8 @@ class RepackApp:
             self._run(work_sort_dlc, gd, self.log)
 
     def _step_compile(self):
+        self.log("Checking Finish.bmp...")
+        self._run(work_copy_finish_bmp, self.log)
         self.log("Launching Inno Setup compiler...")
         self._run(work_compile_gui, self.log)
 
@@ -1466,6 +1487,7 @@ class RepackApp:
 
             # 3 — Compile
             self.log("\n[3/8] Compiling Inno Setup script...")
+            work_copy_finish_bmp(self.log)
             ok = work_compile_blocking(self.log)
             if not ok:
                 if not self._ask_continue(

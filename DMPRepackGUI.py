@@ -377,8 +377,7 @@ def work_compile_blocking(log) -> bool:
     if ISCC.exists():
         log("  Compiling with ISCC.exe (blocking)...")
         r = subprocess.run([str(ISCC), str(SCRIPT_ISS)], cwd=str(BASE_DIR),
-                           capture_output=True, text=True,
-                           creationflags=subprocess.CREATE_NO_WINDOW)
+                           capture_output=True, text=True)
         for line in r.stdout.splitlines():
             log("    " + line)
         for line in r.stderr.splitlines():
@@ -396,20 +395,7 @@ def work_compile_blocking(log) -> bool:
 
 # ── Compress ─────────────────────────────────────────────────────────────────
 
-_ARC_PROGRESS_RE = re.compile(
-    r"^(\d+)%:\s+[\d,]+\s+->\s+[\d,]+:\s+([\d.]+)%.*Remains\s+([\d:]+)"
-)
-_ARC_BAR_WIDTH = 30
-_ARC_SAMPLE_INTERVAL = 2    # seconds between progress label updates
-
-
-def _arc_bar(pct: int, ratio: str, remains: str) -> str:
-    filled = int(_ARC_BAR_WIDTH * pct / 100)
-    bar    = "█" * filled + "░" * (_ARC_BAR_WIDTH - filled)
-    return f"  [{bar}] {pct:3d}%  ratio {ratio}%  ⏱ {remains} left"
-
-
-def work_compress(preset: str, game_dir: str, log, log_progress=None) -> bool:
+def work_compress(preset: str, game_dir: str, log) -> bool:
     bat = COMPRESSION_BATS.get(preset)
     if not bat or not bat.exists():
         log(f"[ERROR] Compression bat not found for preset {preset}: {bat}")
@@ -418,54 +404,12 @@ def work_compress(preset: str, game_dir: str, log, log_progress=None) -> bool:
     write_temp("directory.tmp", str(BASE_DIR))
     write_temp("preset.tmp",    preset)
     log(f"  Running compression preset {preset} — this will take a while...")
-
-    if log_progress is None:
-        r = subprocess.run(str(bat), cwd=str(BASE_DIR), shell=True,
-                           creationflags=subprocess.CREATE_NO_WINDOW)
-        if r.returncode != 0:
-            log(f"[WARN] Compression bat returned code {r.returncode}")
-        else:
-            log("  Compression complete.")
-        return True
-
-    # Stream Arc output; update progress label every ~2 s, reset on new sub-pass.
-    # CREATE_NO_WINDOW suppresses the CMD console so Arc writes through the pipe
-    # instead of directly to a visible console window.
-    proc = subprocess.Popen(
-        str(bat), cwd=str(BASE_DIR), shell=True,
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-        stdin=subprocess.DEVNULL,
-        text=True, errors="replace", bufsize=1,
-        creationflags=subprocess.CREATE_NO_WINDOW,
-    )
-    last_sample = 0.0   # force first update immediately
-    last_pct    = -1
-    for line in proc.stdout:
-        stripped = line.strip()
-        # The bat echoes "Compression Complete" immediately before PAUSE.
-        # Break here so we never block on PAUSE waiting for a keypress.
-        if stripped.lower() == "compression complete":
-            break
-        m = _ARC_PROGRESS_RE.match(stripped)
-        if m:
-            pct = int(m.group(1))
-            now = time.time()
-            # Reset timer on new sub-pass (percentage went back down)
-            if pct < last_pct:
-                last_sample = 0.0
-            last_pct = pct
-            if now - last_sample >= _ARC_SAMPLE_INTERVAL:
-                log_progress(_arc_bar(pct, m.group(2), m.group(3)))
-                last_sample = now
-    # Kill the bat process — if we hit "Compression Complete" it's stuck on
-    # PAUSE; if we hit EOF it's already done. Either way, clean up.
-    try:
-        proc.kill()
-    except OSError:
-        pass
-    proc.wait()
-
-    log("  Compression complete.")
+    log("  (watch the CMD window for Arc progress; press any key when it shows PAUSE)")
+    r = subprocess.run(str(bat), cwd=str(BASE_DIR), shell=True)
+    if r.returncode != 0:
+        log(f"[WARN] Compression bat returned code {r.returncode}")
+    else:
+        log("  Compression complete.")
     return True
 
 
@@ -513,7 +457,7 @@ def work_create_dll(preset: str, log) -> bool:
            f"-w{tmp}", "-mx", "AGRepackInstaller.dll",
            str(src_dir / "*")]
     log("  Building AGRepackInstaller.dll with Arc...")
-    subprocess.run(cmd, cwd=str(BASE_DIR), creationflags=subprocess.CREATE_NO_WINDOW)
+    subprocess.run(cmd, cwd=str(BASE_DIR))
 
     created = BASE_DIR / "AGRepackInstaller.dll"
     dest    = CONVERSION_DIR / "AGRepackInstaller.dll"
@@ -663,7 +607,7 @@ def work_zip_and_name(log) -> bool:
            + [zip_name, str(CONVERSION_DIR / "*")])
 
     log(f"  Creating archive: {zip_name}")
-    subprocess.run(cmd, cwd=str(BASE_DIR), creationflags=subprocess.CREATE_NO_WINDOW)
+    subprocess.run(cmd, cwd=str(BASE_DIR))
 
     # Move single or multi-part archive into output folder
     parts = sorted(BASE_DIR.glob("*.001"))
@@ -738,7 +682,7 @@ def work_archive_art(log) -> bool:
            str(zip_path), str(bg_dir / "*"),
            "-xr!*\\*", "-xr!_OldGameArt", "-xr!_OldGameArt\\*"]
     log(f"  Archiving game art as: {arc_name}.7z")
-    subprocess.run(cmd, cwd=str(BASE_DIR), creationflags=subprocess.CREATE_NO_WINDOW)
+    subprocess.run(cmd, cwd=str(BASE_DIR))
 
     if zip_path.exists():
         shutil.move(str(zip_path), str(old_art / zip_path.name))
@@ -815,7 +759,6 @@ class RepackApp:
         self.root.configure(bg=BG)
         self.root.minsize(860, 700)
         self._busy = False
-        self._progress_active = False
 
         self._init_vars()
         self._apply_styles()
@@ -898,15 +841,6 @@ class RepackApp:
             relief="flat", bd=0, selectbackground=ACCENT)
         self.log_box.pack(fill="both", expand=True)
         self.log_box.config(state="disabled")
-
-        # Single-line progress bar (shown only during compression)
-        self._prog_var = tk.StringVar()
-        self._prog_label = tk.Label(
-            log_outer, textvariable=self._prog_var,
-            bg="#0a0f1e", fg="#00e5ff",
-            font=("Cascadia Code", 9), anchor="w", padx=4,
-        )
-        # not packed yet — shown on demand
 
     # ══════════════════════════════════════════════════════════════════════════
     #  Startup: detect existing settings.ini
@@ -1317,23 +1251,10 @@ class RepackApp:
 
     def log(self, msg: str):
         def _write():
-            if self._progress_active:
-                self._progress_active = False
-                self._prog_var.set("")
-                self._prog_label.pack_forget()
             self.log_box.config(state="normal")
             self.log_box.insert("end", msg + "\n")
             self.log_box.see("end")
             self.log_box.config(state="disabled")
-        self.root.after(0, _write)
-
-    def log_progress(self, msg: str):
-        """Update the single-line progress bar below the log."""
-        def _write():
-            if not self._progress_active:
-                self._prog_label.pack(fill="x", pady=(2, 0))
-                self._progress_active = True
-            self._prog_var.set(msg)
         self.root.after(0, _write)
 
     def dump_log_to_file(self) -> None:
@@ -1452,8 +1373,7 @@ class RepackApp:
             return
         preset = self.preset_var.get()
         self.log(f"Compressing game data (preset {preset}) — this takes a while...")
-        lp = self.log_progress
-        self._run(lambda: work_compress(preset, gd, self.log, lp))
+        self._run(lambda: work_compress(preset, gd, self.log))
 
     def _step_create_dll(self):
         preset = self.preset_var.get()
@@ -1542,7 +1462,7 @@ class RepackApp:
 
             # 4 — Compress
             self.log(f"\n[4/8] Compressing game data (preset {preset})...")
-            ok = work_compress(preset, gd, self.log, self.log_progress)
+            ok = work_compress(preset, gd, self.log)
             if not ok:
                 if not self._ask_continue(
                     "Step 4 — Compress",

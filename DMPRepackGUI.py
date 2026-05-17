@@ -1205,14 +1205,14 @@ class RepackApp:
         grid.columnconfigure(1, weight=1)
 
         step_defs = [
-            ("Pre-Process Files",       self._step_preprocess,   BTN),
-            ("Save Settings → INI",     self._action_save_settings, BTN),
-            ("Compile Script  (IS)",    self._step_compile,      BTN),
-            ("Compress Game Data",      self._step_compress,     BTN),
-            ("Create DLL",             self._step_create_dll,   BTN),
-            ("Merge DLL into EXE",     self._step_internal_dll, BTN),
-            ("Zip & Name Package",     self._step_zip,          BTN),
-            ("Archive Game Art",       self._step_archive_art,  BTN),
+            ("1.  Pre-Process Files",        self._step_preprocess,     BTN),
+            ("2.  Save Settings → INI",      self._action_save_settings, BTN),
+            ("3.  Compile Script  (IS)",     self._step_compile,        BTN),
+            ("4.  Compress Game Data",       self._step_compress,       BTN),
+            ("5.  Create DLL (+ Records)",   self._step_create_dll,     BTN),
+            ("6.  Merge DLL into EXE",       self._step_internal_dll,   BTN),
+            ("7.  Zip & Name Package",       self._step_zip,            BTN),
+            ("8.  Archive Game Art",         self._step_archive_art,    BTN),
         ]
         for i, (label, cmd, color) in enumerate(step_defs):
             r, c = divmod(i, 2)

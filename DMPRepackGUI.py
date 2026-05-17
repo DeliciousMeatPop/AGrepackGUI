@@ -377,7 +377,8 @@ def work_compile_blocking(log) -> bool:
     if ISCC.exists():
         log("  Compiling with ISCC.exe (blocking)...")
         r = subprocess.run([str(ISCC), str(SCRIPT_ISS)], cwd=str(BASE_DIR),
-                           capture_output=True, text=True)
+                           capture_output=True, text=True,
+                           creationflags=subprocess.CREATE_NO_WINDOW)
         for line in r.stdout.splitlines():
             log("    " + line)
         for line in r.stderr.splitlines():
@@ -419,19 +420,23 @@ def work_compress(preset: str, game_dir: str, log, log_progress=None) -> bool:
     log(f"  Running compression preset {preset} — this will take a while...")
 
     if log_progress is None:
-        r = subprocess.run(str(bat), cwd=str(BASE_DIR), shell=True)
+        r = subprocess.run(str(bat), cwd=str(BASE_DIR), shell=True,
+                           creationflags=subprocess.CREATE_NO_WINDOW)
         if r.returncode != 0:
             log(f"[WARN] Compression bat returned code {r.returncode}")
         else:
             log("  Compression complete.")
         return True
 
-    # Stream Arc output; update progress label every ~2 s, reset on new sub-pass
+    # Stream Arc output; update progress label every ~2 s, reset on new sub-pass.
+    # CREATE_NO_WINDOW suppresses the CMD console so Arc writes through the pipe
+    # instead of directly to a visible console window.
     proc = subprocess.Popen(
         str(bat), cwd=str(BASE_DIR), shell=True,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         stdin=subprocess.DEVNULL,
         text=True, errors="replace", bufsize=1,
+        creationflags=subprocess.CREATE_NO_WINDOW,
     )
     last_sample = 0.0   # force first update immediately
     last_pct    = -1
@@ -508,7 +513,7 @@ def work_create_dll(preset: str, log) -> bool:
            f"-w{tmp}", "-mx", "AGRepackInstaller.dll",
            str(src_dir / "*")]
     log("  Building AGRepackInstaller.dll with Arc...")
-    subprocess.run(cmd, cwd=str(BASE_DIR))
+    subprocess.run(cmd, cwd=str(BASE_DIR), creationflags=subprocess.CREATE_NO_WINDOW)
 
     created = BASE_DIR / "AGRepackInstaller.dll"
     dest    = CONVERSION_DIR / "AGRepackInstaller.dll"
@@ -658,7 +663,7 @@ def work_zip_and_name(log) -> bool:
            + [zip_name, str(CONVERSION_DIR / "*")])
 
     log(f"  Creating archive: {zip_name}")
-    subprocess.run(cmd, cwd=str(BASE_DIR))
+    subprocess.run(cmd, cwd=str(BASE_DIR), creationflags=subprocess.CREATE_NO_WINDOW)
 
     # Move single or multi-part archive into output folder
     parts = sorted(BASE_DIR.glob("*.001"))
@@ -733,7 +738,7 @@ def work_archive_art(log) -> bool:
            str(zip_path), str(bg_dir / "*"),
            "-xr!*\\*", "-xr!_OldGameArt", "-xr!_OldGameArt\\*"]
     log(f"  Archiving game art as: {arc_name}.7z")
-    subprocess.run(cmd, cwd=str(BASE_DIR))
+    subprocess.run(cmd, cwd=str(BASE_DIR), creationflags=subprocess.CREATE_NO_WINDOW)
 
     if zip_path.exists():
         shutil.move(str(zip_path), str(old_art / zip_path.name))

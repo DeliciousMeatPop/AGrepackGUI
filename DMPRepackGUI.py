@@ -800,7 +800,7 @@ def work_recompile_fix(log, pre_archive_hook=None) -> bool:
 class RepackApp:
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("DMPRepack GUI  –  ARMGDDN Games")
+        self.root.title("AG Repack GUI  –  by DMP")
         self.root.configure(bg=BG)
         self.root.minsize(860, 700)
         self._busy = False
@@ -864,10 +864,14 @@ class RepackApp:
         # ── Header bar
         hdr = tk.Frame(self.root, bg="#0a0f1e", pady=10)
         hdr.pack(fill="x")
-        tk.Label(hdr, text="DMPRepack GUI", bg="#0a0f1e", fg=ACCENT,
+        tk.Label(hdr, text="AG Repack GUI", bg="#0a0f1e", fg=ACCENT,
                  font=("Segoe UI", 16, "bold")).pack(side="left", padx=16)
-        tk.Label(hdr, text="ARMGDDN Games  //  Repack Tool",
+        tk.Label(hdr, text="ARMGDDN Games  //  by DMP",
                  bg="#0a0f1e", fg=FG2, font=("Segoe UI", 10)).pack(side="left")
+        tk.Button(hdr, text="?", command=self._show_about,
+                  bg="#0a0f1e", fg=ACCENT, activebackground="#0a0f1e",
+                  activeforeground=FG2, bd=0, relief="flat", cursor="hand2",
+                  font=("Segoe UI", 14, "bold"), padx=10).pack(side="right", padx=16)
 
         # ── Notebook
         nb = ttk.Notebook(self.root)
@@ -890,6 +894,12 @@ class RepackApp:
     # ══════════════════════════════════════════════════════════════════════════
     #  Startup: detect existing settings.ini
     # ══════════════════════════════════════════════════════════════════════════
+
+    def _show_about(self):
+        messagebox.showinfo(
+            "About AG Repack GUI",
+            "AG Repack GUI\n\nMade with <3 for ARMGDDN Games by DMP",
+        )
 
     def _check_existing_settings(self):
         setup_ini = SETUP_DIR / "settings.ini"

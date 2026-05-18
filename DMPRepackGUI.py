@@ -15,6 +15,7 @@ import time
 import shutil
 import subprocess
 import threading
+import webbrowser
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
 from pathlib import Path
@@ -866,7 +867,7 @@ class RepackApp:
         hdr.pack(fill="x")
         tk.Label(hdr, text="AG Repack GUI", bg="#0a0f1e", fg=ACCENT,
                  font=("Segoe UI", 16, "bold")).pack(side="left", padx=16)
-        tk.Label(hdr, text="ARMGDDN Games  //  by DMP",
+        tk.Label(hdr, text="Made by DMP of ARMGDDN Games",
                  bg="#0a0f1e", fg=FG2, font=("Segoe UI", 10)).pack(side="left")
         tk.Button(hdr, text="?", command=self._show_about,
                   bg="#0a0f1e", fg=ACCENT, activebackground="#0a0f1e",
@@ -896,10 +897,61 @@ class RepackApp:
     # ══════════════════════════════════════════════════════════════════════════
 
     def _show_about(self):
-        messagebox.showinfo(
-            "About AG Repack GUI",
-            "AG Repack GUI\n\nMade with <3 for ARMGDDN Games by DMP",
-        )
+        win = tk.Toplevel(self.root)
+        win.title("About")
+        win.configure(bg="#0a0f1e")
+        win.resizable(False, False)
+        win.grab_set()
+
+        # ── centre on parent ──────────────────────────────────────────────────
+        win.update_idletasks()
+        pw = self.root.winfo_width();  ph = self.root.winfo_height()
+        px = self.root.winfo_rootx(); py = self.root.winfo_rooty()
+        w, h = 420, 380
+        win.geometry(f"{w}x{h}+{px + (pw - w)//2}+{py + (ph - h)//2}")
+
+        pad = dict(bg="#0a0f1e")
+
+        # ── heart / title ─────────────────────────────────────────────────────
+        tk.Label(win, text="AG Repack GUI", font=("Segoe UI", 17, "bold"),
+                 fg=ACCENT, **pad).pack(pady=(22, 0))
+        tk.Label(win, text="Made with ♥ by DMP of ARMGDDN Games,",
+                 font=("Segoe UI", 10), fg="#f472b6", **pad).pack()
+        tk.Label(win, text="for ARMGDDN Games.",
+                 font=("Segoe UI", 10), fg="#f472b6", **pad).pack(pady=(0, 18))
+
+        sep = tk.Frame(win, bg=BORDER, height=1)
+        sep.pack(fill="x", padx=24, pady=(0, 14))
+
+        # ── link helper ───────────────────────────────────────────────────────
+        def link(parent, label, url, color):
+            lbl = tk.Label(parent, text=label, font=("Segoe UI", 10, "underline"),
+                           fg=color, cursor="hand2", **pad)
+            lbl.bind("<Button-1>", lambda _e: webbrowser.open(url))
+            lbl.bind("<Enter>",    lambda _e: lbl.config(fg="white"))
+            lbl.bind("<Leave>",    lambda _e: lbl.config(fg=color))
+            return lbl
+
+        def row(icon, caption, label, url, icon_color, link_color):
+            f = tk.Frame(win, **pad)
+            f.pack(fill="x", padx=32, pady=3)
+            tk.Label(f, text=icon,    font=("Segoe UI", 11), fg=icon_color,  **pad).pack(side="left")
+            tk.Label(f, text=caption, font=("Segoe UI", 9),  fg=FG2,         **pad).pack(side="left", padx=(6, 4))
+            link(f, label, url, link_color).pack(side="left")
+
+        row("✈",  "ARMGDDN Telegram",   "t.me/ARMGDDNGames",              "https://t.me/ARMGDDNGames",                   "#38bdf8", "#38bdf8")
+        row("\U0001f4e6", "ARMGDDN Browser", "github.com/KaladinDMP/AGBrowser", "https://github.com/KaladinDMP/AGBrowser",     "#4ade80", "#4ade80")
+        row("\U0001f310", "AG Beta Site",    "ARMGDDNBrowser.com",              "https://ARMGDDNBrowser.com",                  "#f59e0b", "#f59e0b")
+        row("\U0001f431", "DMP's GitHub",    "github.com/KaladinDMP",           "https://github.com/KaladinDMP",               "#a78bfa", "#a78bfa")
+        row("✉",  "Contact DMP",        "t.me/SickSoThr33",               "https://t.me/SickSoThr33",                    "#38bdf8", "#38bdf8")
+
+        sep2 = tk.Frame(win, bg=BORDER, height=1)
+        sep2.pack(fill="x", padx=24, pady=(14, 10))
+
+        tk.Button(win, text="Close", command=win.destroy,
+                  bg=BTN, fg=FG, activebackground=ACCENT, activeforeground=FG,
+                  relief="flat", bd=0, padx=20, pady=5,
+                  font=("Segoe UI", 9)).pack(pady=(0, 18))
 
     def _check_existing_settings(self):
         setup_ini = SETUP_DIR / "settings.ini"

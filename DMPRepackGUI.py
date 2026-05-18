@@ -40,6 +40,7 @@ SETUP_FILES    = COMPRESSOR / "Setup_Files"
 ISCC           = BASE_DIR / "Resources" / "IS_Files" / "ISCC.exe"
 COMPIL32       = BASE_DIR / "Resources" / "IS_Files" / "Compil32Ex.exe"
 ARC_EXE        = COMPRESSOR / "Resources" / "Win64" / "Arc.exe"
+APP_ICON       = BASE_DIR / "setup.ico"
 
 INI_TEMPLATES = {
     "PC":          RESOURCE_DIR / "2.ini",
@@ -728,9 +729,15 @@ def work_archive_art(log) -> bool:
     log(f"  Archiving game art as: {arc_name}.7z")
     subprocess.run(cmd, cwd=str(BASE_DIR))
 
-    log_file = bg_dir / "repack_log.txt"
-    if log_file.exists():
-        log_file.unlink()
+    # Belt-and-suspenders cleanup of the log no matter where it landed
+    for stray in (bg_dir / "repack_log.txt",
+                  SETUP_DIR / "repack_log.txt",
+                  BASE_DIR  / "repack_log.txt"):
+        if stray.exists():
+            try:
+                stray.unlink()
+            except OSError:
+                pass
 
     if zip_path.exists():
         shutil.move(str(zip_path), str(old_art / zip_path.name))
@@ -802,6 +809,11 @@ class RepackApp:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("AG Repack GUI  –  by DMP")
+        if APP_ICON.exists():
+            try:
+                self.root.iconbitmap(default=str(APP_ICON))
+            except tk.TclError:
+                pass
         self.root.configure(bg=BG)
         self.root.minsize(860, 700)
         self._busy = False
@@ -901,6 +913,11 @@ class RepackApp:
         win.title("About")
         win.configure(bg="#0a0f1e")
         win.resizable(False, False)
+        if APP_ICON.exists():
+            try:
+                win.iconbitmap(str(APP_ICON))
+            except tk.TclError:
+                pass
         win.grab_set()
 
         # ── centre on parent ──────────────────────────────────────────────────
@@ -1503,6 +1520,8 @@ class RepackApp:
 
     def _step_archive_art(self):
         self.log("Archiving game art...")
+        self.log("  Saving repack log...")
+        self._dump_log_blocking()
         self._run(work_archive_art, self.log)
 
     # ── Full repack ───────────────────────────────────────────────────────────

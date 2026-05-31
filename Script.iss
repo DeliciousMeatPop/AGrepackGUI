@@ -6,7 +6,7 @@
 ;#define pf32
 #define OutputDir          /* create setup.exe inside >> */ "COMPRESSOR\Setup_Files"
 
-;#define InternalDLL        /* Putting Setup.dll next to the script will compress the DLL file into the Setup.exe file  */
+;#define InternalDLL
 ;#define DSG_PasswordDLL "123"  /* Same password used in DiskSpan_GUI to extract decompressors from Setup.dll files */
 
 ;#define DSG_CreateUninstallList

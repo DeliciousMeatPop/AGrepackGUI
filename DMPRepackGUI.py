@@ -972,50 +972,59 @@ class RepackApp:
 
     def _check_existing_settings(self):
         setup_ini = SETUP_DIR / "settings.ini"
-        if not setup_ini.exists():
+
+        # Setup\ folder takes priority — it drives the Recompile Fix workflow.
+        if setup_ini.exists():
+            load = messagebox.askyesno(
+                "settings.ini Found in Setup\\",
+                "Found settings.ini in the Setup\\ folder.\n\n"
+                "Copy it to the main folder and load its values into the form?",
+                icon="question",
+            )
+            if load:
+                shutil.copy2(str(setup_ini), str(SETTINGS_INI))
+                self._load_settings_ini()
+
+            do_fix = messagebox.askyesno(
+                "Run Recompile Fix?",
+                "Would you like to run the Recompile Fix workflow?\n\n"
+                "Use this when you already have compressed data and just need\n"
+                "to recompile / repackage (e.g. after a settings change).\n\n"
+                "Before clicking YES, make sure the Setup\\ folder contains:\n"
+                "  •  data.bin\n"
+                "  •  settings.ini\n"
+                "  •  AGRepackInstaller.dll\n"
+                "  •  All game art files",
+                icon="question",
+            )
+            if do_fix:
+                data_conv  = CONVERSION_DIR / "data.bin"
+                data_setup = SETUP_DIR / "data.bin"
+                if not data_conv.exists() and not data_setup.exists():
+                    proceed = messagebox.askokcancel(
+                        "data.bin Not Found",
+                        "data.bin is missing from the expected locations:\n\n"
+                        f"  {data_conv}\n"
+                        f"  — or —\n"
+                        f"  {data_setup}\n\n"
+                        "Fix that first, then click OK to continue.\n"
+                        "Click Cancel if you need more time.",
+                    )
+                    if not proceed:
+                        return
+                self._run_recompile_fix()
             return
 
-        # Offer to copy it to the main folder and load into the form
-        load = messagebox.askyesno(
-            "settings.ini Found in Setup\\",
-            "Found settings.ini in the Setup\\ folder.\n\n"
-            "Copy it to the main folder and load its values into the form?",
-            icon="question",
-        )
-        if load:
-            shutil.copy2(str(setup_ini), str(SETTINGS_INI))
-            self._load_settings_ini()
-
-        # Ask about the Recompile Fix workflow
-        do_fix = messagebox.askyesno(
-            "Run Recompile Fix?",
-            "Would you like to run the Recompile Fix workflow?\n\n"
-            "Use this when you already have compressed data and just need\n"
-            "to recompile / repackage (e.g. after a settings change).\n\n"
-            "Before clicking YES, make sure the Setup\\ folder contains:\n"
-            "  •  data.bin\n"
-            "  •  settings.ini\n"
-            "  •  AGRepackInstaller.dll\n"
-            "  •  All game art files",
-            icon="question",
-        )
-        if do_fix:
-            # Only warn about missing data.bin when they actually intend to run a fix
-            data_conv  = CONVERSION_DIR / "data.bin"
-            data_setup = SETUP_DIR / "data.bin"
-            if not data_conv.exists() and not data_setup.exists():
-                proceed = messagebox.askokcancel(
-                    "data.bin Not Found",
-                    "data.bin is missing from the expected locations:\n\n"
-                    f"  {data_conv}\n"
-                    f"  — or —\n"
-                    f"  {data_setup}\n\n"
-                    "Fix that first, then click OK to continue.\n"
-                    "Click Cancel if you need more time.",
-                )
-                if not proceed:
-                    return
-            self._run_recompile_fix()
+        # Fall back to root-dir settings.ini — just offer to populate the form.
+        if SETTINGS_INI.exists():
+            load = messagebox.askyesno(
+                "settings.ini Found",
+                "Found settings.ini in the repack folder.\n\n"
+                "Load its values into the form?",
+                icon="question",
+            )
+            if load:
+                self._load_settings_ini()
 
     def _load_settings_ini(self):
         """Parse settings.ini and populate every form field."""

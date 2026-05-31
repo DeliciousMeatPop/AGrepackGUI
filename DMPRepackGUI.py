@@ -192,20 +192,6 @@ def ini_uncomment_block(lines: list, header: str) -> list:
     return result
 
 
-# ── Visible subprocess helper ─────────────────────────────────────────────────
-
-_CREATE_NEW_CONSOLE = getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
-
-def _run_visible(cmd, cwd=None, shell=False) -> int:
-    """Run *cmd* in a new CMD window so the user can watch progress.
-    Blocks until the process exits and returns its exit code."""
-    proc = subprocess.Popen(
-        cmd, cwd=cwd, shell=shell,
-        creationflags=_CREATE_NEW_CONSOLE,
-    )
-    return proc.wait()
-
-
 # ═══════════════════════════════════════════════════════════════════════════
 #  Repacker identity
 # ═══════════════════════════════════════════════════════════════════════════
@@ -404,12 +390,17 @@ def work_compile_gui(log) -> bool:
 def work_compile_blocking(log) -> bool:
     """Use ISCC.exe (CLI) for a blocking compile in the full-run flow."""
     if ISCC.exists():
-        log("  Compiling with ISCC.exe (watch the CMD window for progress)...")
-        rc = _run_visible([str(ISCC), str(SCRIPT_ISS)], cwd=str(BASE_DIR))
-        if rc == 0:
+        log("  Compiling with ISCC.exe (blocking)...")
+        r = subprocess.run([str(ISCC), str(SCRIPT_ISS)], cwd=str(BASE_DIR),
+                           capture_output=True, text=True)
+        for line in r.stdout.splitlines():
+            log("    " + line)
+        for line in r.stderr.splitlines():
+            log("    " + line)
+        if r.returncode == 0:
             log("  Compilation successful.")
             return True
-        log(f"[ERROR] ISCC exited with code {rc}")
+        log(f"[ERROR] ISCC exited with code {r.returncode}")
         return False
     # Fallback: launch GUI compiler and ask user to confirm
     log("  ISCC.exe not found — falling back to GUI compiler.")
@@ -438,15 +429,15 @@ def work_compress(preset: str, game_dir: str, log) -> bool:
     tmp_bat   = bat.parent / f"_tmp_{bat.name}"
     tmp_bat.write_bytes(no_pause.encode("utf-8"))
     try:
-        rc = _run_visible(str(tmp_bat), cwd=str(BASE_DIR), shell=True)
+        r = subprocess.run(str(tmp_bat), cwd=str(BASE_DIR), shell=True)
     finally:
         try:
             tmp_bat.unlink()
         except OSError:
             pass
 
-    if rc != 0:
-        log(f"[WARN] Compression bat returned code {rc}")
+    if r.returncode != 0:
+        log(f"[WARN] Compression bat returned code {r.returncode}")
     else:
         log("  Compression complete.")
     return True
@@ -495,8 +486,8 @@ def work_create_dll(preset: str, log) -> bool:
     cmd = [str(ARC_EXE), "a", "-ep1", "-r", "-ed", "-s",
            f"-w{tmp}", "-mx", "AGRepackInstaller.dll",
            str(src_dir / "*")]
-    log("  Building AGRepackInstaller.dll with Arc (watch the CMD window)...")
-    _run_visible(cmd, cwd=str(BASE_DIR))
+    log("  Building AGRepackInstaller.dll with Arc...")
+    subprocess.run(cmd, cwd=str(BASE_DIR))
 
     created = BASE_DIR / "AGRepackInstaller.dll"
     dest    = CONVERSION_DIR / "AGRepackInstaller.dll"
@@ -646,7 +637,7 @@ def work_zip_and_name(log) -> bool:
            + [zip_name, str(CONVERSION_DIR / "*")])
 
     log(f"  Creating archive: {zip_name}")
-    _run_visible(cmd, cwd=str(BASE_DIR))
+    subprocess.run(cmd, cwd=str(BASE_DIR))
 
     # Move single or multi-part archive into output folder
     parts = sorted(BASE_DIR.glob("*.001"))

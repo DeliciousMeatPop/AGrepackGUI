@@ -42,7 +42,7 @@ echo.
 
 python -m PyInstaller ^
     --onefile ^
-    --windowed ^
+    --console ^
     --icon="%ICON%" ^
     --name="%EXENAME%" ^
     --distpath="." ^

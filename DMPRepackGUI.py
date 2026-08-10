@@ -1142,11 +1142,11 @@ def work_download_steam_art(appid: str, game_dir: str, exe_hint: str,
                             log, apply_meta=None) -> bool:
     """Download art + set up icon for a repack.
 
-    icon.ico  → parent of the game directory AND the Setup\\ folder
+    icon.ico  → the game folder AND the Setup\\ folder
                 (existing game icon if present, otherwise extracted from the
                  game .exe — no PNG conversion)
     hero+logo → Setup\\ folder  (2x variant when it exists, standard otherwise)
-    screenshots → parent of the game directory, numbered 1.jpg, 2.jpg, ...
+    screenshots → the game folder, numbered 1.jpg, 2.jpg, ...
 
     apply_meta(name, buildid): optional callback used to auto-fill empty
     Game Name / Build fields on the GUI thread.
@@ -1161,8 +1161,6 @@ def work_download_steam_art(appid: str, game_dir: str, exe_hint: str,
         log(f"[ERROR] Game directory not found: {game_dir}")
         return False
 
-    parent = game_path.parent
-    parent.mkdir(parents=True, exist_ok=True)
     SETUP_DIR.mkdir(parents=True, exist_ok=True)
 
     log(f"  Fetching Steam art for App ID {appid} ...")
@@ -1180,7 +1178,7 @@ def work_download_steam_art(appid: str, game_dir: str, exe_hint: str,
     # ── icon.ico  (existing icon, else extracted from the exe) ───────────────
     ico_bytes = resolve_game_icon(game_path, exe_hint, log)
     if ico_bytes:
-        for dest in (parent / "icon.ico", SETUP_DIR / "icon.ico"):
+        for dest in (game_path / "icon.ico", SETUP_DIR / "icon.ico"):
             try:
                 dest.write_bytes(ico_bytes)
                 log(f"  icon.ico saved to {dest}")
@@ -1213,14 +1211,14 @@ def work_download_steam_art(appid: str, game_dir: str, exe_hint: str,
     shots = [s.get("path_full") for s in (details.get("screenshots") or [])
              if s.get("path_full")]
     if shots:
-        log(f"  Found {len(shots)} screenshots — downloading to {parent} ...")
+        log(f"  Found {len(shots)} screenshots — downloading to {game_path} ...")
         saved = 0
         for idx, img_url in enumerate(shots, start=1):
             data = _http_get(img_url)
             if not data:
                 log(f"    [WARN] Failed to download screenshot {idx}.")
                 continue
-            (parent / f"{idx}.jpg").write_bytes(data)
+            (game_path / f"{idx}.jpg").write_bytes(data)
             saved += 1
         log(f"  Saved {saved}/{len(shots)} screenshots.")
         got_any = got_any or saved > 0
@@ -1628,8 +1626,9 @@ class RepackApp:
         row("Game Size",        self.size_var, width=18)
 
         # ── Steam art download (shown only once a Game Directory + App ID
-        #    are set — icon.ico, library hero, logo, screenshots, and
-        #    auto-fills empty Game Name / Build fields) ──
+        #    are set — writes icon.ico + screenshots to the game folder,
+        #    hero/logo + icon.ico to Setup\, and auto-fills empty
+        #    Game Name / Build fields) ──
         self._art_frame = tk.Frame(p, bg=BG)
         self._art_frame.pack(fill="x", padx=16, pady=(6, 2))
         self._art_btn = tk.Button(

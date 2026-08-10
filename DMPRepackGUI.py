@@ -225,6 +225,22 @@ def dir_size_str(folder: Path) -> str:
     return ""
 
 
+def _has_console() -> bool:
+    """True if this process owns a console window.
+
+    A --console PyInstaller build (and a plain `python` run) always has one; a
+    --windowed build does not, and there its child processes need their own
+    console plus valid std handles to launch reliably.
+    """
+    if os.name != "nt":
+        return True
+    try:
+        import ctypes
+        return ctypes.windll.kernel32.GetConsoleWindow() != 0
+    except Exception:
+        return sys.stdout is not None
+
+
 def write_temp(filename: str, value: str):
     import tempfile
     p = Path(tempfile.gettempdir()) / filename
@@ -415,21 +431,63 @@ def work_compress(preset: str, game_dir: str, log) -> bool:
     if not bat or not bat.exists():
         log(f"[ERROR] Compression bat not found for preset {preset}: {bat}")
         return False
+
+    # The batch reads dir.tmp / directory.tmp from %TEMP% and writes all of its
+    # output underneath BASE_DIR (COMPRESSOR\...).  If the install folder is not
+    # writable — e.g. installed under Program Files and launched without admin —
+    # every write below fails and the compression silently produces nothing.
+    # Catch that here with a clear message instead of a mystery "no data.bin".
+    try:
+        CONVERSION_DIR.mkdir(parents=True, exist_ok=True)
+        (COMPRESSOR / "Conversion_Output").mkdir(parents=True, exist_ok=True)
+        probe = COMPRESSOR / "Conversion_Output" / ".write_test"
+        probe.write_bytes(b"")
+        probe.unlink()
+    except OSError as e:
+        log(f"[ERROR] Cannot write to the working folder: {e}")
+        log(f"        Location: {COMPRESSOR}")
+        log("        Run the app as administrator, or install it somewhere writable")
+        log("        (not inside Program Files).")
+        return False
+
     write_temp("dir.tmp",       game_dir)
     write_temp("directory.tmp", str(BASE_DIR))
     write_temp("preset.tmp",    preset)
     log(f"  Running compression preset {preset} — this will take a while...")
     log("  (watch the CMD window for Arc progress)")
-    CONVERSION_DIR.mkdir(parents=True, exist_ok=True)
-    (COMPRESSOR / "Conversion_Output").mkdir(parents=True, exist_ok=True)
+
+    # Clear any stale Data.bin so the success check below can't be fooled by a
+    # leftover from a previous run.
+    data_bin = CONVERSION_DIR / "Data.bin"
+    try:
+        if data_bin.exists():
+            data_bin.unlink()
+    except OSError:
+        pass
 
     # Write a temp bat with PAUSE removed so the window closes automatically.
     bat_lines = bat.read_bytes().decode("utf-8", errors="replace").splitlines(keepends=True)
     no_pause  = "".join(ln for ln in bat_lines if ln.strip().upper() != "PAUSE")
     tmp_bat   = bat.parent / f"_tmp_{bat.name}"
-    tmp_bat.write_bytes(no_pause.encode("utf-8"))
     try:
-        r = subprocess.run(str(tmp_bat), cwd=str(BASE_DIR), shell=True)
+        tmp_bat.write_bytes(no_pause.encode("utf-8"))
+    except OSError as e:
+        log(f"[ERROR] Cannot write compression helper script: {e}")
+        log(f"        Location: {tmp_bat.parent}")
+        log("        Run the app as administrator, or install it somewhere writable.")
+        return False
+
+    # In a --windowed (no-console) PyInstaller build the process has no console
+    # and its std handles are invalid, which can make the child cmd abort the
+    # moment it launches.  Give the child its own console and a valid stdin so
+    # it runs the same way it does under the --console build.
+    run_kwargs = {"cwd": str(BASE_DIR), "shell": True}
+    if os.name == "nt" and not _has_console():
+        run_kwargs["creationflags"] = getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
+        run_kwargs["stdin"] = subprocess.DEVNULL
+
+    try:
+        r = subprocess.run(str(tmp_bat), **run_kwargs)
     finally:
         try:
             tmp_bat.unlink()
@@ -437,9 +495,21 @@ def work_compress(preset: str, game_dir: str, log) -> bool:
             pass
 
     if r.returncode != 0:
-        log(f"[WARN] Compression bat returned code {r.returncode}")
-    else:
-        log("  Compression complete.")
+        log(f"[ERROR] Compression failed (exit code {r.returncode}).")
+        return False
+
+    # Verify the batch actually produced Data.bin.  A non-zero-length file is
+    # the only reliable signal that Arc ran to completion — the exit code alone
+    # is not trustworthy when the paths handed to the batch were empty/unreadable.
+    if not data_bin.exists() or data_bin.stat().st_size == 0:
+        log(f"[ERROR] Compression finished but Data.bin was not produced: {data_bin}")
+        log("        Common causes:")
+        log("          • The game directory was empty, wrong, or unreadable.")
+        log("          • The install folder is not writable (see Program Files / admin note above).")
+        log("          • The game path contains non-English characters.")
+        return False
+
+    log("  Compression complete.")
     return True
 
 
@@ -1407,8 +1477,27 @@ class RepackApp:
         done.wait()
 
     def _run(self, fn, *args):
-        """Run fn(*args) in a daemon thread."""
-        threading.Thread(target=fn, args=args, daemon=True).start()
+        """Run fn(*args) in a daemon thread.
+
+        Any exception is reported in the GUI log (and a dialog) instead of being
+        printed to a console that a --windowed build does not have — otherwise a
+        crashed worker just vanishes with no trace.
+        """
+        def _guarded():
+            try:
+                fn(*args)
+            except Exception:
+                import traceback
+                tb = traceback.format_exc()
+                self.log("[ERROR] Unexpected error — the step did not finish:")
+                for line in tb.rstrip().splitlines():
+                    self.log("    " + line)
+                self.root.after(0, lambda: messagebox.showerror(
+                    "Unexpected Error",
+                    "Something went wrong during this step:\n\n"
+                    + tb.strip().splitlines()[-1]
+                    + "\n\nSee the log for details."))
+        threading.Thread(target=_guarded, daemon=True).start()
 
     def _ask_continue(self, step: str, detail: str) -> bool:
         """

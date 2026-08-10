@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 *.pyo
 /_current source */
+
+# Leftover temp compression scripts from interrupted runs
+Resource/_tmp_*.bat

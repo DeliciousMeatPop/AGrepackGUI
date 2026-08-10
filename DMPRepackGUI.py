@@ -932,50 +932,224 @@ def _steam_pick_asset(appid: str, candidates) -> Tuple[Optional[str], Optional[b
     return None, None
 
 
-def _png_to_ico(png_bytes: bytes) -> bytes:
-    """Wrap a PNG into a Vista-style .ico container (PNG-compressed image).
+# ── Icon: existing .ico, or extracted from the game exe ──────────────────────
 
-    No image library required — the ICO format allows a raw PNG as the image
-    payload, so we just prepend the 6-byte ICONDIR + 16-byte ICONDIRENTRY.
-    Dimensions of 256 or more are stored as 0 per the spec (0 == 256+)."""
-    width = int.from_bytes(png_bytes[16:20], "big")
-    height = int.from_bytes(png_bytes[20:24], "big")
-    b_w = 0 if width >= 256 else width
-    b_h = 0 if height >= 256 else height
-    icondir = struct.pack("<HHH", 0, 1, 1)               # reserved, type=icon, count=1
-    entry = struct.pack("<BBBBHHII",
-                        b_w, b_h, 0, 0,                  # w, h, colours, reserved
-                        1, 32,                           # planes, bpp
-                        len(png_bytes), 22)              # size, offset (6+16)
-    return icondir + entry + png_bytes
+_RT_ICON, _RT_GROUP_ICON = 3, 14
+# Executables that are never the game itself — skip them when auto-picking one.
+_EXE_JUNK = re.compile(
+    r"(unins|vc_?redist|vcredist|dxsetup|directx|dotnet|oalinst|_setup|"
+    r"crashhandler|crashpad|handler|dxwebsetup|redist|installer)",
+    re.IGNORECASE)
 
 
-def steam_get_screenshots(appid: str, log) -> list:
-    """Return the list of full-size screenshot URLs from the Steam store API."""
+def extract_ico_from_exe(exe_path) -> Optional[bytes]:
+    """Rebuild the primary .ico from a Windows PE executable's icon resources.
+
+    Reads the RT_GROUP_ICON / RT_ICON resource tree and stitches the images
+    back into a real multi-resolution .ico.  Pure standard library — no ffmpeg,
+    no image tools (ffmpeg cannot read PE icon resources at all).
+    Returns the .ico bytes, or None if the exe has no icon / isn't a PE file."""
+    try:
+        data = Path(exe_path).read_bytes()
+    except OSError:
+        return None
+    if data[:2] != b"MZ":
+        return None
+    try:
+        e_lfanew = struct.unpack_from("<I", data, 0x3C)[0]
+        if data[e_lfanew:e_lfanew + 4] != b"PE\0\0":
+            return None
+        coff = e_lfanew + 4
+        num_sections, = struct.unpack_from("<H", data, coff + 2)
+        opt_size, = struct.unpack_from("<H", data, coff + 16)
+        opt = coff + 20
+        magic, = struct.unpack_from("<H", data, opt)
+        dd = opt + (0x60 if magic == 0x10B else 0x70)      # PE32 vs PE32+
+        rsrc_rva, _ = struct.unpack_from("<II", data, dd + 2 * 8)  # dir entry [2]
+        if not rsrc_rva:
+            return None
+
+        sec = opt + opt_size
+        sections = []
+        for i in range(num_sections):
+            vsize, vaddr, rawsize, rawptr = struct.unpack_from(
+                "<IIII", data, sec + i * 40 + 8)
+            sections.append((vaddr, vsize, rawptr, rawsize))
+
+        def rva_to_off(rva):
+            for vaddr, vsize, rawptr, rawsize in sections:
+                if vaddr <= rva < vaddr + max(vsize, rawsize):
+                    return rawptr + (rva - vaddr)
+            return None
+
+        res_base = rva_to_off(rsrc_rva)
+        if res_base is None:
+            return None
+
+        def parse_dir(off):
+            n_named, n_id = struct.unpack_from("<HH", data, off + 12)
+            out = []
+            for i in range(n_named + n_id):
+                name, child = struct.unpack_from("<II", data, off + 16 + i * 8)
+                out.append((name, bool(child & 0x80000000),
+                            res_base + (child & 0x7FFFFFFF)))
+            return out
+
+        def find_type(type_id):
+            for name, is_dir, child in parse_dir(res_base):
+                if not (name & 0x80000000) and name == type_id and is_dir:
+                    return child
+            return None
+
+        def first_leaf(dir_off):
+            for name, is_dir, child in parse_dir(dir_off):
+                if is_dir:
+                    for _n, d2, c2 in parse_dir(child):
+                        if not d2:
+                            return struct.unpack_from("<II", data, c2)
+                else:
+                    return struct.unpack_from("<II", data, child)
+            return None
+
+        grp_dir = find_type(_RT_GROUP_ICON)
+        icon_dir = find_type(_RT_ICON)
+        if grp_dir is None or icon_dir is None:
+            return None
+
+        grp = first_leaf(grp_dir)
+        if not grp:
+            return None
+        grp_off = rva_to_off(grp[0])
+        grp_data = data[grp_off:grp_off + grp[1]]
+
+        icon_map = {}
+        for name, is_dir, child in parse_dir(icon_dir):
+            rid = name & 0x7FFFFFFF
+            leaf = None
+            if is_dir:
+                for _n, d2, c2 in parse_dir(child):
+                    if not d2:
+                        leaf = struct.unpack_from("<II", data, c2)
+                        break
+            icon_map[rid] = leaf
+
+        _, _, count = struct.unpack_from("<HHH", grp_data, 0)
+        head = struct.pack("<HHH", 0, 1, count)
+        entries, images = b"", []
+        offset = 6 + count * 16
+        for i in range(count):
+            b = 6 + i * 14
+            w, h, colors, res, planes, bpp, _nb = struct.unpack_from(
+                "<BBBBHHI", grp_data, b)
+            rid, = struct.unpack_from("<H", grp_data, b + 12)
+            leaf = icon_map.get(rid)
+            if not leaf:
+                continue
+            img_off = rva_to_off(leaf[0])
+            img = data[img_off:img_off + leaf[1]]
+            entries += struct.pack("<BBBBHHII", w, h, colors, res,
+                                   planes, bpp, len(img), offset)
+            offset += len(img)
+            images.append(img)
+        if not images:
+            return None
+        return head + entries + b"".join(images)
+    except (struct.error, IndexError):
+        return None
+
+
+def _pick_game_exe(game_dir: Path, exe_hint: str = "") -> Optional[Path]:
+    """Resolve the game's main executable: the hint from the form if it points
+    at a real file, otherwise the largest non-installer .exe in the game dir."""
+    if exe_hint:
+        cand = Path(exe_hint)
+        if not cand.is_absolute():
+            cand = game_dir / exe_hint
+        if cand.is_file() and cand.suffix.lower() == ".exe":
+            return cand
+    exes = [p for p in game_dir.rglob("*.exe")
+            if p.is_file() and not _EXE_JUNK.search(p.name)]
+    if not exes:
+        return None
+    return max(exes, key=lambda p: p.stat().st_size)
+
+
+def resolve_game_icon(game_dir: Path, exe_hint: str, log) -> Optional[bytes]:
+    """Return .ico bytes for the game: an existing .ico if one ships with the
+    game (an icon is already an icon — no conversion), otherwise the icon
+    extracted from the game's main executable."""
+    # 1 — an existing .ico shipped with the game
+    icos = sorted(game_dir.rglob("*.ico"),
+                  key=lambda p: (p.name.lower() != "icon.ico", -p.stat().st_size))
+    if icos:
+        log(f"  Using existing icon: {icos[0].name}")
+        try:
+            return icos[0].read_bytes()
+        except OSError:
+            pass
+    # 2 — fall back to the game executable's embedded icon
+    exe = _pick_game_exe(game_dir, exe_hint)
+    if exe:
+        ico = extract_ico_from_exe(exe)
+        if ico:
+            log(f"  Extracted icon from executable: {exe.name}")
+            return ico
+        log(f"  [WARN] {exe.name} has no embedded icon to extract.")
+    else:
+        log("  [WARN] No suitable game .exe found for icon extraction.")
+    return None
+
+
+def _read_steam_buildid(game_dir: Path, appid: str) -> Optional[str]:
+    """If the game lives inside a Steam library, read its build id from
+    steamapps/appmanifest_<appid>.acf.  Returns the build id string or None."""
+    for parent in [game_dir] + list(game_dir.parents):
+        if parent.name.lower() == "steamapps":
+            acf = parent / f"appmanifest_{appid}.acf"
+            if acf.is_file():
+                try:
+                    text = acf.read_text(encoding="utf-8", errors="replace")
+                except OSError:
+                    return None
+                m = re.search(r'"buildid"\s*"(\d+)"', text)
+                if m:
+                    return m.group(1)
+            break
+    return None
+
+
+def steam_get_appdetails(appid: str, log) -> dict:
+    """Return the Steam store 'data' object for an app (name, screenshots,
+    developers, ...), or {} if it can't be fetched."""
     url = f"https://store.steampowered.com/api/appdetails?appids={appid}"
     raw = _http_get(url)
     if not raw:
-        log("  [WARN] Could not reach the Steam store API for screenshots.")
-        return []
+        log("  [WARN] Could not reach the Steam store API.")
+        return {}
     try:
         data = json.loads(raw.decode("utf-8", "replace"))
     except Exception:
         log("  [WARN] Steam store API returned unreadable data.")
-        return []
+        return {}
     entry = data.get(str(appid)) if isinstance(data, dict) else None
     if not entry or not entry.get("success"):
         log(f"  [WARN] No store data found for App ID {appid}.")
-        return []
-    shots = entry.get("data", {}).get("screenshots", []) or []
-    return [s.get("path_full") for s in shots if s.get("path_full")]
+        return {}
+    return entry.get("data", {}) or {}
 
 
-def work_download_steam_art(appid: str, game_dir: str, log) -> bool:
-    """Download all Steam store art for a repack.
+def work_download_steam_art(appid: str, game_dir: str, exe_hint: str,
+                            log, apply_meta=None) -> bool:
+    """Download art + set up icon for a repack.
 
-    icon.ico  → parent of the game directory
+    icon.ico  → parent of the game directory AND the Setup\\ folder
+                (existing game icon if present, otherwise extracted from the
+                 game .exe — no PNG conversion)
     hero+logo → Setup\\ folder  (2x variant when it exists, standard otherwise)
     screenshots → parent of the game directory, numbered 1.jpg, 2.jpg, ...
+
+    apply_meta(name, buildid): optional callback used to auto-fill empty
+    Game Name / Build fields on the GUI thread.
     """
     appid = str(appid).strip()
     if not appid.isdigit():
@@ -994,24 +1168,38 @@ def work_download_steam_art(appid: str, game_dir: str, log) -> bool:
     log(f"  Fetching Steam art for App ID {appid} ...")
     got_any = False
 
-    # ── Logo (also the source for icon.ico) ──────────────────────────────────
+    details = steam_get_appdetails(appid, log)
+
+    # ── Store metadata → auto-fill empty Name / Build fields ─────────────────
+    if apply_meta:
+        name = (details.get("name") or "").strip()
+        buildid = _read_steam_buildid(game_path, appid)
+        if name or buildid:
+            apply_meta(name, buildid)
+
+    # ── icon.ico  (existing icon, else extracted from the exe) ───────────────
+    ico_bytes = resolve_game_icon(game_path, exe_hint, log)
+    if ico_bytes:
+        for dest in (parent / "icon.ico", SETUP_DIR / "icon.ico"):
+            try:
+                dest.write_bytes(ico_bytes)
+                log(f"  icon.ico saved to {dest}")
+            except OSError as exc:
+                log(f"  [WARN] Could not write {dest}: {exc}")
+        got_any = True
+    else:
+        log("  [WARN] No icon could be found or extracted for this game.")
+
+    # ── Logo (2x if available, else standard) ────────────────────────────────
     logo_name, logo_bytes = _steam_pick_asset(appid, ("logo_2x.png", "logo.png"))
     if logo_bytes:
         (SETUP_DIR / logo_name).write_bytes(logo_bytes)
         log(f"  Logo saved to Setup\\{logo_name}")
         got_any = True
-
-        # icon.ico built from the logo PNG, placed beside the game folder
-        try:
-            ico_path = parent / "icon.ico"
-            ico_path.write_bytes(_png_to_ico(logo_bytes))
-            log(f"  icon.ico saved to {ico_path}")
-        except Exception as exc:
-            log(f"  [WARN] Could not build icon.ico: {exc}")
     else:
         log("  [WARN] No logo art available on Steam for this App ID.")
 
-    # ── Library hero ─────────────────────────────────────────────────────────
+    # ── Library hero (2x if available, else standard) ────────────────────────
     hero_name, hero_bytes = _steam_pick_asset(
         appid, ("library_hero_2x.jpg", "library_hero.jpg"))
     if hero_bytes:
@@ -1022,7 +1210,8 @@ def work_download_steam_art(appid: str, game_dir: str, log) -> bool:
         log("  [WARN] No library hero art available on Steam for this App ID.")
 
     # ── Screenshots (numbered 1.jpg, 2.jpg, ...) ─────────────────────────────
-    shots = steam_get_screenshots(appid, log)
+    shots = [s.get("path_full") for s in (details.get("screenshots") or [])
+             if s.get("path_full")]
     if shots:
         log(f"  Found {len(shots)} screenshots — downloading to {parent} ...")
         saved = 0
@@ -1439,12 +1628,13 @@ class RepackApp:
         row("Game Size",        self.size_var, width=18)
 
         # ── Steam art download (shown only once a Game Directory + App ID
-        #    are set — pulls icon.ico, library hero, logo and screenshots) ──
+        #    are set — icon.ico, library hero, logo, screenshots, and
+        #    auto-fills empty Game Name / Build fields) ──
         self._art_frame = tk.Frame(p, bg=BG)
         self._art_frame.pack(fill="x", padx=16, pady=(6, 2))
         self._art_btn = tk.Button(
             self._art_frame,
-            text="⬇  Download Steam Art   (icon • hero • logo • screenshots)",
+            text="⬇  Fetch Art & Metadata   (icon • hero • logo • screenshots)",
             command=self._action_download_steam_art,
             bg=ACCENT, fg="#ffffff",
             activebackground="#4f46e5", activeforeground="#ffffff",
@@ -1783,8 +1973,21 @@ class RepackApp:
                 "Required",
                 "Set a Game Directory and a numeric Steam App ID first.")
             return
+        exe_hint = self.exe1_var.get().strip()
+
+        def apply_meta(name, buildid):
+            def _set():
+                if name and not self.name_var.get().strip():
+                    self.name_var.set(name)
+                    self.log(f"  Auto-filled Game Name: {name}")
+                if buildid and not self.build_var.get().strip():
+                    self.build_var.set(buildid)
+                    self.log(f"  Auto-filled Build / Version: {buildid}")
+            self.root.after(0, _set)
+
         self.log(f"Downloading Steam art for App ID {appid} ...")
-        self._run(work_download_steam_art, appid, gd, self.log)
+        self._run(work_download_steam_art, appid, gd, exe_hint,
+                  self.log, apply_meta)
 
     # ── Single-step wrappers ──────────────────────────────────────────────────
 

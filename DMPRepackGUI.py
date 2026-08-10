@@ -872,6 +872,180 @@ def work_recompile_fix(log, pre_archive_hook=None) -> bool:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
+#  Steam art downloader
+# ═══════════════════════════════════════════════════════════════════════════
+#
+#  Given a Game Directory + Steam App ID we can pull every bit of store art we
+#  need for a repack straight from Steam:
+#     •  icon.ico          →  parent folder of the game directory
+#     •  library hero + logo (2x if available, else standard)  →  Setup\ folder
+#     •  every store screenshot, numbered 1.jpg, 2.jpg, ...     →  parent folder
+#
+#  Only the standard library (urllib) is used so the PyInstaller --onefile build
+#  needs no extra dependencies.
+
+import json
+import struct
+import urllib.request
+from typing import Optional, Tuple
+
+# Steam serves the same assets from several mirrors — try them in order so a
+# single flaky host doesn't sink the whole download.
+STEAM_CDN_HOSTS = (
+    "https://steamcdn-a.akamaihd.net/steam/apps/{appid}/{fname}",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{appid}/{fname}",
+    "https://cdn.cloudflare.steamstatic.com/steam/apps/{appid}/{fname}",
+)
+_STEAM_UA = {"User-Agent": "Mozilla/5.0"}
+
+
+def _http_get(url: str, timeout: int = 30) -> Optional[bytes]:
+    """GET a URL and return its body, or None on any failure / non-200."""
+    try:
+        req = urllib.request.Request(url, headers=_STEAM_UA)
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            if resp.status != 200:
+                return None
+            return resp.read()
+    except Exception:
+        return None
+
+
+def _steam_cdn_get(appid: str, fname: str) -> Optional[bytes]:
+    """Fetch a per-app CDN asset (library_hero.jpg, logo.png, ...) trying each
+    mirror in turn.  Returns the bytes or None if every host failed / 404'd."""
+    for host in STEAM_CDN_HOSTS:
+        data = _http_get(host.format(appid=appid, fname=fname))
+        if data:
+            return data
+    return None
+
+
+def _steam_pick_asset(appid: str, candidates) -> Tuple[Optional[str], Optional[bytes]]:
+    """Try each filename in `candidates` (highest quality first) and return the
+    first one that exists as (filename, bytes).  Returns (None, None) if none
+    are available."""
+    for fname in candidates:
+        data = _steam_cdn_get(appid, fname)
+        if data:
+            return fname, data
+    return None, None
+
+
+def _png_to_ico(png_bytes: bytes) -> bytes:
+    """Wrap a PNG into a Vista-style .ico container (PNG-compressed image).
+
+    No image library required — the ICO format allows a raw PNG as the image
+    payload, so we just prepend the 6-byte ICONDIR + 16-byte ICONDIRENTRY.
+    Dimensions of 256 or more are stored as 0 per the spec (0 == 256+)."""
+    width = int.from_bytes(png_bytes[16:20], "big")
+    height = int.from_bytes(png_bytes[20:24], "big")
+    b_w = 0 if width >= 256 else width
+    b_h = 0 if height >= 256 else height
+    icondir = struct.pack("<HHH", 0, 1, 1)               # reserved, type=icon, count=1
+    entry = struct.pack("<BBBBHHII",
+                        b_w, b_h, 0, 0,                  # w, h, colours, reserved
+                        1, 32,                           # planes, bpp
+                        len(png_bytes), 22)              # size, offset (6+16)
+    return icondir + entry + png_bytes
+
+
+def steam_get_screenshots(appid: str, log) -> list:
+    """Return the list of full-size screenshot URLs from the Steam store API."""
+    url = f"https://store.steampowered.com/api/appdetails?appids={appid}"
+    raw = _http_get(url)
+    if not raw:
+        log("  [WARN] Could not reach the Steam store API for screenshots.")
+        return []
+    try:
+        data = json.loads(raw.decode("utf-8", "replace"))
+    except Exception:
+        log("  [WARN] Steam store API returned unreadable data.")
+        return []
+    entry = data.get(str(appid)) if isinstance(data, dict) else None
+    if not entry or not entry.get("success"):
+        log(f"  [WARN] No store data found for App ID {appid}.")
+        return []
+    shots = entry.get("data", {}).get("screenshots", []) or []
+    return [s.get("path_full") for s in shots if s.get("path_full")]
+
+
+def work_download_steam_art(appid: str, game_dir: str, log) -> bool:
+    """Download all Steam store art for a repack.
+
+    icon.ico  → parent of the game directory
+    hero+logo → Setup\\ folder  (2x variant when it exists, standard otherwise)
+    screenshots → parent of the game directory, numbered 1.jpg, 2.jpg, ...
+    """
+    appid = str(appid).strip()
+    if not appid.isdigit():
+        log("[ERROR] App ID must be numeric.")
+        return False
+
+    game_path = Path(game_dir)
+    if not game_path.exists():
+        log(f"[ERROR] Game directory not found: {game_dir}")
+        return False
+
+    parent = game_path.parent
+    parent.mkdir(parents=True, exist_ok=True)
+    SETUP_DIR.mkdir(parents=True, exist_ok=True)
+
+    log(f"  Fetching Steam art for App ID {appid} ...")
+    got_any = False
+
+    # ── Logo (also the source for icon.ico) ──────────────────────────────────
+    logo_name, logo_bytes = _steam_pick_asset(appid, ("logo_2x.png", "logo.png"))
+    if logo_bytes:
+        (SETUP_DIR / logo_name).write_bytes(logo_bytes)
+        log(f"  Logo saved to Setup\\{logo_name}")
+        got_any = True
+
+        # icon.ico built from the logo PNG, placed beside the game folder
+        try:
+            ico_path = parent / "icon.ico"
+            ico_path.write_bytes(_png_to_ico(logo_bytes))
+            log(f"  icon.ico saved to {ico_path}")
+        except Exception as exc:
+            log(f"  [WARN] Could not build icon.ico: {exc}")
+    else:
+        log("  [WARN] No logo art available on Steam for this App ID.")
+
+    # ── Library hero ─────────────────────────────────────────────────────────
+    hero_name, hero_bytes = _steam_pick_asset(
+        appid, ("library_hero_2x.jpg", "library_hero.jpg"))
+    if hero_bytes:
+        (SETUP_DIR / hero_name).write_bytes(hero_bytes)
+        log(f"  Library hero saved to Setup\\{hero_name}")
+        got_any = True
+    else:
+        log("  [WARN] No library hero art available on Steam for this App ID.")
+
+    # ── Screenshots (numbered 1.jpg, 2.jpg, ...) ─────────────────────────────
+    shots = steam_get_screenshots(appid, log)
+    if shots:
+        log(f"  Found {len(shots)} screenshots — downloading to {parent} ...")
+        saved = 0
+        for idx, img_url in enumerate(shots, start=1):
+            data = _http_get(img_url)
+            if not data:
+                log(f"    [WARN] Failed to download screenshot {idx}.")
+                continue
+            (parent / f"{idx}.jpg").write_bytes(data)
+            saved += 1
+        log(f"  Saved {saved}/{len(shots)} screenshots.")
+        got_any = got_any or saved > 0
+    else:
+        log("  [WARN] No store screenshots found for this App ID.")
+
+    if got_any:
+        log("  Steam art download complete.")
+    else:
+        log("[ERROR] Nothing could be downloaded — check the App ID and connection.")
+    return got_any
+
+
+# ═══════════════════════════════════════════════════════════════════════════
 #  GUI
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -1264,6 +1438,28 @@ class RepackApp:
         row("Build / Version",  self.build_var)
         row("Game Size",        self.size_var, width=18)
 
+        # ── Steam art download (shown only once a Game Directory + App ID
+        #    are set — pulls icon.ico, library hero, logo and screenshots) ──
+        self._art_frame = tk.Frame(p, bg=BG)
+        self._art_frame.pack(fill="x", padx=16, pady=(6, 2))
+        self._art_btn = tk.Button(
+            self._art_frame,
+            text="⬇  Download Steam Art   (icon • hero • logo • screenshots)",
+            command=self._action_download_steam_art,
+            bg=ACCENT, fg="#ffffff",
+            activebackground="#4f46e5", activeforeground="#ffffff",
+            font=("Segoe UI", 10, "bold"), relief="flat", cursor="hand2",
+            padx=10, pady=8)
+        self._art_hint = tk.Label(
+            self._art_frame,
+            text="Choose a Game Directory and enter a Steam App ID to enable "
+                 "Steam art download.",
+            bg=BG, fg=FG2, font=("Segoe UI", 8))
+        # Re-evaluate visibility whenever the directory or App ID changes.
+        self.game_dir_var.trace_add("write", self._update_art_button)
+        self.appid_var.trace_add("write", self._update_art_button)
+        self._update_art_button()
+
         # ── Game type ────────────────────────────────────────────────
         section("GAME TYPE")
         gt_frame = tk.Frame(p, bg=BG)
@@ -1561,6 +1757,34 @@ class RepackApp:
                                        f"'{labels.get(k, k)}' is required.")
                 return False
         return True
+
+    # ── Steam art download ────────────────────────────────────────────────────
+
+    def _update_art_button(self, *_):
+        """Show the Steam-art button only when a Game Directory is chosen and a
+        numeric App ID has been entered; otherwise show a short hint."""
+        # Guard: trace fires during startup before the widgets exist.
+        if not hasattr(self, "_art_btn"):
+            return
+        have_dir   = bool(self.game_dir_var.get().strip())
+        have_appid = self.appid_var.get().strip().isdigit()
+        if have_dir and have_appid:
+            self._art_hint.pack_forget()
+            self._art_btn.pack(fill="x")
+        else:
+            self._art_btn.pack_forget()
+            self._art_hint.pack(anchor="w")
+
+    def _action_download_steam_art(self):
+        gd    = self.game_dir_var.get().strip()
+        appid = self.appid_var.get().strip()
+        if not gd or not appid.isdigit():
+            messagebox.showwarning(
+                "Required",
+                "Set a Game Directory and a numeric Steam App ID first.")
+            return
+        self.log(f"Downloading Steam art for App ID {appid} ...")
+        self._run(work_download_steam_art, appid, gd, self.log)
 
     # ── Single-step wrappers ──────────────────────────────────────────────────
 

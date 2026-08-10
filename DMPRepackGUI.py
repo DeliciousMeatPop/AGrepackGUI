@@ -1146,7 +1146,7 @@ def work_download_steam_art(appid: str, game_dir: str, exe_hint: str,
                 (existing game icon if present, otherwise extracted from the
                  game .exe — no PNG conversion)
     hero+logo → Setup\\ folder  (2x variant when it exists, standard otherwise)
-    screenshots → the game folder, numbered 1.jpg, 2.jpg, ...
+    screenshots → Setup\\Background, numbered 1.jpg, 2.jpg, ...
 
     apply_meta(name, buildid): optional callback used to auto-fill empty
     Game Name / Build fields on the GUI thread.
@@ -1211,14 +1211,16 @@ def work_download_steam_art(appid: str, game_dir: str, exe_hint: str,
     shots = [s.get("path_full") for s in (details.get("screenshots") or [])
              if s.get("path_full")]
     if shots:
-        log(f"  Found {len(shots)} screenshots — downloading to {game_path} ...")
+        shots_dir = SETUP_DIR / "Background"
+        shots_dir.mkdir(parents=True, exist_ok=True)
+        log(f"  Found {len(shots)} screenshots — downloading to {shots_dir} ...")
         saved = 0
         for idx, img_url in enumerate(shots, start=1):
             data = _http_get(img_url)
             if not data:
                 log(f"    [WARN] Failed to download screenshot {idx}.")
                 continue
-            (game_path / f"{idx}.jpg").write_bytes(data)
+            (shots_dir / f"{idx}.jpg").write_bytes(data)
             saved += 1
         log(f"  Saved {saved}/{len(shots)} screenshots.")
         got_any = got_any or saved > 0
@@ -1626,9 +1628,9 @@ class RepackApp:
         row("Game Size",        self.size_var, width=18)
 
         # ── Steam art download (shown only once a Game Directory + App ID
-        #    are set — writes icon.ico + screenshots to the game folder,
-        #    hero/logo + icon.ico to Setup\, and auto-fills empty
-        #    Game Name / Build fields) ──
+        #    are set — writes icon.ico to the game folder + Setup\,
+        #    hero/logo to Setup\, screenshots to Setup\Background, and
+        #    auto-fills empty Game Name / Build fields) ──
         self._art_frame = tk.Frame(p, bg=BG)
         self._art_frame.pack(fill="x", padx=16, pady=(6, 2))
         self._art_btn = tk.Button(

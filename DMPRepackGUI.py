@@ -1288,6 +1288,18 @@ class RepackApp:
         self.do_dlc_var     = B()
         self.preset_var     = S(value="12")
 
+        # ── VD.bat auto-fill state ───────────────────────────────────
+        #   The VD.bat launcher lives next to the SteamVR exe, so its path is
+        #   derived automatically (…\Win64\Game.exe → …\Win64\VD.bat) while the
+        #   user hasn't hand-edited it.  _vd_last_auto remembers the last value
+        #   we filled in; once the field diverges from it the user has taken
+        #   over and we stop syncing.  _loading_cfg suppresses the trace while a
+        #   settings.ini is being loaded.
+        self._vd_last_auto = ""
+        self._loading_cfg  = False
+        self.exe1_var.trace_add("write", self._autofill_vd_vr)
+        self.exe2_var.trace_add("write", self._autofill_vd_vropt)
+
     # ── ttk style ─────────────────────────────────────────────────────────────
 
     def _apply_styles(self):
@@ -1485,6 +1497,10 @@ class RepackApp:
             ini_get_in_section(lines, "Batch", "BatchFile", ""))
 
         # ── Executables ──────────────────────────────────────────────
+        # Suppress VD.bat auto-fill while we push loaded values into the vars,
+        # so an existing (possibly custom) VD.bat path is preserved as-is.
+        self._loading_cfg  = True
+        self._vd_last_auto = ""
         exes   = parse_exe_sections(lines)
         names  = [e.get("shortcutname", "").lower() for e in exes]
         has_flat = any("(flat)"    in n for n in names)
@@ -1523,6 +1539,7 @@ class RepackApp:
             exe = exes[0] if exes else {}
             self.exe1_var.set(exe.get("exe",       ""));  self.exe1p_var.set(exe.get("exeparam",     ""))
 
+        self._loading_cfg = False
         self.game_type_var.set(gt)
         self._refresh_exe_fields()   # redraw exe rows to match type
         self.log(f"settings.ini loaded  [{gt}]: {ini_get(lines, 'Name')}")
@@ -1706,19 +1723,22 @@ class RepackApp:
             tk.Label(self.exe_frame, text=title, bg=BG, fg=ACCENT,
                      font=("Segoe UI", 9, "bold")).pack(anchor="w", padx=18, pady=(0, 4))
 
-        def exe_row(label, path_var, args_var):
+        def exe_row(label, path_var, args_var, show_args=True):
             f = tk.Frame(self.exe_frame, bg=BG)
             f.pack(fill="x", padx=16, pady=3)
             tk.Label(f, text=label, bg=BG, fg=FG2, width=21, anchor="w",
                      font=("Segoe UI", 10)).pack(side="left")
-            tk.Entry(f, textvariable=path_var, bg=ENTRY, fg=FG, width=26,
+            # When args are hidden the path field takes the freed-up width.
+            tk.Entry(f, textvariable=path_var, bg=ENTRY, fg=FG,
+                     width=26 if show_args else 46,
                      insertbackground=FG, relief="flat",
                      font=("Segoe UI", 10)).pack(side="left", padx=(0, 6))
-            tk.Label(f, text="Args:", bg=BG, fg=FG2,
-                     font=("Segoe UI", 10)).pack(side="left")
-            tk.Entry(f, textvariable=args_var, bg=ENTRY, fg=FG, width=16,
-                     insertbackground=FG, relief="flat",
-                     font=("Segoe UI", 10)).pack(side="left", padx=(4, 0))
+            if show_args:
+                tk.Label(f, text="Args:", bg=BG, fg=FG2,
+                         font=("Segoe UI", 10)).pack(side="left")
+                tk.Entry(f, textvariable=args_var, bg=ENTRY, fg=FG, width=16,
+                         insertbackground=FG, relief="flat",
+                         font=("Segoe UI", 10)).pack(side="left", padx=(4, 0))
 
         def meta_toggle():
             section("META / OCULUS  (optional)")
@@ -1735,27 +1755,76 @@ class RepackApp:
             exe_row("EXE Path", self.exe1_var, self.exe1p_var)
 
         elif gt == "VR":
+            # VR launches through the VD.bat (which carries its own arguments
+            # internally), so none of these rows expose an Args field.
             section("STEAMVR EXECUTABLE")
-            exe_row("SteamVR EXE", self.exe1_var, self.exe1p_var)
+            exe_row("SteamVR EXE", self.exe1_var, self.exe1p_var, show_args=False)
             section("VIRTUAL DESKTOP LAUNCHER")
-            exe_row("VD.bat Path", self.exe2_var, self.exe2p_var)
+            exe_row("VD.bat Path", self.exe2_var, self.exe2p_var, show_args=False)
+            tk.Label(self.exe_frame,
+                     text="VD.bat is auto-filled next to the SteamVR exe — "
+                          "edit it only if the launcher lives elsewhere.",
+                     bg=BG, fg=FG2, font=("Segoe UI", 8),
+                     wraplength=560, justify="left").pack(anchor="w", padx=18, pady=(0, 2))
             meta_toggle()
             if self.meta_var.get():
-                exe_row("Meta EXE", self.exe3_var, self.exe3p_var)
+                exe_row("Meta EXE", self.exe3_var, self.exe3p_var, show_args=False)
 
         elif gt == "VR Optional":
             section("FLAT (2D) EXECUTABLE")
-            exe_row("Flat EXE Path", self.exe1_var, self.exe1p_var)
+            exe_row("Flat EXE Path", self.exe1_var, self.exe1p_var, show_args=False)
             section("STEAMVR EXECUTABLE")
-            exe_row("SteamVR EXE",   self.exe2_var, self.exe2p_var)
+            exe_row("SteamVR EXE",   self.exe2_var, self.exe2p_var, show_args=False)
             section("VIRTUAL DESKTOP LAUNCHER")
-            exe_row("VD.bat Path",   self.exe3_var, self.exe3p_var)
+            exe_row("VD.bat Path",   self.exe3_var, self.exe3p_var, show_args=False)
+            tk.Label(self.exe_frame,
+                     text="VD.bat is auto-filled next to the SteamVR exe — "
+                          "edit it only if the launcher lives elsewhere.",
+                     bg=BG, fg=FG2, font=("Segoe UI", 8),
+                     wraplength=560, justify="left").pack(anchor="w", padx=18, pady=(0, 2))
             meta_toggle()
             if self.meta_var.get():
-                exe_row("Meta EXE",  self.exe4_var, self.exe4p_var)
+                exe_row("Meta EXE",  self.exe4_var, self.exe4p_var, show_args=False)
 
     def _refresh_exe_fields(self):
         self._build_exe_fields()
+
+    # ── VD.bat auto-fill ──────────────────────────────────────────────────────
+
+    @staticmethod
+    def _derive_vd_bat(exe_path: str) -> str:
+        """Turn a SteamVR exe path into the sibling VD.bat path.
+
+        e.g.  Beyond\\Binaries\\Win64\\Beyond-Win64-Shipping.exe
+              → Beyond\\Binaries\\Win64\\VD.bat
+        """
+        exe_path = (exe_path or "").strip().strip('"')
+        if not exe_path:
+            return ""
+        idx = max(exe_path.rfind("\\"), exe_path.rfind("/"))
+        if idx == -1:
+            return "VD.bat"
+        return exe_path[:idx + 1] + "VD.bat"
+
+    def _apply_vd_autofill(self, steamvr_var, vd_var):
+        """Fill vd_var with the derived VD.bat path unless the user has edited it."""
+        if self._loading_cfg:
+            return
+        derived = self._derive_vd_bat(steamvr_var.get())
+        current = vd_var.get().strip()
+        # Only auto-fill while the field is empty or still holds our last guess;
+        # once the user types their own path we leave it alone.
+        if current in ("", self._vd_last_auto) and derived != current:
+            self._vd_last_auto = derived
+            vd_var.set(derived)
+
+    def _autofill_vd_vr(self, *_):
+        if self.game_type_var.get() == "VR":
+            self._apply_vd_autofill(self.exe1_var, self.exe2_var)
+
+    def _autofill_vd_vropt(self, *_):
+        if self.game_type_var.get() == "VR Optional":
+            self._apply_vd_autofill(self.exe2_var, self.exe3_var)
 
     # ══════════════════════════════════════════════════════════════════════════
     #  TAB 2 — Build & Pack
@@ -1782,13 +1851,58 @@ class RepackApp:
                            activeforeground=FG, selectcolor=ENTRY,
                            font=("Cascadia Code", 10)).pack(anchor="w", pady=1)
 
-        # ── Individual step buttons ──────────────────────────────────
-        steps_lbl = tk.Frame(frame, bg=BG)
-        steps_lbl.pack(fill="x", padx=12, pady=(8, 4))
+        # ── Full-run (the normal, one-click path) ────────────────────
+        sep = tk.Frame(frame, bg=BORDER, height=1)
+        sep.pack(fill="x", padx=12, pady=12)
+
+        run_outer = tk.Frame(frame, bg=BG)
+        run_outer.pack(pady=4)
+        _big_btn(run_outer, "  ▶   RUN FULL REPACK   ◀  ",
+                 self._action_full_repack, bg=ACCENT, fg="#ffffff",
+                 font=("Segoe UI", 13, "bold"), width=38, pady=12)
+        tk.Label(frame,
+                 text="Pre-Process  →  Save INI  →  Compile  →  Compress  "
+                      "→  Create DLL  →  Merge  →  Zip  →  Archive Art",
+                 bg=BG, fg=FG2, font=("Segoe UI", 8)).pack(pady=(2, 4))
+
+        # ── Manual steps (hidden until explicitly revealed) ──────────
+        # The individual step buttons and the Recompile Fix are only needed
+        # when the full repack above hits a problem — they stay hidden behind
+        # this toggle so the normal flow is just the one button.
+        sep2 = tk.Frame(frame, bg=BORDER, height=1)
+        sep2.pack(fill="x", padx=12, pady=(12, 4))
+
+        toggle_outer = tk.Frame(frame, bg=BG)
+        toggle_outer.pack(pady=4)
+        self._manual_shown  = False
+        self._manual_warned = False
+        self._manual_btn = tk.Button(
+            toggle_outer, text="⚙  Manual Steps  ▾",
+            command=self._toggle_manual_steps,
+            bg=BTN, fg=FG, activebackground=BTN, activeforeground=FG,
+            relief="flat", cursor="hand2", bd=0, padx=14, pady=6,
+            font=("Segoe UI", 10, "bold"))
+        self._manual_btn.pack()
+
+        # Container built now but not packed — _toggle_manual_steps packs it.
+        self._manual_frame = tk.Frame(frame, bg=BG)
+
+        warn = tk.Label(
+            self._manual_frame,
+            text="⚠  In most cases you will never need these. Only use them if "
+                 "the full repack above has an issue and you know what you're "
+                 "doing — running steps out of order can produce a broken repack.",
+            bg=BG, fg=WARN, font=("Segoe UI", 8, "bold"),
+            wraplength=680, justify="left")
+        warn.pack(anchor="w", padx=16, pady=(4, 6))
+
+        # Individual step buttons
+        steps_lbl = tk.Frame(self._manual_frame, bg=BG)
+        steps_lbl.pack(fill="x", padx=12, pady=(4, 4))
         tk.Label(steps_lbl, text="Individual Steps", bg=BG, fg=ACCENT,
                  font=("Segoe UI", 10, "bold")).pack(anchor="w", padx=4)
 
-        grid = tk.Frame(frame, bg=BG)
+        grid = tk.Frame(self._manual_frame, bg=BG)
         grid.pack(fill="x", padx=16, pady=4)
         grid.columnconfigure(0, weight=1)
         grid.columnconfigure(1, weight=1)
@@ -1809,32 +1923,44 @@ class RepackApp:
             cell.grid(row=r, column=c, padx=5, pady=4, sticky="ew")
             _big_btn(cell, label, cmd, bg=color, width=30, fill="x")
 
-        # ── Full-run ─────────────────────────────────────────────────
-        sep = tk.Frame(frame, bg=BORDER, height=1)
-        sep.pack(fill="x", padx=12, pady=12)
-
-        run_outer = tk.Frame(frame, bg=BG)
-        run_outer.pack(pady=4)
-        _big_btn(run_outer, "  ▶   RUN FULL REPACK   ◀  ",
-                 self._action_full_repack, bg=ACCENT, fg="#ffffff",
-                 font=("Segoe UI", 13, "bold"), width=38, pady=12)
-        tk.Label(frame,
-                 text="Pre-Process  →  Save INI  →  Compile  →  Compress  "
-                      "→  Create DLL  →  Merge  →  Zip  →  Archive Art",
-                 bg=BG, fg=FG2, font=("Segoe UI", 8)).pack(pady=(2, 4))
-
-        # ── Recompile Fix ─────────────────────────────────────────────
-        sep2 = tk.Frame(frame, bg=BORDER, height=1)
-        sep2.pack(fill="x", padx=12, pady=(8, 4))
-        fix_outer = tk.Frame(frame, bg=BG)
+        # Recompile Fix
+        sep3 = tk.Frame(self._manual_frame, bg=BORDER, height=1)
+        sep3.pack(fill="x", padx=12, pady=(8, 4))
+        fix_outer = tk.Frame(self._manual_frame, bg=BG)
         fix_outer.pack(pady=2)
         _big_btn(fix_outer, "  ↺  Recompile Fix  ",
                  self._run_recompile_fix, bg=WARN, fg="#000000",
                  font=("Segoe UI", 10, "bold"), width=26, pady=7)
-        tk.Label(frame,
+        tk.Label(self._manual_frame,
                  text="Use when data.bin + DLL are already done — moves files from Setup\\, "
                       "recompiles, merges, zips, archives.",
                  bg=BG, fg=FG2, font=("Segoe UI", 8), wraplength=680).pack(pady=(0, 10))
+
+    def _toggle_manual_steps(self):
+        """Show/hide the advanced manual-step buttons, warning on first reveal."""
+        if self._manual_shown:
+            self._manual_frame.pack_forget()
+            self._manual_shown = False
+            self._manual_btn.config(text="⚙  Manual Steps  ▾")
+            return
+
+        if not self._manual_warned:
+            proceed = messagebox.askokcancel(
+                "Manual Steps",
+                "These buttons run each stage of the repack by hand.\n\n"
+                "In most cases you will NEVER need them — the RUN FULL REPACK "
+                "button does everything in the right order.\n\n"
+                "Only use them if the full repack has an issue and you know "
+                "what you're doing. Running steps out of order can produce a "
+                "broken repack.\n\nShow the manual steps anyway?",
+                icon="warning")
+            if not proceed:
+                return
+            self._manual_warned = True
+
+        self._manual_frame.pack(fill="x", padx=0, pady=(2, 0))
+        self._manual_shown = True
+        self._manual_btn.config(text="⚙  Manual Steps  ▴")
 
     # ══════════════════════════════════════════════════════════════════════════
     #  Action helpers

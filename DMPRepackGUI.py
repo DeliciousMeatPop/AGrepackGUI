@@ -1755,36 +1755,38 @@ class RepackApp:
             exe_row("EXE Path", self.exe1_var, self.exe1p_var)
 
         elif gt == "VR":
-            # VR launches through the VD.bat (which carries its own arguments
-            # internally), so none of these rows expose an Args field.
             section("STEAMVR EXECUTABLE")
-            exe_row("SteamVR EXE", self.exe1_var, self.exe1p_var, show_args=False)
+            exe_row("SteamVR EXE", self.exe1_var, self.exe1p_var)
+            # VD.bat carries its own arguments internally, so it has no Args field.
             section("VIRTUAL DESKTOP LAUNCHER")
             exe_row("VD.bat Path", self.exe2_var, self.exe2p_var, show_args=False)
             tk.Label(self.exe_frame,
                      text="VD.bat is auto-filled next to the SteamVR exe — "
-                          "edit it only if the launcher lives elsewhere.",
+                          "edit it only if the launcher lives elsewhere. "
+                          "Arguments are handled inside the .bat, not here.",
                      bg=BG, fg=FG2, font=("Segoe UI", 8),
                      wraplength=560, justify="left").pack(anchor="w", padx=18, pady=(0, 2))
             meta_toggle()
             if self.meta_var.get():
-                exe_row("Meta EXE", self.exe3_var, self.exe3p_var, show_args=False)
+                exe_row("Meta EXE", self.exe3_var, self.exe3p_var)
 
         elif gt == "VR Optional":
             section("FLAT (2D) EXECUTABLE")
-            exe_row("Flat EXE Path", self.exe1_var, self.exe1p_var, show_args=False)
+            exe_row("Flat EXE Path", self.exe1_var, self.exe1p_var)
             section("STEAMVR EXECUTABLE")
-            exe_row("SteamVR EXE",   self.exe2_var, self.exe2p_var, show_args=False)
+            exe_row("SteamVR EXE",   self.exe2_var, self.exe2p_var)
+            # VD.bat carries its own arguments internally, so it has no Args field.
             section("VIRTUAL DESKTOP LAUNCHER")
             exe_row("VD.bat Path",   self.exe3_var, self.exe3p_var, show_args=False)
             tk.Label(self.exe_frame,
                      text="VD.bat is auto-filled next to the SteamVR exe — "
-                          "edit it only if the launcher lives elsewhere.",
+                          "edit it only if the launcher lives elsewhere. "
+                          "Arguments are handled inside the .bat, not here.",
                      bg=BG, fg=FG2, font=("Segoe UI", 8),
                      wraplength=560, justify="left").pack(anchor="w", padx=18, pady=(0, 2))
             meta_toggle()
             if self.meta_var.get():
-                exe_row("Meta EXE",  self.exe4_var, self.exe4p_var, show_args=False)
+                exe_row("Meta EXE",  self.exe4_var, self.exe4p_var)
 
     def _refresh_exe_fields(self):
         self._build_exe_fields()

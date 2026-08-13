@@ -1118,6 +1118,50 @@ def _read_steam_buildid(game_dir: Path, appid: str) -> Optional[str]:
     return None
 
 
+def find_steam_appid(game_dir: Path) -> Optional[str]:
+    """Search a game folder (and every subfolder) for a steam_appid.txt and
+    return the App ID it contains, or None if there isn't one.
+
+    Steam drops this file next to the game executable, so it's the most
+    reliable way to identify a game straight from a copied folder."""
+    try:
+        for cand in game_dir.rglob("*"):
+            try:
+                if cand.is_file() and cand.name.lower() == "steam_appid.txt":
+                    txt = cand.read_text(encoding="utf-8", errors="replace")
+                    m = re.search(r"\d+", txt)
+                    if m:
+                        return m.group(0)
+            except OSError:
+                continue
+    except OSError:
+        pass
+    return None
+
+
+def steam_get_latest_buildid(appid: str, log) -> Optional[str]:
+    """Fetch the current public-branch build id for an app from the public
+    steamcmd.net mirror, or None if it can't be reached / parsed.
+
+    This is the *newest* build on Steam — the caller should treat it as a
+    best guess, since the folder being repacked may be an older build."""
+    url = f"https://api.steamcmd.net/v1/info/{appid}"
+    raw = _http_get(url)
+    if not raw:
+        return None
+    try:
+        data = json.loads(raw.decode("utf-8", "replace"))
+    except Exception:
+        return None
+    try:
+        app = data["data"][str(appid)]
+        bid = app["depots"]["branches"]["public"]["buildid"]
+    except (KeyError, TypeError, AttributeError):
+        return None
+    bid = str(bid).strip()
+    return bid or None
+
+
 def steam_get_appdetails(appid: str, log) -> dict:
     """Return the Steam store 'data' object for an app (name, screenshots,
     developers, ...), or {} if it can't be fetched."""
@@ -1629,6 +1673,9 @@ class RepackApp:
                 except Exception:
                     pass
             threading.Thread(target=_calc, daemon=True).start()
+            # Identify the game from steam_appid.txt + Steam, in the background
+            threading.Thread(target=self._autofill_from_game_dir,
+                             args=(chosen,), daemon=True).start()
 
         # ── Repacker identity ────────────────────────────────────────
         section("REPACKER IDENTITY")
@@ -2076,6 +2123,51 @@ class RepackApp:
                                        f"'{labels.get(k, k)}' is required.")
                 return False
         return True
+
+    # ── Auto-identify game from folder ────────────────────────────────────────
+
+    def _autofill_from_game_dir(self, chosen: str):
+        """Scan the chosen folder (+ subfolders) for steam_appid.txt and, if
+        found, pull the App ID / Game Name / newest Build id from Steam and fill
+        in any fields the user hasn't already set. Runs on a background thread.
+
+        The build id is Steam's *newest* public build — it's only a best guess
+        for the copy being repacked, so it's left editable for correction."""
+        game_path = Path(chosen)
+        appid = find_steam_appid(game_path)
+        if not appid:
+            self.log("  No steam_appid.txt found under the game directory — "
+                     "enter the Steam App ID manually to fetch metadata.")
+            return
+        self.log(f"  Found steam_appid.txt  →  App ID {appid}")
+
+        def _set_appid():
+            if not self.appid_var.get().strip():
+                self.appid_var.set(appid)
+                self.log(f"  Auto-filled App ID: {appid}")
+        self.root.after(0, _set_appid)
+
+        # Store name
+        details = steam_get_appdetails(appid, self.log)
+        name = (details.get("name") or "").strip()
+
+        # Newest public build id, falling back to the installed manifest's build
+        buildid = steam_get_latest_buildid(appid, self.log)
+        build_src = "Steam newest build"
+        if not buildid:
+            buildid = _read_steam_buildid(game_path, appid)
+            build_src = "installed Steam manifest"
+
+        def _apply():
+            if name and not self.name_var.get().strip():
+                self.name_var.set(name)
+                self.log(f"  Auto-filled Game Name: {name}")
+            if buildid and not self.build_var.get().strip():
+                self.build_var.set(buildid)
+                self.log(f"  Auto-filled Build / Version: {buildid}  "
+                         f"[{build_src}] — correct it if this isn't the "
+                         f"build you're repacking.")
+        self.root.after(0, _apply)
 
     # ── Steam art download ────────────────────────────────────────────────────
 

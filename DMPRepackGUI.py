@@ -27,7 +27,7 @@ from pathlib import Path
 # commits it back here — so you normally don't edit it by hand.  make_version_file.py
 # reads it to stamp the exe, and the app compares it against the latest GitHub
 # release on launch.
-__version__ = "1.0.0"
+__version__ = "1.0.3"
 GITHUB_REPO = "DeliciousMeatPop/AGrepackGUI"
 
 

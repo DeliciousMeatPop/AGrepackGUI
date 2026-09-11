@@ -22,9 +22,11 @@ from tkinter import ttk, filedialog, messagebox, scrolledtext
 from pathlib import Path
 
 # ─── Version / update check ──────────────────────────────────────────────────
-# Bump __version__ on every release and tag the GitHub release to match
-# (e.g. tag "v1.0.1").  make_version_file.py reads this string to stamp the exe,
-# and the app compares it against the latest GitHub release on launch.
+# This string is the source of truth.  The "Build & draft release" GitHub
+# Actions workflow rewrites it from the version you type when you run it, then
+# commits it back here — so you normally don't edit it by hand.  make_version_file.py
+# reads it to stamp the exe, and the app compares it against the latest GitHub
+# release on launch.
 __version__ = "1.0.0"
 GITHUB_REPO = "DeliciousMeatPop/AGrepackGUI"
 

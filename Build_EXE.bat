@@ -37,6 +37,15 @@ if exist "build"          rmdir /s /q "build"
 if exist "dist"           rmdir /s /q "dist"
 if exist "%EXENAME%.spec" del /q "%EXENAME%.spec"
 
+:: Stamp the exe's file properties with __version__ from DMPRepackGUI.py
+echo [BUILD] Generating version resource ...
+python make_version_file.py
+if errorlevel 1 (
+    echo [ERROR] Could not generate version_info.txt
+    pause
+    exit /b 1
+)
+
 echo [BUILD] Compiling %SCRIPT% ...
 echo.
 
@@ -45,6 +54,7 @@ python -m PyInstaller ^
     --console ^
     --icon="%ICON%" ^
     --name="%EXENAME%" ^
+    --version-file="version_info.txt" ^
     --distpath="." ^
     "%SCRIPT%"
 

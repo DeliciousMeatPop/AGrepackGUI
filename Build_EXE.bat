@@ -37,15 +37,26 @@ if exist "build"          rmdir /s /q "build"
 if exist "dist"           rmdir /s /q "dist"
 if exist "%EXENAME%.spec" del /q "%EXENAME%.spec"
 
+:: Stamp the exe's file properties with __version__ from DMPRepackGUI.py
+echo [BUILD] Generating version resource ...
+python make_version_file.py
+if errorlevel 1 (
+    echo [ERROR] Could not generate version_info.txt
+    pause
+    exit /b 1
+)
+
 echo [BUILD] Compiling %SCRIPT% ...
 echo.
 
 python -m PyInstaller ^
-    --onefile ^
+    --onedir ^
     --console ^
+    --contents-directory="runtime" ^
     --icon="%ICON%" ^
     --name="%EXENAME%" ^
-    --distpath="." ^
+    --version-file="version_info.txt" ^
+    --distpath="dist" ^
     "%SCRIPT%"
 
 if errorlevel 1 (
@@ -61,7 +72,10 @@ if exist "%EXENAME%.spec" del /q "%EXENAME%.spec"
 
 echo.
 echo  =========================================
-echo   Done!  "%EXENAME%.exe" is in this folder.
+echo   Done!  Build is in  "dist\%EXENAME%\"
+echo   ("%EXENAME%.exe" + the "runtime" folder).
+echo   Drop your repack toolkit folders (COMPRESSOR,
+echo   Resource, Setup, 7z.exe, ...) in beside the exe.
 echo  =========================================
 echo.
 pause

@@ -13,12 +13,20 @@ import re
 import sys
 import time
 import shutil
+import zipfile
 import subprocess
 import threading
 import webbrowser
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
 from pathlib import Path
+
+# ─── Version / update check ──────────────────────────────────────────────────
+# Bump __version__ on every release and tag the GitHub release to match
+# (e.g. tag "v1.0.1").  make_version_file.py reads this string to stamp the exe,
+# and the app compares it against the latest GitHub release on launch.
+__version__ = "1.0.0"
+GITHUB_REPO = "DeliciousMeatPop/AGrepackGUI"
 
 
 # ─── Resolve base directory ──────────────────────────────────────────────────
@@ -898,6 +906,15 @@ STEAM_CDN_HOSTS = (
 )
 _STEAM_UA = {"User-Agent": "Mozilla/5.0"}
 
+# Newer apps no longer keep art at the flat .../apps/{appid}/logo.png path — the
+# real files live under a per-asset content-hash folder and can carry a language
+# suffix (logo_schinese.png).  Those exact relative paths live in the app's own
+# common.library_assets_full block (the same data SteamDB shows).  We read that
+# (keyless) and build the true CDN URL from it as a fallback.
+STEAM_ASSET_BASE  = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{appid}/{path}"
+STEAM_APPINFO_URL = "https://api.steamcmd.net/v1/info/{appid}"
+_appinfo_cache = {}
+
 
 def _http_get(url: str, timeout: int = 30) -> Optional[bytes]:
     """GET a URL and return its body, or None on any failure / non-200."""
@@ -911,6 +928,77 @@ def _http_get(url: str, timeout: int = 30) -> Optional[bytes]:
         return None
 
 
+def _parse_version(v: str) -> tuple:
+    """Turn 'v1.2.3' / '1.2.3-beta' into a comparable tuple of ints (1, 2, 3)."""
+    return tuple(int(n) for n in re.findall(r"\d+", v or ""))
+
+
+def check_for_update(current: str = __version__):
+    """Return (latest_tag, release_url, exe_asset_url) when a newer GitHub
+    release exists, else None.  exe_asset_url is the direct download for the
+    first .exe attached to the release (None if the release has no exe asset).
+    Never raises — no network, no releases, or a parse error all just return
+    None so the app carries on silently."""
+    raw = _http_get(
+        f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest", timeout=10)
+    if not raw:
+        return None
+    try:
+        rel = json.loads(raw)
+    except ValueError:
+        return None
+    tag = (rel.get("tag_name") or "").strip()
+    url = rel.get("html_url") or f"https://github.com/{GITHUB_REPO}/releases"
+    if not (tag and _parse_version(tag) > _parse_version(current)):
+        return None
+    # onedir builds ship as a .zip (exe + _internal); prefer that, fall back to
+    # a bare .exe if a release only attaches one.
+    payload = None
+    for want in (".zip", ".exe"):
+        for asset in (rel.get("assets") or []):
+            name = (asset.get("name") or "").lower()
+            if name.endswith(want) and asset.get("browser_download_url"):
+                payload = asset["browser_download_url"]
+                break
+        if payload:
+            break
+    return tag, url, payload
+
+
+def _download_stream(url: str, dest: Path, chunk: int = 65536) -> None:
+    """Stream a URL to `dest` (follows redirects, e.g. GitHub asset → storage).
+    Raises on failure so the caller can report it and abort the swap."""
+    req = urllib.request.Request(url, headers=_STEAM_UA)
+    with urllib.request.urlopen(req, timeout=120) as resp, open(dest, "wb") as fh:
+        while True:
+            block = resp.read(chunk)
+            if not block:
+                break
+            fh.write(block)
+
+
+# Names used by the self-updater, created next to the exe (BASE_DIR).
+UPDATE_STAGING = "_update_tmp"
+UPDATER_BAT    = "_update.bat"
+UPDATE_ZIP     = "_update.zip"
+
+
+def cleanup_update_leftovers() -> None:
+    """Remove the staging dir / updater script / zip left by a previous
+    self-update.  Best-effort — a leftover is harmless and cleared next launch."""
+    if not getattr(sys, "frozen", False):
+        return
+    base = Path(sys.executable).parent
+    for leftover in (base / UPDATE_STAGING, base / UPDATER_BAT, base / UPDATE_ZIP):
+        try:
+            if leftover.is_dir():
+                shutil.rmtree(leftover, ignore_errors=True)
+            elif leftover.exists():
+                leftover.unlink()
+        except OSError:
+            pass
+
+
 def _steam_cdn_get(appid: str, fname: str) -> Optional[bytes]:
     """Fetch a per-app CDN asset (library_hero.jpg, logo.png, ...) trying each
     mirror in turn.  Returns the bytes or None if every host failed / 404'd."""
@@ -921,14 +1009,64 @@ def _steam_cdn_get(appid: str, fname: str) -> Optional[bytes]:
     return None
 
 
+def _steam_appinfo(appid: str) -> dict:
+    """Fetch & cache the app's 'common' appinfo block (keyless, stdlib only).
+    Returns {} on any failure so callers can treat it as 'no data'."""
+    if appid not in _appinfo_cache:
+        common = {}
+        raw = _http_get(STEAM_APPINFO_URL.format(appid=appid), timeout=20)
+        if raw:
+            try:
+                common = (json.loads(raw).get("data", {})
+                          .get(appid, {}).get("common", {})) or {}
+            except (ValueError, AttributeError):
+                common = {}
+        _appinfo_cache[appid] = common
+    return _appinfo_cache[appid]
+
+
+def _kind_from_candidates(candidates) -> Optional[str]:
+    """Map our output filenames to the library_assets_full block that feeds them."""
+    joined = " ".join(candidates).lower()
+    if "logo" in joined:
+        return "library_logo"
+    if "hero" in joined:
+        return "library_hero"
+    if "capsule" in joined or "600x900" in joined:
+        return "library_capsule"
+    return None
+
+
 def _steam_pick_asset(appid: str, candidates) -> Tuple[Optional[str], Optional[bytes]]:
-    """Try each filename in `candidates` (highest quality first) and return the
-    first one that exists as (filename, bytes).  Returns (None, None) if none
-    are available."""
+    """Try each filename in `candidates` (highest quality first) on the flat CDN
+    path.  If none exist — newer apps store art under a content-hash folder with
+    a language suffix — resolve the real relative path from the app's
+    library_assets_full metadata, preferring English then any available
+    language.  The output filename stays canonical (logo.png / logo_2x.png /
+    library_hero.jpg / ...) so the installer is unchanged.
+    Returns (filename, bytes), or (None, None) if nothing could be fetched."""
+    # 1) Legacy flat path — fast, still correct for older apps.
     for fname in candidates:
         data = _steam_cdn_get(appid, fname)
         if data:
             return fname, data
+
+    # 2) Fallback: use the app's own asset metadata (what SteamDB shows).
+    kind = _kind_from_candidates(candidates)
+    if kind:
+        hi_name, lo_name = candidates[0], candidates[-1]   # 2x preferred, then 1x
+        block = _steam_appinfo(appid).get("library_assets_full", {}).get(kind, {})
+        for res_key, out_name in (("image2x", hi_name), ("image", lo_name)):
+            langs = block.get(res_key, {})
+            if not isinstance(langs, dict):
+                continue
+            for lang in ["english"] + [l for l in langs if l != "english"]:
+                rel = langs.get(lang)
+                if not rel:
+                    continue
+                data = _http_get(STEAM_ASSET_BASE.format(appid=appid, path=rel))
+                if data:
+                    return out_name, data
     return None, None
 
 
@@ -1285,7 +1423,7 @@ def work_download_steam_art(appid: str, game_dir: str, exe_hint: str,
 class RepackApp:
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("AG Repack GUI  –  by DMP")
+        self.root.title(f"AG Repack GUI  v{__version__}  –  by DMP")
         if APP_ICON.exists():
             try:
                 self.root.iconbitmap(default=str(APP_ICON))
@@ -1301,6 +1439,11 @@ class RepackApp:
         self.repacker_var.set(get_repacker())
         # Run startup check after the window is fully drawn
         self.root.after(150, self._check_existing_settings)
+        # Clear any leftover update staging from a previous self-update, then
+        # look for a newer release — both in the background so the UI never
+        # blocks.
+        threading.Thread(target=cleanup_update_leftovers, daemon=True).start()
+        self.root.after(1200, self._start_update_check)
 
     # ── tk.Variables ─────────────────────────────────────────────────────────
 
@@ -1368,12 +1511,18 @@ class RepackApp:
         hdr.pack(fill="x")
         tk.Label(hdr, text="AG Repack GUI", bg="#0a0f1e", fg=ACCENT,
                  font=("Segoe UI", 16, "bold")).pack(side="left", padx=16)
+        tk.Label(hdr, text=f"v{__version__}", bg="#0a0f1e", fg=FG2,
+                 font=("Segoe UI", 9)).pack(side="left", padx=(0, 8))
         tk.Label(hdr, text="Made by DMP of ARMGDDN Games",
                  bg="#0a0f1e", fg=FG2, font=("Segoe UI", 10)).pack(side="left")
         tk.Button(hdr, text="?", command=self._show_about,
                   bg="#0a0f1e", fg=ACCENT, activebackground="#0a0f1e",
                   activeforeground=FG2, bd=0, relief="flat", cursor="hand2",
                   font=("Segoe UI", 14, "bold"), padx=10).pack(side="right", padx=16)
+        # Hidden until the background check finds a newer release.
+        self.update_lbl = tk.Label(
+            hdr, text="", bg="#0a0f1e", fg=WARN, cursor="hand2",
+            font=("Segoe UI", 10, "bold"))
 
         # ── Notebook
         nb = ttk.Notebook(self.root)
@@ -1396,6 +1545,149 @@ class RepackApp:
     # ══════════════════════════════════════════════════════════════════════════
     #  Startup: detect existing settings.ini
     # ══════════════════════════════════════════════════════════════════════════
+
+    # ── Update check ──────────────────────────────────────────────────────────
+
+    def _start_update_check(self):
+        threading.Thread(target=self._update_check_worker, daemon=True).start()
+
+    def _update_check_worker(self):
+        try:
+            result = check_for_update()
+        except Exception:
+            result = None
+        if result:
+            tag, url, asset = result
+            self.root.after(0, lambda: self._on_update_available(tag, url, asset))
+
+    def _on_update_available(self, tag, url, asset_url):
+        # Persistent clickable banner in the header ...
+        self.update_lbl.config(text=f"⬆  Update available: {tag}  —  click to install")
+        self.update_lbl.bind(
+            "<Button-1>", lambda _e: self._prompt_update(tag, url, asset_url))
+        self.update_lbl.pack(side="right", padx=12)
+        try:
+            self.log(f"[UPDATE] New version {tag} available — {url}")
+        except Exception:
+            pass
+        # ... and prompt once now.
+        self._prompt_update(tag, url, asset_url)
+
+    def _prompt_update(self, tag, url, asset_url):
+        frozen = getattr(sys, "frozen", False)
+        if frozen and asset_url:
+            if messagebox.askyesno(
+                    "Update available",
+                    f"A new version ({tag}) is available — you have v{__version__}.\n\n"
+                    "Download and install it now?\n"
+                    "The app will close and reopen automatically.",
+                    icon="info"):
+                self._run_self_update(asset_url, tag)
+        else:
+            # Dev run (.py) or a release with no exe asset — open the page.
+            if messagebox.askyesno(
+                    "Update available",
+                    f"A new version ({tag}) is available — you have v{__version__}.\n\n"
+                    "Open the download page?",
+                    icon="info"):
+                webbrowser.open(url)
+
+    def _run_self_update(self, asset_url, tag):
+        """Download the new build (a .zip of exe + _internal), extract it, then
+        hand off to a small batch script that runs after this process exits:
+        it waits, copies the new files over the app folder (leaving the repack
+        toolkit and settings untouched), relaunches the exe, and deletes itself.
+        A running app can't overwrite its own locked DLLs, so the swap must
+        happen from outside the process."""
+        win = tk.Toplevel(self.root)
+        win.title("Updating")
+        win.configure(bg="#0a0f1e")
+        win.resizable(False, False)
+        win.grab_set()
+        win.update_idletasks()
+        pw, ph = self.root.winfo_width(), self.root.winfo_height()
+        px, py = self.root.winfo_rootx(), self.root.winfo_rooty()
+        w, h = 360, 120
+        win.geometry(f"{w}x{h}+{px + (pw - w)//2}+{py + (ph - h)//2}")
+        tk.Label(win, text=f"Downloading {tag} ...", bg="#0a0f1e", fg=FG,
+                 font=("Segoe UI", 10)).pack(pady=(24, 12))
+        bar = ttk.Progressbar(win, mode="indeterminate", length=300)
+        bar.pack()
+        bar.start(12)
+
+        def worker():
+            base = Path(sys.executable).parent
+            staging = base / UPDATE_STAGING
+            zip_path = base / UPDATE_ZIP
+            try:
+                shutil.rmtree(staging, ignore_errors=True)
+                _download_stream(asset_url, zip_path)
+                staging.mkdir(parents=True, exist_ok=True)
+                with zipfile.ZipFile(zip_path) as zf:
+                    zf.extractall(staging)
+                try:
+                    zip_path.unlink()
+                except OSError:
+                    pass
+                # If the zip wrapped everything in a single top-level folder,
+                # descend into it so we copy the exe + _internal, not the wrapper.
+                entries = list(staging.iterdir())
+                if len(entries) == 1 and entries[0].is_dir():
+                    staging = entries[0]
+            except Exception as exc:
+                try:
+                    zip_path.unlink()
+                except OSError:
+                    pass
+                shutil.rmtree(base / UPDATE_STAGING, ignore_errors=True)
+                self.root.after(0, lambda: self._update_failed(win, exc))
+                return
+            self.root.after(0, lambda: self._finalize_update(win, base, staging))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _update_failed(self, win, exc):
+        try:
+            win.destroy()
+        except tk.TclError:
+            pass
+        messagebox.showerror("Update failed", f"Could not download the update:\n{exc}")
+
+    def _finalize_update(self, win, base, staging):
+        exe_name = Path(sys.executable).name
+        bat = base / UPDATER_BAT
+        # %~1 app dir, %~2 staging dir, %~3 exe name.  robocopy /R:/W: retries
+        # briefly in case a handle lingers; no /PURGE, so user files are kept.
+        bat.write_text(
+            "@echo off\r\n"
+            "setlocal\r\n"
+            'set "APPDIR=%~1"\r\n'
+            'set "COPYFROM=%~2"\r\n'
+            'set "EXENAME=%~3"\r\n'
+            'set "STAGEROOT=%~4"\r\n'
+            "ping 127.0.0.1 -n 3 >nul\r\n"
+            'robocopy "%COPYFROM%" "%APPDIR%" /E /R:20 /W:1 /NFL /NDL /NJH /NJS >nul\r\n'
+            'start "" "%APPDIR%\\%EXENAME%"\r\n'
+            'rmdir /s /q "%STAGEROOT%"\r\n'
+            'del /q "%~f0"\r\n',
+            encoding="utf-8")
+        # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP so it outlives this exit.
+        detached = 0x00000008 | 0x00000200
+        try:
+            subprocess.Popen(
+                ["cmd", "/c", str(bat), str(base), str(staging), exe_name,
+                 str(base / UPDATE_STAGING)],
+                close_fds=True, creationflags=detached)
+        except OSError as exc:
+            try:
+                win.destroy()
+            except tk.TclError:
+                pass
+            messagebox.showerror(
+                "Update failed", f"Could not start the updater:\n{exc}")
+            return
+        self.root.destroy()
+        sys.exit(0)
 
     def _show_about(self):
         win = tk.Toplevel(self.root)
@@ -1421,6 +1713,8 @@ class RepackApp:
         # ── heart / title ─────────────────────────────────────────────────────
         tk.Label(win, text="AG Repack GUI", font=("Segoe UI", 17, "bold"),
                  fg=ACCENT, **pad).pack(pady=(22, 0))
+        tk.Label(win, text=f"version {__version__}", font=("Segoe UI", 9),
+                 fg=FG2, **pad).pack(pady=(2, 0))
         tk.Label(win, text="Made with ♥ by DMP of ARMGDDN Games,",
                  font=("Segoe UI", 10), fg="#f472b6", **pad).pack()
         tk.Label(win, text="for ARMGDDN Games.",
@@ -2425,6 +2719,9 @@ def _btn(parent, text, command):
 # ═══════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
+    if "--version" in sys.argv or "-V" in sys.argv:
+        print(f"AG Repack GUI v{__version__}")
+        sys.exit(0)
     root = tk.Tk()
     app  = RepackApp(root)
     root.mainloop()

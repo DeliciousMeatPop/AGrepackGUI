@@ -40,12 +40,18 @@ jobs:
           }
           Write-Host "Tag $tag matches __version__ v$v"
 
-      - name: Build exe
+      - name: Build (onedir)
         shell: pwsh
         run: |
-          python -m PyInstaller --onefile --console `
+          python -m PyInstaller --onedir --console --contents-directory="runtime" `
             --icon="setup.ico" --name="AG Repack GUI" `
             --version-file="version_info.txt" --distpath="dist" DMPRepackGUI.py
+
+      - name: Package (zip exe + runtime)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "dist/AG Repack GUI/*" `
+            -DestinationPath "dist/AG Repack GUI.zip" -Force
 
       - name: Create / update draft release
         if: startsWith(github.ref, 'refs/tags/')
@@ -58,10 +64,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             gh release create $tag --draft --title $tag --notes "Automated build of $tag. Review, then publish to roll out the in-app update."
           }
-          gh release upload $tag "dist/AG Repack GUI.exe" --clobber
+          gh release upload $tag "dist/AG Repack GUI.zip" --clobber
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AG-Repack-GUI-exe
-          path: dist/AG Repack GUI.exe
+          name: AG-Repack-GUI
+          path: dist/AG Repack GUI.zip

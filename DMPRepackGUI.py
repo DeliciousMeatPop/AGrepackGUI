@@ -13,6 +13,7 @@ import re
 import sys
 import time
 import shutil
+import zipfile
 import subprocess
 import threading
 import webbrowser
@@ -950,13 +951,18 @@ def check_for_update(current: str = __version__):
     url = rel.get("html_url") or f"https://github.com/{GITHUB_REPO}/releases"
     if not (tag and _parse_version(tag) > _parse_version(current)):
         return None
-    exe_asset = None
-    for asset in (rel.get("assets") or []):
-        name = (asset.get("name") or "").lower()
-        if name.endswith(".exe") and asset.get("browser_download_url"):
-            exe_asset = asset["browser_download_url"]
+    # onedir builds ship as a .zip (exe + _internal); prefer that, fall back to
+    # a bare .exe if a release only attaches one.
+    payload = None
+    for want in (".zip", ".exe"):
+        for asset in (rel.get("assets") or []):
+            name = (asset.get("name") or "").lower()
+            if name.endswith(want) and asset.get("browser_download_url"):
+                payload = asset["browser_download_url"]
+                break
+        if payload:
             break
-    return tag, url, exe_asset
+    return tag, url, payload
 
 
 def _download_stream(url: str, dest: Path, chunk: int = 65536) -> None:
@@ -971,22 +977,26 @@ def _download_stream(url: str, dest: Path, chunk: int = 65536) -> None:
             fh.write(block)
 
 
-def cleanup_old_exe() -> None:
-    """Delete the '<name>.old.exe' left behind by a previous self-update.
-    Best-effort with a short retry (the just-replaced process may still hold
-    the handle for a moment); a leftover is harmless and cleared next launch."""
+# Names used by the self-updater, created next to the exe (BASE_DIR).
+UPDATE_STAGING = "_update_tmp"
+UPDATER_BAT    = "_update.bat"
+UPDATE_ZIP     = "_update.zip"
+
+
+def cleanup_update_leftovers() -> None:
+    """Remove the staging dir / updater script / zip left by a previous
+    self-update.  Best-effort — a leftover is harmless and cleared next launch."""
     if not getattr(sys, "frozen", False):
         return
-    exe = Path(sys.executable)
-    old = exe.with_name(f"{exe.stem}.old{exe.suffix}")
-    for _ in range(6):
-        if not old.exists():
-            return
+    base = Path(sys.executable).parent
+    for leftover in (base / UPDATE_STAGING, base / UPDATER_BAT, base / UPDATE_ZIP):
         try:
-            old.unlink()
-            return
+            if leftover.is_dir():
+                shutil.rmtree(leftover, ignore_errors=True)
+            elif leftover.exists():
+                leftover.unlink()
         except OSError:
-            time.sleep(0.4)
+            pass
 
 
 def _steam_cdn_get(appid: str, fname: str) -> Optional[bytes]:
@@ -1429,9 +1439,10 @@ class RepackApp:
         self.repacker_var.set(get_repacker())
         # Run startup check after the window is fully drawn
         self.root.after(150, self._check_existing_settings)
-        # Clear any leftover ".old" exe from a previous self-update, then look
-        # for a newer release — both in the background so the UI never blocks.
-        threading.Thread(target=cleanup_old_exe, daemon=True).start()
+        # Clear any leftover update staging from a previous self-update, then
+        # look for a newer release — both in the background so the UI never
+        # blocks.
+        threading.Thread(target=cleanup_update_leftovers, daemon=True).start()
         self.root.after(1200, self._start_update_check)
 
     # ── tk.Variables ─────────────────────────────────────────────────────────
@@ -1582,9 +1593,12 @@ class RepackApp:
                 webbrowser.open(url)
 
     def _run_self_update(self, asset_url, tag):
-        """Download the new exe, then swap it in and relaunch.  On Windows the
-        running exe can be renamed (not deleted) while running, so:
-        download → rename self to .old → move new into place → launch → exit."""
+        """Download the new build (a .zip of exe + _internal), extract it, then
+        hand off to a small batch script that runs after this process exits:
+        it waits, copies the new files over the app folder (leaving the repack
+        toolkit and settings untouched), relaunches the exe, and deletes itself.
+        A running app can't overwrite its own locked DLLs, so the swap must
+        happen from outside the process."""
         win = tk.Toplevel(self.root)
         win.title("Updating")
         win.configure(bg="#0a0f1e")
@@ -1602,57 +1616,76 @@ class RepackApp:
         bar.start(12)
 
         def worker():
-            exe = Path(sys.executable)
-            new = exe.with_name(f"{exe.stem}.new{exe.suffix}")
+            base = Path(sys.executable).parent
+            staging = base / UPDATE_STAGING
+            zip_path = base / UPDATE_ZIP
             try:
-                _download_stream(asset_url, new)
+                shutil.rmtree(staging, ignore_errors=True)
+                _download_stream(asset_url, zip_path)
+                staging.mkdir(parents=True, exist_ok=True)
+                with zipfile.ZipFile(zip_path) as zf:
+                    zf.extractall(staging)
+                try:
+                    zip_path.unlink()
+                except OSError:
+                    pass
+                # If the zip wrapped everything in a single top-level folder,
+                # descend into it so we copy the exe + _internal, not the wrapper.
+                entries = list(staging.iterdir())
+                if len(entries) == 1 and entries[0].is_dir():
+                    staging = entries[0]
             except Exception as exc:
-                self.root.after(0, lambda: self._update_failed(win, new, exc))
+                try:
+                    zip_path.unlink()
+                except OSError:
+                    pass
+                shutil.rmtree(base / UPDATE_STAGING, ignore_errors=True)
+                self.root.after(0, lambda: self._update_failed(win, exc))
                 return
-            self.root.after(0, lambda: self._finalize_update(win, exe, new))
+            self.root.after(0, lambda: self._finalize_update(win, base, staging))
 
         threading.Thread(target=worker, daemon=True).start()
 
-    def _update_failed(self, win, partial, exc):
+    def _update_failed(self, win, exc):
         try:
             win.destroy()
         except tk.TclError:
             pass
-        try:
-            if partial.exists():
-                partial.unlink()
-        except OSError:
-            pass
         messagebox.showerror("Update failed", f"Could not download the update:\n{exc}")
 
-    def _finalize_update(self, win, exe, new):
-        old = exe.with_name(f"{exe.stem}.old{exe.suffix}")
+    def _finalize_update(self, win, base, staging):
+        exe_name = Path(sys.executable).name
+        bat = base / UPDATER_BAT
+        # %~1 app dir, %~2 staging dir, %~3 exe name.  robocopy /R:/W: retries
+        # briefly in case a handle lingers; no /PURGE, so user files are kept.
+        bat.write_text(
+            "@echo off\r\n"
+            "setlocal\r\n"
+            'set "APPDIR=%~1"\r\n'
+            'set "COPYFROM=%~2"\r\n'
+            'set "EXENAME=%~3"\r\n'
+            'set "STAGEROOT=%~4"\r\n'
+            "ping 127.0.0.1 -n 3 >nul\r\n"
+            'robocopy "%COPYFROM%" "%APPDIR%" /E /R:20 /W:1 /NFL /NDL /NJH /NJS >nul\r\n'
+            'start "" "%APPDIR%\\%EXENAME%"\r\n'
+            'rmdir /s /q "%STAGEROOT%"\r\n'
+            'del /q "%~f0"\r\n',
+            encoding="utf-8")
+        # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP so it outlives this exit.
+        detached = 0x00000008 | 0x00000200
         try:
-            if old.exists():
-                old.unlink()
-            os.replace(exe, old)   # rename the running exe (allowed on Windows)
-            os.replace(new, exe)   # move the freshly downloaded exe into place
+            subprocess.Popen(
+                ["cmd", "/c", str(bat), str(base), str(staging), exe_name,
+                 str(base / UPDATE_STAGING)],
+                close_fds=True, creationflags=detached)
         except OSError as exc:
-            # Best effort to restore the original if the swap half-completed.
-            try:
-                if not exe.exists() and old.exists():
-                    os.replace(old, exe)
-            except OSError:
-                pass
             try:
                 win.destroy()
             except tk.TclError:
                 pass
             messagebox.showerror(
-                "Update failed", f"Could not install the update:\n{exc}")
+                "Update failed", f"Could not start the updater:\n{exc}")
             return
-        try:
-            subprocess.Popen([str(exe)], close_fds=True)
-        except OSError as exc:
-            messagebox.showerror(
-                "Update installed",
-                f"Update installed but the new version could not be launched "
-                f"automatically:\n{exc}\n\nPlease start it manually.")
         self.root.destroy()
         sys.exit(0)
 

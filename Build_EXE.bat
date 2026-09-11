@@ -50,12 +50,13 @@ echo [BUILD] Compiling %SCRIPT% ...
 echo.
 
 python -m PyInstaller ^
-    --onefile ^
+    --onedir ^
     --console ^
+    --contents-directory="runtime" ^
     --icon="%ICON%" ^
     --name="%EXENAME%" ^
     --version-file="version_info.txt" ^
-    --distpath="." ^
+    --distpath="dist" ^
     "%SCRIPT%"
 
 if errorlevel 1 (
@@ -71,7 +72,10 @@ if exist "%EXENAME%.spec" del /q "%EXENAME%.spec"
 
 echo.
 echo  =========================================
-echo   Done!  "%EXENAME%.exe" is in this folder.
+echo   Done!  Build is in  "dist\%EXENAME%\"
+echo   ("%EXENAME%.exe" + the "runtime" folder).
+echo   Drop your repack toolkit folders (COMPRESSOR,
+echo   Resource, Setup, 7z.exe, ...) in beside the exe.
 echo  =========================================
 echo.
 pause

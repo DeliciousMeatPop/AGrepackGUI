@@ -20,6 +20,13 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
 from pathlib import Path
 
+# ─── Version / update check ──────────────────────────────────────────────────
+# Bump __version__ on every release and tag the GitHub release to match
+# (e.g. tag "v1.0.1").  make_version_file.py reads this string to stamp the exe,
+# and the app compares it against the latest GitHub release on launch.
+__version__ = "1.0.0"
+GITHUB_REPO = "DeliciousMeatPop/AGrepackGUI"
+
 
 # ─── Resolve base directory ──────────────────────────────────────────────────
 if getattr(sys, "frozen", False):          # PyInstaller single-file exe
@@ -898,6 +905,15 @@ STEAM_CDN_HOSTS = (
 )
 _STEAM_UA = {"User-Agent": "Mozilla/5.0"}
 
+# Newer apps no longer keep art at the flat .../apps/{appid}/logo.png path — the
+# real files live under a per-asset content-hash folder and can carry a language
+# suffix (logo_schinese.png).  Those exact relative paths live in the app's own
+# common.library_assets_full block (the same data SteamDB shows).  We read that
+# (keyless) and build the true CDN URL from it as a fallback.
+STEAM_ASSET_BASE  = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{appid}/{path}"
+STEAM_APPINFO_URL = "https://api.steamcmd.net/v1/info/{appid}"
+_appinfo_cache = {}
+
 
 def _http_get(url: str, timeout: int = 30) -> Optional[bytes]:
     """GET a URL and return its body, or None on any failure / non-200."""
@@ -911,6 +927,68 @@ def _http_get(url: str, timeout: int = 30) -> Optional[bytes]:
         return None
 
 
+def _parse_version(v: str) -> tuple:
+    """Turn 'v1.2.3' / '1.2.3-beta' into a comparable tuple of ints (1, 2, 3)."""
+    return tuple(int(n) for n in re.findall(r"\d+", v or ""))
+
+
+def check_for_update(current: str = __version__):
+    """Return (latest_tag, release_url, exe_asset_url) when a newer GitHub
+    release exists, else None.  exe_asset_url is the direct download for the
+    first .exe attached to the release (None if the release has no exe asset).
+    Never raises — no network, no releases, or a parse error all just return
+    None so the app carries on silently."""
+    raw = _http_get(
+        f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest", timeout=10)
+    if not raw:
+        return None
+    try:
+        rel = json.loads(raw)
+    except ValueError:
+        return None
+    tag = (rel.get("tag_name") or "").strip()
+    url = rel.get("html_url") or f"https://github.com/{GITHUB_REPO}/releases"
+    if not (tag and _parse_version(tag) > _parse_version(current)):
+        return None
+    exe_asset = None
+    for asset in (rel.get("assets") or []):
+        name = (asset.get("name") or "").lower()
+        if name.endswith(".exe") and asset.get("browser_download_url"):
+            exe_asset = asset["browser_download_url"]
+            break
+    return tag, url, exe_asset
+
+
+def _download_stream(url: str, dest: Path, chunk: int = 65536) -> None:
+    """Stream a URL to `dest` (follows redirects, e.g. GitHub asset → storage).
+    Raises on failure so the caller can report it and abort the swap."""
+    req = urllib.request.Request(url, headers=_STEAM_UA)
+    with urllib.request.urlopen(req, timeout=120) as resp, open(dest, "wb") as fh:
+        while True:
+            block = resp.read(chunk)
+            if not block:
+                break
+            fh.write(block)
+
+
+def cleanup_old_exe() -> None:
+    """Delete the '<name>.old.exe' left behind by a previous self-update.
+    Best-effort with a short retry (the just-replaced process may still hold
+    the handle for a moment); a leftover is harmless and cleared next launch."""
+    if not getattr(sys, "frozen", False):
+        return
+    exe = Path(sys.executable)
+    old = exe.with_name(f"{exe.stem}.old{exe.suffix}")
+    for _ in range(6):
+        if not old.exists():
+            return
+        try:
+            old.unlink()
+            return
+        except OSError:
+            time.sleep(0.4)
+
+
 def _steam_cdn_get(appid: str, fname: str) -> Optional[bytes]:
     """Fetch a per-app CDN asset (library_hero.jpg, logo.png, ...) trying each
     mirror in turn.  Returns the bytes or None if every host failed / 404'd."""
@@ -921,14 +999,64 @@ def _steam_cdn_get(appid: str, fname: str) -> Optional[bytes]:
     return None
 
 
+def _steam_appinfo(appid: str) -> dict:
+    """Fetch & cache the app's 'common' appinfo block (keyless, stdlib only).
+    Returns {} on any failure so callers can treat it as 'no data'."""
+    if appid not in _appinfo_cache:
+        common = {}
+        raw = _http_get(STEAM_APPINFO_URL.format(appid=appid), timeout=20)
+        if raw:
+            try:
+                common = (json.loads(raw).get("data", {})
+                          .get(appid, {}).get("common", {})) or {}
+            except (ValueError, AttributeError):
+                common = {}
+        _appinfo_cache[appid] = common
+    return _appinfo_cache[appid]
+
+
+def _kind_from_candidates(candidates) -> Optional[str]:
+    """Map our output filenames to the library_assets_full block that feeds them."""
+    joined = " ".join(candidates).lower()
+    if "logo" in joined:
+        return "library_logo"
+    if "hero" in joined:
+        return "library_hero"
+    if "capsule" in joined or "600x900" in joined:
+        return "library_capsule"
+    return None
+
+
 def _steam_pick_asset(appid: str, candidates) -> Tuple[Optional[str], Optional[bytes]]:
-    """Try each filename in `candidates` (highest quality first) and return the
-    first one that exists as (filename, bytes).  Returns (None, None) if none
-    are available."""
+    """Try each filename in `candidates` (highest quality first) on the flat CDN
+    path.  If none exist — newer apps store art under a content-hash folder with
+    a language suffix — resolve the real relative path from the app's
+    library_assets_full metadata, preferring English then any available
+    language.  The output filename stays canonical (logo.png / logo_2x.png /
+    library_hero.jpg / ...) so the installer is unchanged.
+    Returns (filename, bytes), or (None, None) if nothing could be fetched."""
+    # 1) Legacy flat path — fast, still correct for older apps.
     for fname in candidates:
         data = _steam_cdn_get(appid, fname)
         if data:
             return fname, data
+
+    # 2) Fallback: use the app's own asset metadata (what SteamDB shows).
+    kind = _kind_from_candidates(candidates)
+    if kind:
+        hi_name, lo_name = candidates[0], candidates[-1]   # 2x preferred, then 1x
+        block = _steam_appinfo(appid).get("library_assets_full", {}).get(kind, {})
+        for res_key, out_name in (("image2x", hi_name), ("image", lo_name)):
+            langs = block.get(res_key, {})
+            if not isinstance(langs, dict):
+                continue
+            for lang in ["english"] + [l for l in langs if l != "english"]:
+                rel = langs.get(lang)
+                if not rel:
+                    continue
+                data = _http_get(STEAM_ASSET_BASE.format(appid=appid, path=rel))
+                if data:
+                    return out_name, data
     return None, None
 
 
@@ -1285,7 +1413,7 @@ def work_download_steam_art(appid: str, game_dir: str, exe_hint: str,
 class RepackApp:
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("AG Repack GUI  –  by DMP")
+        self.root.title(f"AG Repack GUI  v{__version__}  –  by DMP")
         if APP_ICON.exists():
             try:
                 self.root.iconbitmap(default=str(APP_ICON))
@@ -1301,6 +1429,10 @@ class RepackApp:
         self.repacker_var.set(get_repacker())
         # Run startup check after the window is fully drawn
         self.root.after(150, self._check_existing_settings)
+        # Clear any leftover ".old" exe from a previous self-update, then look
+        # for a newer release — both in the background so the UI never blocks.
+        threading.Thread(target=cleanup_old_exe, daemon=True).start()
+        self.root.after(1200, self._start_update_check)
 
     # ── tk.Variables ─────────────────────────────────────────────────────────
 
@@ -1368,12 +1500,18 @@ class RepackApp:
         hdr.pack(fill="x")
         tk.Label(hdr, text="AG Repack GUI", bg="#0a0f1e", fg=ACCENT,
                  font=("Segoe UI", 16, "bold")).pack(side="left", padx=16)
+        tk.Label(hdr, text=f"v{__version__}", bg="#0a0f1e", fg=FG2,
+                 font=("Segoe UI", 9)).pack(side="left", padx=(0, 8))
         tk.Label(hdr, text="Made by DMP of ARMGDDN Games",
                  bg="#0a0f1e", fg=FG2, font=("Segoe UI", 10)).pack(side="left")
         tk.Button(hdr, text="?", command=self._show_about,
                   bg="#0a0f1e", fg=ACCENT, activebackground="#0a0f1e",
                   activeforeground=FG2, bd=0, relief="flat", cursor="hand2",
                   font=("Segoe UI", 14, "bold"), padx=10).pack(side="right", padx=16)
+        # Hidden until the background check finds a newer release.
+        self.update_lbl = tk.Label(
+            hdr, text="", bg="#0a0f1e", fg=WARN, cursor="hand2",
+            font=("Segoe UI", 10, "bold"))
 
         # ── Notebook
         nb = ttk.Notebook(self.root)
@@ -1396,6 +1534,127 @@ class RepackApp:
     # ══════════════════════════════════════════════════════════════════════════
     #  Startup: detect existing settings.ini
     # ══════════════════════════════════════════════════════════════════════════
+
+    # ── Update check ──────────────────────────────────────────────────────────
+
+    def _start_update_check(self):
+        threading.Thread(target=self._update_check_worker, daemon=True).start()
+
+    def _update_check_worker(self):
+        try:
+            result = check_for_update()
+        except Exception:
+            result = None
+        if result:
+            tag, url, asset = result
+            self.root.after(0, lambda: self._on_update_available(tag, url, asset))
+
+    def _on_update_available(self, tag, url, asset_url):
+        # Persistent clickable banner in the header ...
+        self.update_lbl.config(text=f"⬆  Update available: {tag}  —  click to install")
+        self.update_lbl.bind(
+            "<Button-1>", lambda _e: self._prompt_update(tag, url, asset_url))
+        self.update_lbl.pack(side="right", padx=12)
+        try:
+            self.log(f"[UPDATE] New version {tag} available — {url}")
+        except Exception:
+            pass
+        # ... and prompt once now.
+        self._prompt_update(tag, url, asset_url)
+
+    def _prompt_update(self, tag, url, asset_url):
+        frozen = getattr(sys, "frozen", False)
+        if frozen and asset_url:
+            if messagebox.askyesno(
+                    "Update available",
+                    f"A new version ({tag}) is available — you have v{__version__}.\n\n"
+                    "Download and install it now?\n"
+                    "The app will close and reopen automatically.",
+                    icon="info"):
+                self._run_self_update(asset_url, tag)
+        else:
+            # Dev run (.py) or a release with no exe asset — open the page.
+            if messagebox.askyesno(
+                    "Update available",
+                    f"A new version ({tag}) is available — you have v{__version__}.\n\n"
+                    "Open the download page?",
+                    icon="info"):
+                webbrowser.open(url)
+
+    def _run_self_update(self, asset_url, tag):
+        """Download the new exe, then swap it in and relaunch.  On Windows the
+        running exe can be renamed (not deleted) while running, so:
+        download → rename self to .old → move new into place → launch → exit."""
+        win = tk.Toplevel(self.root)
+        win.title("Updating")
+        win.configure(bg="#0a0f1e")
+        win.resizable(False, False)
+        win.grab_set()
+        win.update_idletasks()
+        pw, ph = self.root.winfo_width(), self.root.winfo_height()
+        px, py = self.root.winfo_rootx(), self.root.winfo_rooty()
+        w, h = 360, 120
+        win.geometry(f"{w}x{h}+{px + (pw - w)//2}+{py + (ph - h)//2}")
+        tk.Label(win, text=f"Downloading {tag} ...", bg="#0a0f1e", fg=FG,
+                 font=("Segoe UI", 10)).pack(pady=(24, 12))
+        bar = ttk.Progressbar(win, mode="indeterminate", length=300)
+        bar.pack()
+        bar.start(12)
+
+        def worker():
+            exe = Path(sys.executable)
+            new = exe.with_name(f"{exe.stem}.new{exe.suffix}")
+            try:
+                _download_stream(asset_url, new)
+            except Exception as exc:
+                self.root.after(0, lambda: self._update_failed(win, new, exc))
+                return
+            self.root.after(0, lambda: self._finalize_update(win, exe, new))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _update_failed(self, win, partial, exc):
+        try:
+            win.destroy()
+        except tk.TclError:
+            pass
+        try:
+            if partial.exists():
+                partial.unlink()
+        except OSError:
+            pass
+        messagebox.showerror("Update failed", f"Could not download the update:\n{exc}")
+
+    def _finalize_update(self, win, exe, new):
+        old = exe.with_name(f"{exe.stem}.old{exe.suffix}")
+        try:
+            if old.exists():
+                old.unlink()
+            os.replace(exe, old)   # rename the running exe (allowed on Windows)
+            os.replace(new, exe)   # move the freshly downloaded exe into place
+        except OSError as exc:
+            # Best effort to restore the original if the swap half-completed.
+            try:
+                if not exe.exists() and old.exists():
+                    os.replace(old, exe)
+            except OSError:
+                pass
+            try:
+                win.destroy()
+            except tk.TclError:
+                pass
+            messagebox.showerror(
+                "Update failed", f"Could not install the update:\n{exc}")
+            return
+        try:
+            subprocess.Popen([str(exe)], close_fds=True)
+        except OSError as exc:
+            messagebox.showerror(
+                "Update installed",
+                f"Update installed but the new version could not be launched "
+                f"automatically:\n{exc}\n\nPlease start it manually.")
+        self.root.destroy()
+        sys.exit(0)
 
     def _show_about(self):
         win = tk.Toplevel(self.root)
@@ -1421,6 +1680,8 @@ class RepackApp:
         # ── heart / title ─────────────────────────────────────────────────────
         tk.Label(win, text="AG Repack GUI", font=("Segoe UI", 17, "bold"),
                  fg=ACCENT, **pad).pack(pady=(22, 0))
+        tk.Label(win, text=f"version {__version__}", font=("Segoe UI", 9),
+                 fg=FG2, **pad).pack(pady=(2, 0))
         tk.Label(win, text="Made with ♥ by DMP of ARMGDDN Games,",
                  font=("Segoe UI", 10), fg="#f472b6", **pad).pack()
         tk.Label(win, text="for ARMGDDN Games.",
@@ -2425,6 +2686,9 @@ def _btn(parent, text, command):
 # ═══════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
+    if "--version" in sys.argv or "-V" in sys.argv:
+        print(f"AG Repack GUI v{__version__}")
+        sys.exit(0)
     root = tk.Tk()
     app  = RepackApp(root)
     root.mainloop()

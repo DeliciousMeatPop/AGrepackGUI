@@ -5,3 +5,9 @@ __pycache__/
 
 # Leftover temp compression scripts from interrupted runs
 Resource/_tmp_*.bat
+
+# PyInstaller build artefacts
+build/
+dist/
+*.spec
+version_info.txt

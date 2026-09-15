@@ -1625,7 +1625,9 @@ class RepackApp:
 
         def worker():
             base = Path(sys.executable).parent
-            zip_path = base / UPDATE_ZIP
+            # Keep the release zip's own filename — no renaming.
+            zip_name = asset_url.rsplit("/", 1)[-1].split("?", 1)[0] or "update.zip"
+            zip_path = base / zip_name
             try:
                 _download_stream(asset_url, zip_path)
             except Exception as exc:
@@ -1667,14 +1669,15 @@ class RepackApp:
         7-Zip ships beside the app; PowerShell's Expand-Archive is the fallback.
         On failure it keeps the zip, logs, and PAUSES so the error is visible."""
         exe_name = Path(sys.executable).name
-        seven    = base / "7z.exe"
+        zip_name = Path(zip_path).name
         bat = base / UPDATER_BAT
-        # %~1 app-folder path, %~2 exe name.
+        # %~1 app-folder path, %~2 exe name, %~3 the downloaded zip's own name.
         bat.write_text(
             "@echo off\r\n"
             'title AG Repack GUI - Updater\r\n'
             'cd /d "%~1"\r\n'
             'set "EXENAME=%~2"\r\n'
+            'set "ZIP=%~3"\r\n'
             'set "LOG=_update.log"\r\n'
             'echo [update] start %date% %time%> "%LOG%"\r\n'
             "echo.\r\n"
@@ -1683,22 +1686,22 @@ class RepackApp:
             'taskkill /f /im "%EXENAME%" >nul 2>&1\r\n'
             "ping 127.0.0.1 -n 6 >nul\r\n"
             'if exist "7z.exe" (\r\n'
-            '    "7z.exe" x -y "_update.zip" >> "%LOG%" 2>&1\r\n'
+            '    "7z.exe" x -y "%ZIP%" >> "%LOG%" 2>&1\r\n'
             "    if errorlevel 2 goto fail\r\n"
             ") else (\r\n"
-            "    powershell -NoProfile -Command \"Expand-Archive -LiteralPath '_update.zip' -DestinationPath '.' -Force\" >> \"%LOG%\" 2>&1\r\n"
+            "    powershell -NoProfile -Command \"Expand-Archive -LiteralPath '%ZIP%' -DestinationPath '.' -Force\" >> \"%LOG%\" 2>&1\r\n"
             "    if errorlevel 1 goto fail\r\n"
             ")\r\n"
-            'del /q "_update.zip" >nul 2>&1\r\n'
+            'del /q "%ZIP%" >nul 2>&1\r\n'
             'echo [update] success>> "%LOG%"\r\n'
             'start "" "%EXENAME%"\r\n'
             'del /q "%~f0"\r\n'
             "exit\r\n"
             ":fail\r\n"
-            'echo [update] FAILED - see %LOG%; _update.zip kept>> "%LOG%"\r\n'
+            'echo [update] FAILED - see %LOG%; %ZIP% kept>> "%LOG%"\r\n'
             "echo.\r\n"
             "echo   *** UPDATE FAILED ***\r\n"
-            "echo   The download (_update.zip) was kept; see _update.log.\r\n"
+            'echo   The download ^(%ZIP%^) was kept; see _update.log.\r\n'
             "echo.\r\n"
             'start "" "%EXENAME%"\r\n'
             "pause\r\n"
@@ -1709,7 +1712,7 @@ class RepackApp:
         new_console = 0x00000010 | 0x00000200
         try:
             subprocess.Popen(
-                ["cmd", "/c", str(bat), str(base), exe_name],
+                ["cmd", "/c", str(bat), str(base), exe_name, zip_name],
                 close_fds=True, creationflags=new_console)
         except OSError as exc:
             messagebox.showerror(

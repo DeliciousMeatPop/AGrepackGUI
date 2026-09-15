@@ -1704,54 +1704,57 @@ class RepackApp:
         exe_name = Path(sys.executable).name
         bat = base / UPDATER_BAT
         # %~1 app dir, %~2 staging dir, %~3 exe name, %~4 staging root.
-        # The running app locks its own exe + runtime DLLs, so we must:
-        #   1. WAIT until the exe handle is released (probe by opening it for
-        #      append — that fails while the old process still holds it),
-        #   2. copy the new build over, then CHECK robocopy's exit code
-        #      (0-7 = success, >=8 = failure) instead of assuming it worked.
-        # On failure we keep the staging folder and write _update.log so the
-        # swap can be retried/diagnosed, rather than silently discarding it.
+        # The running app locks its own exe + runtime DLLs while it's alive, so
+        # the swap must happen from this external script after the app exits.
+        # robocopy's own /R retries wait out that lock (it keeps retrying the
+        # locked exe until the old process releases it), so no clever wait
+        # probe is needed. We then CHECK robocopy's exit code (0-7 = success,
+        # >=8 = failure) instead of assuming it worked — the old updater's bug
+        # was blindly deleting the staging folder and relaunching the OLD exe
+        # even when the copy had failed. On failure we keep the staging folder,
+        # write _update.log, and PAUSE the window so the error is visible.
         bat.write_text(
             "@echo off\r\n"
-            "setlocal enableextensions\r\n"
+            'title AG Repack GUI - Updater\r\n'
             'set "APPDIR=%~1"\r\n'
             'set "COPYFROM=%~2"\r\n'
             'set "EXENAME=%~3"\r\n'
             'set "STAGEROOT=%~4"\r\n'
             'set "LOG=%APPDIR%\\_update.log"\r\n'
             'echo [update] start %date% %time%> "%LOG%"\r\n'
-            "set /a tries=0\r\n"
-            ":waitloop\r\n"
-            '2>nul (>>"%APPDIR%\\%EXENAME%" (call )) && goto unlocked\r\n'
-            "set /a tries+=1\r\n"
-            "if %tries% geq 120 goto locked\r\n"
-            "ping 127.0.0.1 -n 2 >nul\r\n"
-            "goto waitloop\r\n"
-            ":unlocked\r\n"
-            'echo [update] exe free after %tries% tries>> "%LOG%"\r\n'
-            'robocopy "%COPYFROM%" "%APPDIR%" /E /R:10 /W:2 /NFL /NDL /NJH /NJS >> "%LOG%"\r\n'
-            "if %ERRORLEVEL% geq 8 goto copyfail\r\n"
-            'echo [update] copy ok>> "%LOG%"\r\n'
+            "echo.\r\n"
+            "echo   Updating AG Repack GUI - please wait...\r\n"
+            "echo.\r\n"
+            "rem /R:30 /W:1 keeps retrying the locked exe until the old app\r\n"
+            "rem exits (~a few seconds); no /PURGE so user files are kept.\r\n"
+            'robocopy "%COPYFROM%" "%APPDIR%" /E /R:30 /W:1 /NFL /NDL /NJH /NJS >> "%LOG%"\r\n'
+            "set RC=%ERRORLEVEL%\r\n"
+            'echo [update] robocopy exit %RC%>> "%LOG%"\r\n'
+            "if %RC% geq 8 goto fail\r\n"
+            'echo [update] success>> "%LOG%"\r\n'
+            'rmdir /s /q "%STAGEROOT%" 2>nul\r\n'
             'start "" "%APPDIR%\\%EXENAME%"\r\n'
-            'rmdir /s /q "%STAGEROOT%"\r\n'
             'del /q "%~f0"\r\n'
-            "exit /b 0\r\n"
-            ":locked\r\n"
-            'echo [update] ERROR: app still running; update kept in "%STAGEROOT%">> "%LOG%"\r\n'
+            "exit\r\n"
+            ":fail\r\n"
+            'echo [update] FAILED (robocopy %RC%); kept in "%STAGEROOT%">> "%LOG%"\r\n'
+            "echo.\r\n"
+            "echo   *** UPDATE FAILED ^(robocopy code %RC%^) ***\r\n"
+            "echo   The new files are still in: %STAGEROOT%\r\n"
+            'echo   Details in: %LOG%\r\n'
+            "echo.\r\n"
             'start "" "%APPDIR%\\%EXENAME%"\r\n'
-            "exit /b 1\r\n"
-            ":copyfail\r\n"
-            'echo [update] ERROR: robocopy failed; update kept in "%STAGEROOT%">> "%LOG%"\r\n'
-            'start "" "%APPDIR%\\%EXENAME%"\r\n'
-            "exit /b 1\r\n",
+            "pause\r\n"
+            "exit\r\n",
             encoding="utf-8")
-        # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP so it outlives this exit.
-        detached = 0x00000008 | 0x00000200
+        # CREATE_NEW_CONSOLE gives the updater its own visible window (so a
+        # failure is seen, not silent) that outlives this process exiting.
+        new_console = 0x00000010 | 0x00000200
         try:
             subprocess.Popen(
                 ["cmd", "/c", str(bat), str(base), str(staging), exe_name,
                  str(base / UPDATE_STAGING)],
-                close_fds=True, creationflags=detached)
+                close_fds=True, creationflags=new_console)
         except OSError as exc:
             messagebox.showerror(
                 "Update failed", f"Could not start the updater:\n{exc}")

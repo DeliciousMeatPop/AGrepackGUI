@@ -29,8 +29,11 @@ jobs:
         shell: pwsh
         run: |
           $ver = "${{ inputs.version }}".Trim().TrimStart('v')
-          if ($ver -notmatch '^\d+(\.\d+){1,3}$') {
-            Write-Error "Invalid version '$ver' — use digits and dots, e.g. 1.0.1"
+          # Require major.minor.patch (2-3 dots). A two-segment version like
+          # "1.06" parses to (1, 6), which sorts ABOVE "1.0.7" -> (1, 0, 7) and
+          # breaks the in-app update check, so reject it up front.
+          if ($ver -notmatch '^\d+\.\d+\.\d+(\.\d+)?$') {
+            Write-Error "Invalid version '$ver' — use major.minor.patch, e.g. 1.0.7"
             exit 1
           }
           $path = "DMPRepackGUI.py"

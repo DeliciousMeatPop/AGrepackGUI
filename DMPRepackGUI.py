@@ -1009,6 +1009,27 @@ def cleanup_update_leftovers() -> None:
             pass
 
 
+def pending_update_staging() -> Optional[Path]:
+    """If a previous self-update downloaded a build but never swapped it in
+    (e.g. the files were still locked when the updater ran), return the
+    staging dir that still holds the new exe so the swap can be retried.
+    Returns None when there's nothing to resume.  Frozen build only."""
+    if not getattr(sys, "frozen", False):
+        return None
+    base    = Path(sys.executable).parent
+    staging = base / UPDATE_STAGING
+    if not staging.is_dir():
+        return None
+    exe_name = Path(sys.executable).name
+    if (staging / exe_name).is_file():
+        return staging
+    # The zip may wrap everything in a single top-level folder.
+    subdirs = [e for e in staging.iterdir() if e.is_dir()]
+    if len(subdirs) == 1 and (subdirs[0] / exe_name).is_file():
+        return subdirs[0]
+    return None
+
+
 def _steam_cdn_get(appid: str, fname: str) -> Optional[bytes]:
     """Fetch a per-app CDN asset (library_hero.jpg, logo.png, ...) trying each
     mirror in turn.  Returns the bytes or None if every host failed / 404'd."""
@@ -1449,11 +1470,14 @@ class RepackApp:
         self.repacker_var.set(get_repacker())
         # Run startup check after the window is fully drawn
         self.root.after(150, self._check_existing_settings)
-        # Clear any leftover update staging from a previous self-update, then
-        # look for a newer release — both in the background so the UI never
-        # blocks.
-        threading.Thread(target=cleanup_update_leftovers, daemon=True).start()
-        self.root.after(1200, self._start_update_check)
+        # If a previous self-update downloaded a build but never swapped it in,
+        # offer to finish it now; otherwise clear any stray leftovers and look
+        # for a newer release — all without blocking the UI.
+        if pending_update_staging() is not None:
+            self.root.after(400, self._resume_pending_update)
+        else:
+            threading.Thread(target=cleanup_update_leftovers, daemon=True).start()
+            self.root.after(1200, self._start_update_check)
 
     # ── tk.Variables ─────────────────────────────────────────────────────────
 
@@ -1664,6 +1688,19 @@ class RepackApp:
         messagebox.showerror("Update failed", f"Could not download the update:\n{exc}")
 
     def _finalize_update(self, win, base, staging):
+        if self._spawn_updater(base, staging):
+            self.root.destroy()
+            sys.exit(0)
+        # Spawn failed — _spawn_updater already showed the error; keep running.
+        try:
+            win.destroy()
+        except tk.TclError:
+            pass
+
+    def _spawn_updater(self, base, staging) -> bool:
+        """Write the updater batch and launch it detached so it survives this
+        process exiting.  Returns True on launch, False (with an error box)
+        if the updater couldn't be started."""
         exe_name = Path(sys.executable).name
         bat = base / UPDATER_BAT
         # %~1 app dir, %~2 staging dir, %~3 exe name, %~4 staging root.
@@ -1716,15 +1753,32 @@ class RepackApp:
                  str(base / UPDATE_STAGING)],
                 close_fds=True, creationflags=detached)
         except OSError as exc:
-            try:
-                win.destroy()
-            except tk.TclError:
-                pass
             messagebox.showerror(
                 "Update failed", f"Could not start the updater:\n{exc}")
+            return False
+        return True
+
+    def _resume_pending_update(self):
+        """A prior update downloaded a build but the swap didn't complete (the
+        old exe/DLLs were still locked).  Offer to finish it now: the updater
+        waits for this process to exit before copying, so relaunch-and-swap
+        succeeds where the in-place attempt failed."""
+        staging = pending_update_staging()
+        if staging is None:
             return
-        self.root.destroy()
-        sys.exit(0)
+        base = Path(sys.executable).parent
+        if not messagebox.askyesno(
+                "Finish update",
+                "An update was downloaded earlier but not fully applied.\n\n"
+                "Apply it now? The app will close, swap in the new files, "
+                "and reopen."):
+            # Declined — clear the leftovers so we don't ask again next launch.
+            threading.Thread(target=cleanup_update_leftovers, daemon=True).start()
+            self.root.after(1200, self._start_update_check)
+            return
+        if self._spawn_updater(base, staging):
+            self.root.destroy()
+            sys.exit(0)
 
     def _show_about(self):
         win = tk.Toplevel(self.root)

@@ -740,6 +740,14 @@ def work_zip_and_name(log) -> bool:
     if appid:
         (out_folder / appid).touch()
 
+    # Drop crashfix.bat into the repack, loose next to the appid file (not zipped)
+    crashfix_src = SETUP_DIR / "crashfix.bat"
+    if crashfix_src.exists():
+        shutil.copy2(str(crashfix_src), str(out_folder / crashfix_src.name))
+        log(f"  Added crashfix.bat to: {out_folder}")
+    else:
+        log(f"  [WARN] crashfix.bat not found in Setup — skipped: {crashfix_src}")
+
     # VR Optional: restore backed-up files for the 2nd pass
     if optional.exists():
         dll_save = SAVE_DIR / "AGRepackInstaller.dll"

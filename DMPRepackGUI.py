@@ -1009,27 +1009,6 @@ def cleanup_update_leftovers() -> None:
             pass
 
 
-def pending_update_staging() -> Optional[Path]:
-    """If a previous self-update downloaded a build but never swapped it in
-    (e.g. the files were still locked when the updater ran), return the
-    staging dir that still holds the new exe so the swap can be retried.
-    Returns None when there's nothing to resume.  Frozen build only."""
-    if not getattr(sys, "frozen", False):
-        return None
-    base    = Path(sys.executable).parent
-    staging = base / UPDATE_STAGING
-    if not staging.is_dir():
-        return None
-    exe_name = Path(sys.executable).name
-    if (staging / exe_name).is_file():
-        return staging
-    # The zip may wrap everything in a single top-level folder.
-    subdirs = [e for e in staging.iterdir() if e.is_dir()]
-    if len(subdirs) == 1 and (subdirs[0] / exe_name).is_file():
-        return subdirs[0]
-    return None
-
-
 def _steam_cdn_get(appid: str, fname: str) -> Optional[bytes]:
     """Fetch a per-app CDN asset (library_hero.jpg, logo.png, ...) trying each
     mirror in turn.  Returns the bytes or None if every host failed / 404'd."""
@@ -1470,14 +1449,10 @@ class RepackApp:
         self.repacker_var.set(get_repacker())
         # Run startup check after the window is fully drawn
         self.root.after(150, self._check_existing_settings)
-        # If a previous self-update downloaded a build but never swapped it in,
-        # offer to finish it now; otherwise clear any stray leftovers and look
-        # for a newer release — all without blocking the UI.
-        if pending_update_staging() is not None:
-            self.root.after(400, self._resume_pending_update)
-        else:
-            threading.Thread(target=cleanup_update_leftovers, daemon=True).start()
-            self.root.after(1200, self._start_update_check)
+        # Clear any leftover update files from a previous self-update, then look
+        # for a newer release — both in the background so the UI never blocks.
+        threading.Thread(target=cleanup_update_leftovers, daemon=True).start()
+        self.root.after(1200, self._start_update_check)
 
     # ── tk.Variables ─────────────────────────────────────────────────────────
 
@@ -1627,12 +1602,11 @@ class RepackApp:
                 webbrowser.open(url)
 
     def _run_self_update(self, asset_url, tag):
-        """Download the new build (a .zip of exe + _internal), extract it, then
-        hand off to a small batch script that runs after this process exits:
-        it waits, copies the new files over the app folder (leaving the repack
-        toolkit and settings untouched), relaunches the exe, and deletes itself.
-        A running app can't overwrite its own locked DLLs, so the swap must
-        happen from outside the process."""
+        """Download the release .zip, then hand off to a small batch script that
+        force-kills this exe, waits, extracts the zip straight over the app
+        folder (overwriting), relaunches, and deletes itself.  A running app
+        can't overwrite its own locked files, so the swap happens from an
+        external script after the process is killed."""
         win = tk.Toplevel(self.root)
         win.title("Updating")
         win.configure(bg="#0a0f1e")
@@ -1651,32 +1625,19 @@ class RepackApp:
 
         def worker():
             base = Path(sys.executable).parent
-            staging = base / UPDATE_STAGING
-            zip_path = base / UPDATE_ZIP
+            # Keep the release zip's own filename — no renaming.
+            zip_name = asset_url.rsplit("/", 1)[-1].split("?", 1)[0] or "update.zip"
+            zip_path = base / zip_name
             try:
-                shutil.rmtree(staging, ignore_errors=True)
                 _download_stream(asset_url, zip_path)
-                staging.mkdir(parents=True, exist_ok=True)
-                with zipfile.ZipFile(zip_path) as zf:
-                    zf.extractall(staging)
-                try:
-                    zip_path.unlink()
-                except OSError:
-                    pass
-                # If the zip wrapped everything in a single top-level folder,
-                # descend into it so we copy the exe + _internal, not the wrapper.
-                entries = list(staging.iterdir())
-                if len(entries) == 1 and entries[0].is_dir():
-                    staging = entries[0]
             except Exception as exc:
                 try:
                     zip_path.unlink()
                 except OSError:
                     pass
-                shutil.rmtree(base / UPDATE_STAGING, ignore_errors=True)
                 self.root.after(0, lambda: self._update_failed(win, exc))
                 return
-            self.root.after(0, lambda: self._finalize_update(win, base, staging))
+            self.root.after(0, lambda: self._finalize_update(win, base, zip_path))
 
         threading.Thread(target=worker, daemon=True).start()
 
@@ -1687,8 +1648,8 @@ class RepackApp:
             pass
         messagebox.showerror("Update failed", f"Could not download the update:\n{exc}")
 
-    def _finalize_update(self, win, base, staging):
-        if self._spawn_updater(base, staging):
+    def _finalize_update(self, win, base, zip_path):
+        if self._spawn_updater(base, zip_path):
             self.root.destroy()
             sys.exit(0)
         # Spawn failed — _spawn_updater already showed the error; keep running.
@@ -1697,91 +1658,67 @@ class RepackApp:
         except tk.TclError:
             pass
 
-    def _spawn_updater(self, base, staging) -> bool:
-        """Write the updater batch and launch it detached so it survives this
-        process exiting.  Returns True on launch, False (with an error box)
-        if the updater couldn't be started."""
+    def _spawn_updater(self, base, zip_path) -> bool:
+        """Write the updater batch and launch it in its own visible console so
+        it survives this process being killed.  Returns True on launch, False
+        (with an error box) if the updater couldn't be started.
+
+        Dead simple by design: force-kill the exe (guarantees the file lock is
+        gone — no waiting on a graceful exit that might not happen), pause, then
+        extract the release zip straight over the app folder, overwriting.
+        7-Zip ships beside the app; PowerShell's Expand-Archive is the fallback.
+        On failure it keeps the zip, logs, and PAUSES so the error is visible."""
         exe_name = Path(sys.executable).name
+        zip_name = Path(zip_path).name
         bat = base / UPDATER_BAT
-        # %~1 app dir, %~2 staging dir, %~3 exe name, %~4 staging root.
-        # The running app locks its own exe + runtime DLLs while it's alive, so
-        # the swap must happen from this external script after the app exits.
-        # robocopy's own /R retries wait out that lock (it keeps retrying the
-        # locked exe until the old process releases it), so no clever wait
-        # probe is needed. We then CHECK robocopy's exit code (0-7 = success,
-        # >=8 = failure) instead of assuming it worked — the old updater's bug
-        # was blindly deleting the staging folder and relaunching the OLD exe
-        # even when the copy had failed. On failure we keep the staging folder,
-        # write _update.log, and PAUSE the window so the error is visible.
+        # %~1 app-folder path, %~2 exe name, %~3 the downloaded zip's own name.
         bat.write_text(
             "@echo off\r\n"
             'title AG Repack GUI - Updater\r\n'
-            'set "APPDIR=%~1"\r\n'
-            'set "COPYFROM=%~2"\r\n'
-            'set "EXENAME=%~3"\r\n'
-            'set "STAGEROOT=%~4"\r\n'
-            'set "LOG=%APPDIR%\\_update.log"\r\n'
+            'cd /d "%~1"\r\n'
+            'set "EXENAME=%~2"\r\n'
+            'set "ZIP=%~3"\r\n'
+            'set "LOG=_update.log"\r\n'
             'echo [update] start %date% %time%> "%LOG%"\r\n'
             "echo.\r\n"
             "echo   Updating AG Repack GUI - please wait...\r\n"
             "echo.\r\n"
-            "rem /R:30 /W:1 keeps retrying the locked exe until the old app\r\n"
-            "rem exits (~a few seconds); no /PURGE so user files are kept.\r\n"
-            'robocopy "%COPYFROM%" "%APPDIR%" /E /R:30 /W:1 /NFL /NDL /NJH /NJS >> "%LOG%"\r\n'
-            "set RC=%ERRORLEVEL%\r\n"
-            'echo [update] robocopy exit %RC%>> "%LOG%"\r\n'
-            "if %RC% geq 8 goto fail\r\n"
+            'taskkill /f /im "%EXENAME%" >nul 2>&1\r\n'
+            "ping 127.0.0.1 -n 6 >nul\r\n"
+            'if exist "7z.exe" (\r\n'
+            '    "7z.exe" x -y "%ZIP%" >> "%LOG%" 2>&1\r\n'
+            "    if errorlevel 2 goto fail\r\n"
+            ") else (\r\n"
+            "    powershell -NoProfile -Command \"Expand-Archive -LiteralPath '%ZIP%' -DestinationPath '.' -Force\" >> \"%LOG%\" 2>&1\r\n"
+            "    if errorlevel 1 goto fail\r\n"
+            ")\r\n"
+            'del /q "%ZIP%" >nul 2>&1\r\n'
             'echo [update] success>> "%LOG%"\r\n'
-            'rmdir /s /q "%STAGEROOT%" 2>nul\r\n'
-            'start "" "%APPDIR%\\%EXENAME%"\r\n'
+            'start "" "%EXENAME%"\r\n'
             'del /q "%~f0"\r\n'
             "exit\r\n"
             ":fail\r\n"
-            'echo [update] FAILED (robocopy %RC%); kept in "%STAGEROOT%">> "%LOG%"\r\n'
+            'echo [update] FAILED - see %LOG%; %ZIP% kept>> "%LOG%"\r\n'
             "echo.\r\n"
-            "echo   *** UPDATE FAILED ^(robocopy code %RC%^) ***\r\n"
-            "echo   The new files are still in: %STAGEROOT%\r\n"
-            'echo   Details in: %LOG%\r\n'
+            "echo   *** UPDATE FAILED ***\r\n"
+            'echo   The download ^(%ZIP%^) was kept; see _update.log.\r\n'
             "echo.\r\n"
-            'start "" "%APPDIR%\\%EXENAME%"\r\n'
+            'start "" "%EXENAME%"\r\n'
             "pause\r\n"
             "exit\r\n",
             encoding="utf-8")
         # CREATE_NEW_CONSOLE gives the updater its own visible window (so a
-        # failure is seen, not silent) that outlives this process exiting.
+        # failure is seen, not silent) that outlives this process being killed.
         new_console = 0x00000010 | 0x00000200
         try:
             subprocess.Popen(
-                ["cmd", "/c", str(bat), str(base), str(staging), exe_name,
-                 str(base / UPDATE_STAGING)],
+                ["cmd", "/c", str(bat), str(base), exe_name, zip_name],
                 close_fds=True, creationflags=new_console)
         except OSError as exc:
             messagebox.showerror(
                 "Update failed", f"Could not start the updater:\n{exc}")
             return False
         return True
-
-    def _resume_pending_update(self):
-        """A prior update downloaded a build but the swap didn't complete (the
-        old exe/DLLs were still locked).  Offer to finish it now: the updater
-        waits for this process to exit before copying, so relaunch-and-swap
-        succeeds where the in-place attempt failed."""
-        staging = pending_update_staging()
-        if staging is None:
-            return
-        base = Path(sys.executable).parent
-        if not messagebox.askyesno(
-                "Finish update",
-                "An update was downloaded earlier but not fully applied.\n\n"
-                "Apply it now? The app will close, swap in the new files, "
-                "and reopen."):
-            # Declined — clear the leftovers so we don't ask again next launch.
-            threading.Thread(target=cleanup_update_leftovers, daemon=True).start()
-            self.root.after(1200, self._start_update_check)
-            return
-        if self._spawn_updater(base, staging):
-            self.root.destroy()
-            sys.exit(0)
 
     def _show_about(self):
         win = tk.Toplevel(self.root)

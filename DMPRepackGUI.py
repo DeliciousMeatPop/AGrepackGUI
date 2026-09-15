@@ -1666,20 +1666,47 @@ class RepackApp:
     def _finalize_update(self, win, base, staging):
         exe_name = Path(sys.executable).name
         bat = base / UPDATER_BAT
-        # %~1 app dir, %~2 staging dir, %~3 exe name.  robocopy /R:/W: retries
-        # briefly in case a handle lingers; no /PURGE, so user files are kept.
+        # %~1 app dir, %~2 staging dir, %~3 exe name, %~4 staging root.
+        # The running app locks its own exe + runtime DLLs, so we must:
+        #   1. WAIT until the exe handle is released (probe by opening it for
+        #      append — that fails while the old process still holds it),
+        #   2. copy the new build over, then CHECK robocopy's exit code
+        #      (0-7 = success, >=8 = failure) instead of assuming it worked.
+        # On failure we keep the staging folder and write _update.log so the
+        # swap can be retried/diagnosed, rather than silently discarding it.
         bat.write_text(
             "@echo off\r\n"
-            "setlocal\r\n"
+            "setlocal enableextensions\r\n"
             'set "APPDIR=%~1"\r\n'
             'set "COPYFROM=%~2"\r\n'
             'set "EXENAME=%~3"\r\n'
             'set "STAGEROOT=%~4"\r\n'
-            "ping 127.0.0.1 -n 3 >nul\r\n"
-            'robocopy "%COPYFROM%" "%APPDIR%" /E /R:20 /W:1 /NFL /NDL /NJH /NJS >nul\r\n'
+            'set "LOG=%APPDIR%\\_update.log"\r\n'
+            'echo [update] start %date% %time%> "%LOG%"\r\n'
+            "set /a tries=0\r\n"
+            ":waitloop\r\n"
+            '2>nul (>>"%APPDIR%\\%EXENAME%" (call )) && goto unlocked\r\n'
+            "set /a tries+=1\r\n"
+            "if %tries% geq 120 goto locked\r\n"
+            "ping 127.0.0.1 -n 2 >nul\r\n"
+            "goto waitloop\r\n"
+            ":unlocked\r\n"
+            'echo [update] exe free after %tries% tries>> "%LOG%"\r\n'
+            'robocopy "%COPYFROM%" "%APPDIR%" /E /R:10 /W:2 /NFL /NDL /NJH /NJS >> "%LOG%"\r\n'
+            "if %ERRORLEVEL% geq 8 goto copyfail\r\n"
+            'echo [update] copy ok>> "%LOG%"\r\n'
             'start "" "%APPDIR%\\%EXENAME%"\r\n'
             'rmdir /s /q "%STAGEROOT%"\r\n'
-            'del /q "%~f0"\r\n',
+            'del /q "%~f0"\r\n'
+            "exit /b 0\r\n"
+            ":locked\r\n"
+            'echo [update] ERROR: app still running; update kept in "%STAGEROOT%">> "%LOG%"\r\n'
+            'start "" "%APPDIR%\\%EXENAME%"\r\n'
+            "exit /b 1\r\n"
+            ":copyfail\r\n"
+            'echo [update] ERROR: robocopy failed; update kept in "%STAGEROOT%">> "%LOG%"\r\n'
+            'start "" "%APPDIR%\\%EXENAME%"\r\n'
+            "exit /b 1\r\n",
             encoding="utf-8")
         # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP so it outlives this exit.
         detached = 0x00000008 | 0x00000200

@@ -1671,39 +1671,47 @@ class RepackApp:
         exe_name = Path(sys.executable).name
         zip_name = Path(zip_path).name
         bat = base / UPDATER_BAT
-        # %~1 app-folder path, %~2 exe name, %~3 the downloaded zip's own name.
+        # Fully self-contained: no arguments needed. The exe and zip names are
+        # baked in (they never change), and it works from its own folder — so it
+        # runs the same whether the app launches it OR you double-click it.
         bat.write_text(
             "@echo off\r\n"
             'title AG Repack GUI - Updater\r\n'
-            'cd /d "%~1"\r\n'
-            'set "EXENAME=%~2"\r\n'
-            'set "ZIP=%~3"\r\n'
+            'cd /d "%~dp0"\r\n'
             'set "LOG=_update.log"\r\n'
             'echo [update] start %date% %time%> "%LOG%"\r\n'
             "echo.\r\n"
             "echo   Updating AG Repack GUI - please wait...\r\n"
             "echo.\r\n"
-            'taskkill /f /im "%EXENAME%" >nul 2>&1\r\n'
+            f'taskkill /f /im "{exe_name}" >nul 2>&1\r\n'
             "ping 127.0.0.1 -n 6 >nul\r\n"
+            f'if not exist "{zip_name}" goto nozip\r\n'
             'if exist "7z.exe" (\r\n'
-            '    "7z.exe" x -y "%ZIP%" >> "%LOG%" 2>&1\r\n'
+            f'    "7z.exe" x -y "{zip_name}" >> "%LOG%" 2>&1\r\n'
             "    if errorlevel 2 goto fail\r\n"
             ") else (\r\n"
-            "    powershell -NoProfile -Command \"Expand-Archive -LiteralPath '%ZIP%' -DestinationPath '.' -Force\" >> \"%LOG%\" 2>&1\r\n"
+            f"    powershell -NoProfile -Command \"Expand-Archive -LiteralPath '{zip_name}' -DestinationPath '.' -Force\" >> \"%LOG%\" 2>&1\r\n"
             "    if errorlevel 1 goto fail\r\n"
             ")\r\n"
-            'del /q "%ZIP%" >nul 2>&1\r\n'
+            f'del /q "{zip_name}" >nul 2>&1\r\n'
             'echo [update] success>> "%LOG%"\r\n'
-            'start "" "%EXENAME%"\r\n'
+            f'start "" "{exe_name}"\r\n'
             'del /q "%~f0"\r\n'
             "exit\r\n"
+            ":nozip\r\n"
+            f'echo [update] FAILED - {zip_name} not found>> "%LOG%"\r\n'
+            "echo.\r\n"
+            f"echo   *** UPDATE FAILED - {zip_name} not found ***\r\n"
+            f'start "" "{exe_name}"\r\n'
+            "pause\r\n"
+            "exit\r\n"
             ":fail\r\n"
-            'echo [update] FAILED - see %LOG%; %ZIP% kept>> "%LOG%"\r\n'
+            f'echo [update] FAILED - see %LOG%; {zip_name} kept>> "%LOG%"\r\n'
             "echo.\r\n"
             "echo   *** UPDATE FAILED ***\r\n"
-            'echo   The download ^(%ZIP%^) was kept; see _update.log.\r\n'
+            "echo   The download was kept; see _update.log.\r\n"
             "echo.\r\n"
-            'start "" "%EXENAME%"\r\n'
+            f'start "" "{exe_name}"\r\n'
             "pause\r\n"
             "exit\r\n",
             encoding="utf-8")
@@ -1712,7 +1720,7 @@ class RepackApp:
         new_console = 0x00000010 | 0x00000200
         try:
             subprocess.Popen(
-                ["cmd", "/c", str(bat), str(base), exe_name, zip_name],
+                ["cmd", "/c", str(bat)],
                 close_fds=True, creationflags=new_console)
         except OSError as exc:
             messagebox.showerror(

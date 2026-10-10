@@ -52,6 +52,13 @@ COMPIL32       = BASE_DIR / "Resources" / "IS_Files" / "Compil32Ex.exe"
 ARC_EXE        = COMPRESSOR / "Resources" / "Win64" / "Arc.exe"
 APP_ICON       = BASE_DIR / "setup.ico"
 
+# Update-patch maker (XDelta/) — everything relative to the repacker's own folder
+XDELTA_DIR     = BASE_DIR / "XDelta"
+PATCH_GUI_PS1  = XDELTA_DIR / "make_patch_gui.ps1"
+PATCH_OLD_DIR  = XDELTA_DIR / "Games" / "old"
+PATCH_NEW_DIR  = XDELTA_DIR / "Games" / "new"
+PATCH_OLD_TAG  = "-ARMGDDN"
+
 INI_TEMPLATES = {
     "PC":          RESOURCE_DIR / "2.ini",
     "VR":          RESOURCE_DIR / "1.ini",
@@ -681,6 +688,19 @@ def save_repack_log(log_text: str, log) -> None:
 
 # ── Zip & Name ───────────────────────────────────────────────────────────────
 
+def release_name_parts(lines: list) -> tuple:
+    """(game name, build, group tag) exactly as the finished repack is named."""
+    name  = sanitize_name(ini_get(lines, "Name", "Game"))
+    build = ini_get(lines, "Buildversion", "")
+    admin = ini_get(lines, "RunAppAsAdmin", "0")
+    if (BASE_DIR / "vroptional.txt").exists():
+        name += " VR"
+    group = "-ARMGDDN"
+    if admin.strip() == "1":
+        group += " + OFME"
+    return name, build, group
+
+
 def work_zip_and_name(log) -> bool:
     if not SETTINGS_INI.exists():
         log("[ERROR] settings.ini not found.")
@@ -690,18 +710,9 @@ def work_zip_and_name(log) -> bool:
         return False
 
     lines  = ini_read(SETTINGS_INI)
-    name   = sanitize_name(ini_get(lines, "Name", "Game"))
     appid  = ini_get(lines, "APPID", "")
-    build  = ini_get(lines, "Buildversion", "")
-    admin  = ini_get(lines, "RunAppAsAdmin", "0")
-
     optional = BASE_DIR / "vroptional.txt"
-    if optional.exists():
-        name += " VR"
-
-    group = "-ARMGDDN"
-    if admin.strip() == "1":
-        group += " + OFME"
+    name, build, group = release_name_parts(lines)
 
     zip_name    = f"{name} v{build} {group}.7z"
     folder_name = f"{name} v{build} {group}"
@@ -759,6 +770,121 @@ def work_zip_and_name(log) -> bool:
         optional.unlink()
         log("  VR Optional files restored for second pass.")
 
+    return True
+
+
+# ── Update patch (XDelta) ────────────────────────────────────────────────────
+# Flow: the OLD repack is silently installed to XDelta\Games\old while the new
+# one compresses; once the new installer exists it is silently installed to
+# XDelta\Games\new, then the patch maker opens pre-filled while zipping carries on.
+
+def patch_clear_dirs(log) -> None:
+    """Empty Games/old and Games/new (keeping their .gitkeep placeholders)."""
+    for d in (PATCH_OLD_DIR, PATCH_NEW_DIR):
+        d.mkdir(parents=True, exist_ok=True)
+        for item in d.iterdir():
+            if item.name in (".gitkeep", ".gitignore"):
+                continue
+            if item.is_dir():
+                shutil.rmtree(item, ignore_errors=True)
+            else:
+                try:
+                    item.unlink()
+                except OSError:
+                    pass
+    log("  Cleared XDelta\\Games\\old and XDelta\\Games\\new.")
+
+
+def patch_dirs_dirty() -> bool:
+    return any(item.name not in (".gitkeep", ".gitignore")
+               for d in (PATCH_OLD_DIR, PATCH_NEW_DIR) if d.exists()
+               for item in d.iterdir())
+
+
+def _run_installer(exe: Path, args: str) -> int:
+    """Run an installer, wait for it and return its exit code.  The installers
+    ask for administrator rights; Python's normal process launch refuses
+    those when the repacker isn't elevated (WinError 740), so fall back to
+    ShellExecuteEx 'runas', which raises the UAC prompt instead."""
+    cmdline = f'"{exe}" {args}'
+    try:
+        return subprocess.run(cmdline, cwd=str(exe.parent)).returncode
+    except OSError as e:
+        if getattr(e, "winerror", None) != 740:
+            raise
+
+    import ctypes
+    from ctypes import wintypes
+
+    class SHELLEXECUTEINFOW(ctypes.Structure):
+        _fields_ = [("cbSize", wintypes.DWORD), ("fMask", wintypes.ULONG),
+                    ("hwnd", wintypes.HWND), ("lpVerb", wintypes.LPCWSTR),
+                    ("lpFile", wintypes.LPCWSTR), ("lpParameters", wintypes.LPCWSTR),
+                    ("lpDirectory", wintypes.LPCWSTR), ("nShow", ctypes.c_int),
+                    ("hInstApp", wintypes.HINSTANCE), ("lpIDList", ctypes.c_void_p),
+                    ("lpClass", wintypes.LPCWSTR), ("hkeyClass", wintypes.HKEY),
+                    ("dwHotKey", wintypes.DWORD), ("hIcon", wintypes.HANDLE),
+                    ("hProcess", wintypes.HANDLE)]
+
+    SEE_MASK_NOCLOSEPROCESS = 0x40
+    info = SHELLEXECUTEINFOW()
+    info.cbSize       = ctypes.sizeof(info)
+    info.fMask        = SEE_MASK_NOCLOSEPROCESS
+    info.lpVerb       = "runas"
+    info.lpFile       = str(exe)
+    info.lpParameters = args
+    info.lpDirectory  = str(exe.parent)
+    info.nShow        = 0   # SW_HIDE
+    if not ctypes.windll.shell32.ShellExecuteExW(ctypes.byref(info)):
+        return -1           # UAC declined
+    ctypes.windll.kernel32.WaitForSingleObject(info.hProcess, 0xFFFFFFFF)
+    code = wintypes.DWORD()
+    ctypes.windll.kernel32.GetExitCodeProcess(info.hProcess, ctypes.byref(code))
+    ctypes.windll.kernel32.CloseHandle(info.hProcess)
+    return code.value
+
+
+def patch_install(label: str, installer: Path, dest: Path, log,
+                  uninstaller: bool = True) -> bool:
+    """Silently install a repack into dest (Inno Setup switches).  /LANG skips
+    the installer's language picker and /NOICONS/TASKS keep it from adding
+    shortcuts.  uninstaller=False adds /NOUNINSTALL (our Script.iss switch):
+    the NEW repack ships without an uninstaller, so the patch deletes the old
+    one from the user's install instead of leaving it behind, broken."""
+    if not installer.exists():
+        log(f"[ERROR] {label} repack installer not found: {installer}")
+        return False
+    dest.mkdir(parents=True, exist_ok=True)
+    log(f"  Installing {label} repack silently  →  {dest}")
+    args = (f'/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /NOICONS /TASKS="" '
+            f'/LANG=english /DIR="{dest}"' + ("" if uninstaller else " /NOUNINSTALL"))
+    try:
+        code = _run_installer(installer, args)
+    except OSError as e:
+        log(f"[ERROR] Could not start the {label} installer: {e}")
+        return False
+    if code != 0:
+        log(f"[ERROR] {label} installer exited with code {code}.")
+        return False
+    if not any(dest.iterdir()):
+        log(f"[ERROR] {label} installer reported success but {dest} is empty.")
+        return False
+
+    log(f"  {label.capitalize()} repack installed.")
+    return True
+
+
+def patch_launch_maker(old_release: str, new_release: str, log) -> bool:
+    """Open the patch maker GUI pre-filled with both release names."""
+    if not PATCH_GUI_PS1.exists():
+        log(f"[ERROR] Patch maker not found: {PATCH_GUI_PS1}")
+        return False
+    cmd = ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+           "-WindowStyle", "Hidden", "-File", str(PATCH_GUI_PS1),
+           "-OldRelease", old_release, "-NewRelease", new_release, "-KeepGames"]
+    flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    subprocess.Popen(cmd, cwd=str(XDELTA_DIR), creationflags=flags)
+    log("  Patch maker opened — click Build Patch there when ready.")
     return True
 
 
@@ -1483,6 +1609,9 @@ class RepackApp:
         self.do_rename_var  = B()
         self.do_dlc_var     = B()
         self.preset_var     = S(value="12")
+        self.patch_var      = B()
+        self.patch_exe_var  = S()
+        self.patch_build_var = S()
 
         # ── VD.bat auto-fill state ───────────────────────────────────
         #   The VD.bat launcher lives next to the SteamVR exe, so its path is
@@ -2233,6 +2362,36 @@ class RepackApp:
                            activeforeground=FG, selectcolor=ENTRY,
                            font=("Cascadia Code", 10)).pack(anchor="w", pady=1)
 
+        # ── Update patch (XDelta) ────────────────────────────────────
+        up = tk.Frame(frame, bg=PANEL, padx=16, pady=12)
+        up.pack(fill="x", padx=12, pady=(0, 6))
+        tk.Checkbutton(up, text="Also make an update patch (XDelta)",
+                       variable=self.patch_var, command=self._toggle_patch_fields,
+                       bg=PANEL, fg=FG, activebackground=PANEL,
+                       activeforeground=FG, selectcolor=ENTRY,
+                       font=("Segoe UI", 11, "bold")).pack(anchor="w")
+        self._patch_fields = tk.Frame(up, bg=PANEL)   # packed by the toggle
+
+        def _patch_row(label, var, browse=False):
+            r = tk.Frame(self._patch_fields, bg=PANEL)
+            r.pack(fill="x", pady=3)
+            tk.Label(r, text=label, bg=PANEL, fg=FG2, width=24, anchor="w",
+                     font=("Segoe UI", 10)).pack(side="left")
+            tk.Entry(r, textvariable=var, bg=ENTRY, fg=FG, insertbackground=FG,
+                     relief="flat", font=("Cascadia Code", 10)
+                     ).pack(side="left", fill="x", expand=True, ipady=3)
+            if browse:
+                _btn(r, "Browse", lambda: self._browse_patch_exe())
+
+        _patch_row("Old repack installer:", self.patch_exe_var, browse=True)
+        _patch_row("Old repack Build ID:", self.patch_build_var)
+        tk.Label(self._patch_fields,
+                 text="The old repack is installed silently to XDelta\\Games\\old while the "
+                      "new one compresses, then the new repack to XDelta\\Games\\new "
+                      "before zipping. The patch maker opens pre-filled.",
+                 bg=PANEL, fg=FG2, font=("Segoe UI", 8), wraplength=680,
+                 justify="left").pack(anchor="w", pady=(4, 0))
+
         # ── Full-run (the normal, one-click path) ────────────────────
         sep = tk.Frame(frame, bg=BORDER, height=1)
         sep.pack(fill="x", padx=12, pady=12)
@@ -2317,6 +2476,83 @@ class RepackApp:
                  text="Use when data.bin + DLL are already done — moves files from Setup\\, "
                       "recompiles, merges, zips, archives.",
                  bg=BG, fg=FG2, font=("Segoe UI", 8), wraplength=680).pack(pady=(0, 10))
+
+    def _toggle_patch_fields(self):
+        if self.patch_var.get():
+            self._patch_fields.pack(fill="x", pady=(8, 0))
+        else:
+            self._patch_fields.pack_forget()
+
+    def _browse_patch_exe(self):
+        p = filedialog.askopenfilename(
+            title="Old repack installer (setup.exe / AGRepackInstaller.exe)",
+            filetypes=[("Installers", "*.exe"), ("All files", "*.*")])
+        if p:
+            self.patch_exe_var.set(p)
+
+    def _on_main(self, fn):
+        """Run fn() on the Tk main thread from a worker and return its result."""
+        out, done = [None], threading.Event()
+        def _go():
+            try:
+                out[0] = fn()
+            finally:
+                done.set()
+        self.root.after(0, _go)
+        done.wait()
+        return out[0]
+
+    def _patch_review_dialog(self, old_rel: str, new_rel: str):
+        """Let the user look over / edit both release names.  Returns
+        (old, new) on Next, or None on Cancel.  Main thread only."""
+        win = tk.Toplevel(self.root)
+        win.title("Update Patch — check release names")
+        win.configure(bg=BG)
+        win.transient(self.root)
+        win.resizable(False, False)
+        result = [None]
+        old_v, new_v = tk.StringVar(value=old_rel), tk.StringVar(value=new_rel)
+
+        tk.Label(win, text="Update patch release names", bg=BG, fg=ACCENT,
+                 font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=16, pady=(14, 2))
+        tk.Label(win, text="Look these over, fix anything that's off, then hit Next.",
+                 bg=BG, fg=FG2, font=("Segoe UI", 9)).pack(anchor="w", padx=16, pady=(0, 8))
+        for label, var in (("Old release:", old_v), ("New release:", new_v)):
+            r = tk.Frame(win, bg=BG)
+            r.pack(fill="x", padx=16, pady=3)
+            tk.Label(r, text=label, bg=BG, fg=FG2, width=12, anchor="w",
+                     font=("Segoe UI", 10)).pack(side="left")
+            tk.Entry(r, textvariable=var, bg=ENTRY, fg=FG, insertbackground=FG,
+                     relief="flat", width=70, font=("Cascadia Code", 10)
+                     ).pack(side="left", fill="x", expand=True, ipady=3)
+        tk.Label(win, text="Format:  Game Name vBUILD_NUMBER -TAG",
+                 bg=BG, fg=FG2, font=("Segoe UI", 8)).pack(anchor="w", padx=16, pady=(4, 0))
+
+        def _next():
+            o, n = old_v.get().strip(), new_v.get().strip()
+            if not (re.match(r"^.+?\s+v[\d.]+(\s+.+)?$", o) and
+                    re.match(r"^.+?\s+v[\d.]+(\s+.+)?$", n)):
+                messagebox.showwarning(
+                    "Release name", "Both names must look like:\n"
+                    "Game Name vBUILD_NUMBER -TAG", parent=win)
+                return
+            result[0] = (o, n)
+            win.destroy()
+
+        bf = tk.Frame(win, bg=BG)
+        bf.pack(fill="x", padx=16, pady=14)
+        tk.Button(bf, text="Next  ▶", command=_next, bg=ACCENT, fg="#ffffff",
+                  activebackground=ACCENT, activeforeground="#ffffff",
+                  font=("Segoe UI", 10, "bold"), relief="flat", cursor="hand2",
+                  padx=16, pady=5).pack(side="right")
+        tk.Button(bf, text="Skip patch", command=win.destroy, bg=BTN, fg=FG,
+                  activebackground=BTN, activeforeground=FG,
+                  font=("Segoe UI", 10), relief="flat", cursor="hand2",
+                  padx=12, pady=5).pack(side="right", padx=(0, 8))
+        win.bind("<Return>", lambda e: _next())
+        win.grab_set()
+        win.wait_window()
+        return result[0]
 
     def _toggle_manual_steps(self):
         """Show/hide the advanced manual-step buttons, warning on first reveal."""
@@ -2621,7 +2857,22 @@ class RepackApp:
         preset    = self.preset_var.get()
         do_rename = self.do_rename_var.get()
         do_dlc    = self.do_dlc_var.get()
+        make_patch   = self.patch_var.get()
+        old_exe      = Path(self.patch_exe_var.get().strip().strip('"'))
+        old_build    = self.patch_build_var.get().strip().lstrip("vV")
         # ────────────────────────────────────────────────────────────────────
+
+        if make_patch:
+            problem = None
+            if not PATCH_GUI_PS1.exists():
+                problem = f"The patch maker was not found:\n{PATCH_GUI_PS1}"
+            elif not old_exe.is_file():
+                problem = "Pick the old repack's installer (setup.exe or AGRepackInstaller.exe)."
+            elif not re.fullmatch(r"[\d.]+", old_build):
+                problem = "Enter the old repack's Build ID (digits only, e.g. 21222340)."
+            if problem:
+                messagebox.showwarning("Update patch", problem)
+                return
 
         def _full():
             self.log("=" * 56)
@@ -2669,6 +2920,29 @@ class RepackApp:
                     self.log("[STOP] Repack stopped at user request after compile failure.")
                     return
 
+            # Update patch: install the OLD repack in the background while the
+            # new one compresses.
+            patch_on  = make_patch
+            old_state = {"ok": False}
+            old_thread = None
+            if patch_on:
+                if patch_dirs_dirty() and not self._on_main(lambda: messagebox.askyesno(
+                        "Update patch",
+                        "XDelta\\Games\\old and/or \\new already contain files "
+                        "from a previous patch.\n\nDelete them to make room for "
+                        "this patch?\n(No = skip the update patch for this run)")):
+                    self.log("\n[PATCH] Left existing Games files alone — update patch skipped.")
+                    patch_on = False
+                else:
+                    patch_clear_dirs(self.log)
+                    game_name = release_name_parts(ini_read(SETTINGS_INI))[0]
+                    self.log("\n[PATCH] Installing the OLD repack in the background...")
+                    def _old():
+                        old_state["ok"] = patch_install(
+                            "old", old_exe, PATCH_OLD_DIR / game_name, self.log)
+                    old_thread = threading.Thread(target=_old, daemon=True)
+                    old_thread.start()
+
             # 4 — Compress
             self.log(f"\n[4/8] Compressing game data (preset {preset})...")
             ok = work_compress(preset, gd, self.log)
@@ -2706,6 +2980,28 @@ class RepackApp:
                 ):
                     self.log("[STOP] Repack stopped at user request.")
                     return
+
+            # Update patch: confirm names, install the NEW repack, open the
+            # patch maker — then zipping carries on while the patch is built.
+            if patch_on:
+                self.log("\n[PATCH] Preparing the update patch...")
+                name, build, group = release_name_parts(ini_read(SETTINGS_INI))
+                names = self._on_main(lambda: self._patch_review_dialog(
+                    f"{name} v{old_build} {PATCH_OLD_TAG}",
+                    f"{name} v{build} {group}"))
+                if not names:
+                    self.log("  Update patch skipped.")
+                else:
+                    self.log("  Waiting for the old repack install to finish...")
+                    old_thread.join()
+                    new_exe = CONVERSION_DIR / "AGRepackInstaller.exe"
+                    if not old_state["ok"]:
+                        self.log("[PATCH] Old repack install failed — update patch skipped.")
+                    elif not patch_install("new", new_exe, PATCH_NEW_DIR / name, self.log,
+                                       uninstaller=False):
+                        self.log("[PATCH] New repack install failed — update patch skipped.")
+                    else:
+                        patch_launch_maker(names[0], names[1], self.log)
 
             # 7 — Zip
             self.log("\n[7/8] Zipping final package...")

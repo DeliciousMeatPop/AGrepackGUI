@@ -89,7 +89,7 @@ function Read-IniFile([string]$path) {
 function Parse-ReleaseName([string]$release) {
     # Expected format: "Game Name vBUILD_NUMBER -TAG"
     # Splits on the first " v" that precedes a run of digits
-    if ($release -cmatch '^(.+?)\s+v([\d.]+)(\s+.+)?$') {
+    if ($release -cmatch '^(.+?)\s+v([^\s\\/:*?"<>|]+)(\s+.+)?$') {
         return @{
             GameName = $Matches[1].Trim()
             Build    = $Matches[2].Trim()

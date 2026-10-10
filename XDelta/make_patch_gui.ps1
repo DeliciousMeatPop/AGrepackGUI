@@ -76,7 +76,7 @@ function Read-IniFile([string]$path) {
 }
 
 function Parse-ReleaseName([string]$release) {
-    if ($release -cmatch '^(.+?)\s+v([\d.]+)(\s+.+)?$') {
+    if ($release -cmatch '^(.+?)\s+v([^\s\\/:*?"<>|]+)(\s+.+)?$') {
         return @{ GameName = $Matches[1].Trim(); Build = $Matches[2].Trim()
                   Tag = if ($Matches[3]) { $Matches[3].Trim() } else { "" } }
     }

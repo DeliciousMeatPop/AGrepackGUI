@@ -1,0 +1,29 @@
+Why does my CHM help have a blank content pane?
+
+Problem: You open a CHM but you don't see your content in the right-hand pane of the window. You see a cryptic browser message "Navigation to the webpage was canceled" or similar.
+
+Solution: Right-click the CHM file, select Properties, then click the "Unblock" button.
+
+Another Solution
+
+If the above does not work for you, here's a second solution that worked for some users. Thanks to user Borut for providing this solution!
+
+Problem: Your ISXPM folder is positioned somewhere in your network (i.e. not on a local drive). When you invoke online help (either out of a program, or directly), the help window comes up, the table of contents and index are visible, but the right-hand pane of the help window contains an Internet Explorer message about access to the help page being canceled. This is happening not only with the ISXPM help, but with any help not being positioned on your local drive.
+
+Applies to: Windows 2000 SP4; Windows XP SP1 and later; and some more.
+
+Solution: Save the following three lines of a registry script code to a file named for instance ChmIntranetOn.reg (extension should be .reg):
+
+REGEDIT4
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\HTMLHelp\1.x\ItssRestrictions]
+"MaxAllowedZone"=dword:00000002
+
+Double click the file and allow the execution of a script by answering the question which will pop up with yes. Done!
+
+Background: In order to minimize the potential misuse of help pages, Microsoft has - from certain OS versions on - disabled presentation of stand alone and chm-embedded HTML pages residing on non-local drives. The solution presented here (which has been thoroughly and successfully tested both under Windows 2000 SP4, as well as under Windows XP SP3) is a minimalistic one, in a sense that it exclusively adds the ability to correctly present chm help files residing in your local area network (intranet). This ability is not even extended to HTML pages.
+
+Addendum: If after the original script has been applied the problem persists, one should change script in this way (dword:00000003 instead of dword:00000002) and then reapply it:
+
+REGEDIT4
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\HTMLHelp\1.x\ItssRestrictions]
+"MaxAllowedZone"=dword:00000003

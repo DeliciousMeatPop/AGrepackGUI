@@ -11,3 +11,11 @@ build/
 dist/
 *.spec
 version_info.txt
+
+# XDelta patch maker (build output / generated / machine-specific)
+XDelta/Output/
+XDelta/ISXPMPatch/*.exe
+XDelta/pdata/PatchData/
+XDelta/pdata/Preprocessed.iss
+XDelta/settings.ini
+XDelta/setup.ini

@@ -27,6 +27,7 @@ $IsxpmExe    = Join-Path $Root "isxpm.exe"
 $GamesOldDir = Join-Path $Root "Games\old"
 $GamesNewDir = Join-Path $Root "Games\new"
 $ResourceDir = Join-Path $Root "resources"
+$MusicDir    = Join-Path $ResourceDir "music"
 $OutputDir   = Join-Path $Root "ISXPMPatch"
 $UploadDir   = Join-Path $Root "Output\Upload"
 
@@ -88,6 +89,32 @@ function Find-GameFolder([string]$base, [string]$preferred) {
 }
 
 # ── Setup config (setup.ini) ───────────────────────────────────────────────────
+# Paths in setup.ini are stored relative to this folder (e.g. ..\7z.exe) so the
+# whole tool can be moved or shared without editing anything. They are resolved
+# to absolute paths on read, so the rest of the script never sees relative ones.
+$RepoRoot = Split-Path $Root -Parent
+
+function Resolve-SetupPath([string]$value) {
+    if ([string]::IsNullOrWhiteSpace($value)) { return "" }
+    $value = $value.Trim()
+    if ([System.IO.Path]::IsPathRooted($value)) { return $value }
+    return [System.IO.Path]::GetFullPath((Join-Path $Root $value))
+}
+
+function ConvertTo-SetupRelative([string]$value) {
+    if ([string]::IsNullOrWhiteSpace($value)) { return "" }
+    $full = [System.IO.Path]::GetFullPath((Resolve-SetupPath $value))
+    foreach ($base in @($Root, $RepoRoot)) {
+        $prefix = $base.TrimEnd('\', '/') + [System.IO.Path]::DirectorySeparatorChar
+        if ($full.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            $rel = $full.Substring($prefix.Length)
+            if ($base -eq $Root) { return $rel }
+            return "..\" + $rel
+        }
+    }
+    return $full   # outside the tool/repo (e.g. C:\Program Files\7-Zip) - keep absolute
+}
+
 function Get-SetupConfig {
     $cfg = @{ SevenZipPath = ""; MusicFile = ""; SkipBuildPopup = $false }
     if (Test-Path $SetupIni) {
@@ -95,11 +122,16 @@ function Get-SetupConfig {
             $ini = Read-IniFile $SetupIni
             if ($ini.Contains('SETUP')) {
                 $s = $ini['SETUP']
-                if ($s.Contains('SEVENZIP_PATH'))   { $cfg.SevenZipPath   = $s['SEVENZIP_PATH'] }
-                if ($s.Contains('MUSIC_FILE'))       { $cfg.MusicFile      = $s['MUSIC_FILE'] }
+                if ($s.Contains('SEVENZIP_PATH'))   { $cfg.SevenZipPath   = Resolve-SetupPath $s['SEVENZIP_PATH'] }
+                if ($s.Contains('MUSIC_FILE'))       { $cfg.MusicFile      = Resolve-SetupPath $s['MUSIC_FILE'] }
                 if ($s.Contains('SKIP_BUILD_POPUP')) { $cfg.SkipBuildPopup = ($s['SKIP_BUILD_POPUP'] -eq '1') }
             }
         } catch { }
+    }
+    # Nothing (valid) configured: fall back to the 7z.exe shipped in the repo root
+    if (-not $cfg.SevenZipPath -or -not (Test-Path $cfg.SevenZipPath -EA SilentlyContinue)) {
+        $bundled = Join-Path $RepoRoot "7z.exe"
+        if (Test-Path $bundled -EA SilentlyContinue) { $cfg.SevenZipPath = $bundled }
     }
     return $cfg
 }
@@ -107,8 +139,8 @@ function Get-SetupConfig {
 function Save-SetupConfig([string]$sevenZipPath, [string]$musicFile, [bool]$skipBuildPopup) {
     $lines = @(
         '[SETUP]',
-        "SEVENZIP_PATH=$sevenZipPath",
-        "MUSIC_FILE=$musicFile",
+        "SEVENZIP_PATH=$(ConvertTo-SetupRelative $sevenZipPath)",
+        "MUSIC_FILE=$(ConvertTo-SetupRelative $musicFile)",
         "SKIP_BUILD_POPUP=$(if ($skipBuildPopup) { '1' } else { '0' })"
     )
     [System.IO.File]::WriteAllLines($SetupIni, $lines, [System.Text.Encoding]::UTF8)
@@ -199,7 +231,7 @@ function Show-SetupWizard([bool]$isRedo) {
     $txt7z.BackColor   = $cInput
     $txt7z.ForeColor   = $cText
     $txt7z.BorderStyle = "FixedSingle"
-    $txt7z.Text        = if ($existing.SevenZipPath) { $existing.SevenZipPath } else { "C:\Program Files\7-Zip\7z.exe" }
+    $txt7z.Text        = if ($existing.SevenZipPath) { ConvertTo-SetupRelative $existing.SevenZipPath } else { "C:\Program Files\7-Zip\7z.exe" }
     $wiz.Controls.Add($txt7z)
 
     $btn7z = New-Object System.Windows.Forms.Button
@@ -218,9 +250,10 @@ function Show-SetupWizard([bool]$isRedo) {
         $dlg.Title  = "Locate 7z.exe"
         $dlg.Filter = "7z.exe|7z.exe|Executables|*.exe"
         try {
-            if ($txt7z.Text) { $dlg.InitialDirectory = Split-Path $txt7z.Text }
+            $cur = Resolve-SetupPath $txt7z.Text
+            if ($cur -and (Test-Path (Split-Path $cur) -EA SilentlyContinue)) { $dlg.InitialDirectory = Split-Path $cur }
         } catch { }
-        if ($dlg.ShowDialog($wiz) -eq "OK") { $txt7z.Text = $dlg.FileName }
+        if ($dlg.ShowDialog($wiz) -eq "OK") { $txt7z.Text = ConvertTo-SetupRelative $dlg.FileName }
     })
 
     # Music file
@@ -238,7 +271,7 @@ function Show-SetupWizard([bool]$isRedo) {
     $txtMusic.BackColor   = $cInput
     $txtMusic.ForeColor   = $cText
     $txtMusic.BorderStyle = "FixedSingle"
-    $txtMusic.Text        = $existing.MusicFile
+    $txtMusic.Text        = ConvertTo-SetupRelative $existing.MusicFile
     $wiz.Controls.Add($txtMusic)
 
     $btnMusic = New-Object System.Windows.Forms.Button
@@ -255,8 +288,9 @@ function Show-SetupWizard([bool]$isRedo) {
     $btnMusic.Add_Click({
         $dlg = New-Object System.Windows.Forms.OpenFileDialog
         $dlg.Title  = "Select music file"
-        $dlg.Filter = "Audio files|*.mp3;*.ogg;*.wav;*.flac|All files|*.*"
-        if ($dlg.ShowDialog($wiz) -eq "OK") { $txtMusic.Text = $dlg.FileName }
+        $dlg.Filter = "Audio files|*.mp3;*.ogg;*.wav;*.flac;*.mod;*.xm;*.s3m;*.it|All files|*.*"
+        if (Test-Path $MusicDir -EA SilentlyContinue) { $dlg.InitialDirectory = $MusicDir }
+        if ($dlg.ShowDialog($wiz) -eq "OK") { $txtMusic.Text = ConvertTo-SetupRelative $dlg.FileName }
     })
 
     $y += 8
@@ -289,14 +323,14 @@ function Show-SetupWizard([bool]$isRedo) {
     $script:wizSaved = $false
 
     $btnSave.Add_Click({
-        $p = $txt7z.Text.Trim()
-        if (-not (Test-Path $p -ErrorAction SilentlyContinue)) {
+        $p = Resolve-SetupPath $txt7z.Text
+        if (-not $p -or -not (Test-Path $p -ErrorAction SilentlyContinue)) {
             [System.Windows.Forms.MessageBox]::Show(
                 "7-Zip not found at:`n$p`n`nInstall 7-Zip from 7-zip.org or browse to 7z.exe.",
                 "7-Zip Not Found", "OK", "Warning")
             return
         }
-        Save-SetupConfig -sevenZipPath $p -musicFile $txtMusic.Text.Trim() -skipBuildPopup $false
+        Save-SetupConfig -sevenZipPath $p -musicFile (Resolve-SetupPath $txtMusic.Text) -skipBuildPopup $false
         $script:wizSaved = $true
         $wiz.Close()
     })

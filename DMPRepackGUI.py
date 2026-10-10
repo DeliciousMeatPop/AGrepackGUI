@@ -58,6 +58,10 @@ PATCH_GUI_PS1  = XDELTA_DIR / "make_patch_gui.ps1"
 PATCH_OLD_DIR  = XDELTA_DIR / "Games" / "old"
 PATCH_NEW_DIR  = XDELTA_DIR / "Games" / "new"
 PATCH_OLD_TAG  = "-ARMGDDN"
+# A build in a release name: no whitespace or filename-illegal characters. Mostly
+# digits (Steam), but non-Steam games and VR mods can use things like "1.0b".
+PATCH_BUILD_RE = r'[^\s\\/:*?"<>|]+'
+PATCH_RELEASE_RE = r"^.+?\s+v" + PATCH_BUILD_RE + r"(\s+.+)?$"
 
 INI_TEMPLATES = {
     "PC":          RESOURCE_DIR / "2.ini",
@@ -2522,15 +2526,35 @@ class RepackApp:
             exe = Path(chosen)
             self.patch_exe_var.set(chosen)
 
-        build = self.patch_build_var.get().strip().lstrip("vV")
-        while not re.fullmatch(r"[\d.]+", build):
-            build = simpledialog.askstring(
-                "Update patch — old Build ID",
-                "Build ID of the old repack (digits only, e.g. 21222340):",
-                initialvalue=build) or ""
-            build = build.strip().lstrip("vV")
-            if not build:
-                return None
+        def _clean(b):   # drop a typed "v" prefix, but not the V of e.g. "Vanilla"
+            return re.sub(r"^[vV](?=\d)", "", b.strip())
+
+        build, confirmed = _clean(self.patch_build_var.get()), False
+        while True:
+            if not re.fullmatch(PATCH_BUILD_RE, build):
+                build = _clean(simpledialog.askstring(
+                    "Update patch — old Build ID",
+                    "Build ID of the old repack (e.g. 21222340):",
+                    initialvalue=build) or "")
+                if not build:
+                    return None
+                confirmed = False
+                if not re.fullmatch(PATCH_BUILD_RE, build):
+                    messagebox.showwarning(
+                        "Update patch", "The Build ID can't contain spaces or any of "
+                        '\\ / : * ? " < > |')
+                continue
+            if not confirmed and not re.fullmatch(r"[\d.]+", build):
+                # Non-Steam games and VR mods often aren't plain numbers: allow it, but make sure.
+                if not messagebox.askyesno(
+                        "Confirm old Build ID",
+                        f"The old Build ID is \"{build}\", which isn't a plain number.\n\n"
+                        "That's fine for non-Steam games and VR mods — is it exactly right?\n"
+                        f"(The old release will be named \"... v{build} {PATCH_OLD_TAG}\")"):
+                    build = ""
+                    continue
+                confirmed = True
+            break
         self.patch_build_var.set(build)
         return exe, build
 
@@ -2562,8 +2586,7 @@ class RepackApp:
 
         def _next():
             o, n = old_v.get().strip(), new_v.get().strip()
-            if not (re.match(r"^.+?\s+v[\d.]+(\s+.+)?$", o) and
-                    re.match(r"^.+?\s+v[\d.]+(\s+.+)?$", n)):
+            if not (re.match(PATCH_RELEASE_RE, o) and re.match(PATCH_RELEASE_RE, n)):
                 messagebox.showwarning(
                     "Release name", "Both names must look like:\n"
                     "Game Name vBUILD_NUMBER -TAG", parent=win)

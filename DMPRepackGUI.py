@@ -18,7 +18,7 @@ import subprocess
 import threading
 import webbrowser
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox, scrolledtext
+from tkinter import ttk, filedialog, messagebox, scrolledtext, simpledialog
 from pathlib import Path
 
 # ─── Version / update check ──────────────────────────────────────────────────
@@ -2502,6 +2502,38 @@ class RepackApp:
         done.wait()
         return out[0]
 
+    def _patch_ensure_inputs(self):
+        """Called right before the old repack would be installed.  If the old
+        installer path or Build ID is missing/invalid, remind the repacker and
+        ask for it.  Returns (installer Path, build id) or None if declined.
+        Main thread only."""
+        exe = Path(self.patch_exe_var.get().strip().strip('"') or ".")
+        while not exe.is_file():
+            messagebox.showinfo(
+                "Update patch — old repack needed",
+                "Path to old repack install exe required for old installation "
+                "at XDelta\\Games\\old\\\n\n"
+                "Pick the old repack's setup.exe or AGRepackInstaller.exe.")
+            chosen = filedialog.askopenfilename(
+                title="Old repack installer (setup.exe / AGRepackInstaller.exe)",
+                filetypes=[("Installers", "*.exe"), ("All files", "*.*")])
+            if not chosen:
+                return None
+            exe = Path(chosen)
+            self.patch_exe_var.set(chosen)
+
+        build = self.patch_build_var.get().strip().lstrip("vV")
+        while not re.fullmatch(r"[\d.]+", build):
+            build = simpledialog.askstring(
+                "Update patch — old Build ID",
+                "Build ID of the old repack (digits only, e.g. 21222340):",
+                initialvalue=build) or ""
+            build = build.strip().lstrip("vV")
+            if not build:
+                return None
+        self.patch_build_var.set(build)
+        return exe, build
+
     def _patch_review_dialog(self, old_rel: str, new_rel: str):
         """Let the user look over / edit both release names.  Returns
         (old, new) on Next, or None on Cancel.  Main thread only."""
@@ -2858,21 +2890,12 @@ class RepackApp:
         do_rename = self.do_rename_var.get()
         do_dlc    = self.do_dlc_var.get()
         make_patch   = self.patch_var.get()
-        old_exe      = Path(self.patch_exe_var.get().strip().strip('"'))
-        old_build    = self.patch_build_var.get().strip().lstrip("vV")
         # ────────────────────────────────────────────────────────────────────
 
-        if make_patch:
-            problem = None
-            if not PATCH_GUI_PS1.exists():
-                problem = f"The patch maker was not found:\n{PATCH_GUI_PS1}"
-            elif not old_exe.is_file():
-                problem = "Pick the old repack's installer (setup.exe or AGRepackInstaller.exe)."
-            elif not re.fullmatch(r"[\d.]+", old_build):
-                problem = "Enter the old repack's Build ID (digits only, e.g. 21222340)."
-            if problem:
-                messagebox.showwarning("Update patch", problem)
-                return
+        if make_patch and not PATCH_GUI_PS1.exists():
+            messagebox.showwarning(
+                "Update patch", f"The patch maker was not found:\n{PATCH_GUI_PS1}")
+            return
 
         def _full():
             self.log("=" * 56)
@@ -2925,6 +2948,15 @@ class RepackApp:
             patch_on  = make_patch
             old_state = {"ok": False}
             old_thread = None
+            old_exe, old_build = None, ""
+            if patch_on:
+                inputs = self._on_main(self._patch_ensure_inputs)
+                if not inputs:
+                    self.log("\n[PATCH] Old repack installer / Build ID not provided "
+                             "— update patch skipped.")
+                    patch_on = False
+                else:
+                    old_exe, old_build = inputs
             if patch_on:
                 if patch_dirs_dirty() and not self._on_main(lambda: messagebox.askyesno(
                         "Update patch",

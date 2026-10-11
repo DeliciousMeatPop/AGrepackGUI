@@ -13,7 +13,6 @@ import re
 import sys
 import time
 import shutil
-import zipfile
 import subprocess
 import threading
 import webbrowser
@@ -2107,15 +2106,6 @@ class RepackApp:
                          font=("Segoe UI", 10), **kw)
             e.pack(side="left", padx=(0, 4))
             return f
-
-        def browse_row(label, var, isdir=False):
-            f = row(label, var, width=32)
-            def _go():
-                p_ = filedialog.askdirectory(title=label) if isdir \
-                     else filedialog.askopenfilename(title=label)
-                if p_:
-                    var.set(p_)
-            _btn(f, "Browse", _go)
 
         def check_row(label, var):
             f = tk.Frame(p, bg=BG)

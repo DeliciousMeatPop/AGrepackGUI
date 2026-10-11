@@ -3092,7 +3092,7 @@ begin
       #endif
       Height     := ScaleY(17);
       Caption    := ExpandConstant('{cm:CreateUninstall}');
-      Checked    := True;
+      Checked    := Pos('/NOUNINSTALL', UpperCase(GetCmdTail)) = 0;  // /NOUNINSTALL: silent installs without an uninstaller
     end;
   #endif
 

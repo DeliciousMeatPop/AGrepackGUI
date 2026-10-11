@@ -2,6 +2,16 @@
 # GUI patch builder for AG-ISXPM-Made-Easy.
 # Launch via "Patch Builder.bat" or right-click -> Run with PowerShell.
 
+# Optional arguments, passed by AG Repack GUI when it hands over a finished repack:
+#   -OldRelease / -NewRelease  pre-fill the two release name boxes
+#   -KeepGames                 Games\old and Games\new were just installed by the
+#                              repacker, so don't offer to wipe them at startup
+param(
+    [string]$OldRelease = "",
+    [string]$NewRelease = "",
+    [switch]$KeepGames
+)
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
@@ -66,7 +76,7 @@ function Read-IniFile([string]$path) {
 }
 
 function Parse-ReleaseName([string]$release) {
-    if ($release -cmatch '^(.+?)\s+v([\d.]+)(\s+.+)?$') {
+    if ($release -cmatch '^(.+?)\s+v([^\s\\/:*?"<>|]+)(\s+.+)?$') {
         return @{ GameName = $Matches[1].Trim(); Build = $Matches[2].Trim()
                   Tag = if ($Matches[3]) { $Matches[3].Trim() } else { "" } }
     }
@@ -628,6 +638,9 @@ $txtNew.BorderStyle = "FixedSingle"
 $pTop.Controls.Add($txtNew)
 $rowY += 28
 
+if ($OldRelease) { $txtOld.Text = $OldRelease }
+if ($NewRelease) { $txtNew.Text = $NewRelease }
+
 $lblHint = New-Object System.Windows.Forms.Label
 $lblHint.Text      = "Format:  Game Name vBUILD_NUMBER -TAG     e.g.  S.T.A.L.K.E.R. 2 - Heart of Chornobyl v21222340 -ARMGDDN"
 $lblHint.Location  = New-Object System.Drawing.Point(12, $rowY)
@@ -1043,7 +1056,8 @@ $btnBuild.Add_Click({
 # ── Startup checks (run before form shown) ────────────────────────────────────
 $dirtyDirs = @(Get-DirtyDirs)
 if ($dirtyDirs.Count -gt 0) {
-    $dirtyResult = Show-DirtyDialog $dirtyDirs
+    # Launched by the repacker: clear stale work files but keep the fresh game installs
+    $dirtyResult = if ($KeepGames) { "keepgames" } else { Show-DirtyDialog $dirtyDirs }
     if ($dirtyResult -eq "all")       { try { Clear-WorkDirs -keepGames $false } catch { } }
     elseif ($dirtyResult -eq "keepgames") { try { Clear-WorkDirs -keepGames $true  } catch { } }
 }

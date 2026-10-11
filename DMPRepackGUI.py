@@ -51,8 +51,11 @@ COMPIL32       = BASE_DIR / "Resources" / "IS_Files" / "Compil32Ex.exe"
 ARC_EXE        = COMPRESSOR / "Resources" / "Win64" / "Arc.exe"
 APP_ICON       = BASE_DIR / "setup.ico"
 
-# Update-patch maker (XDelta/) — everything relative to the repacker's own folder
-XDELTA_DIR     = BASE_DIR / "XDelta"
+# Update-patch maker. It ships inside the toolkit (XDELTA_SHIPPED_DIR) but must run
+# from a folder NEXT TO the toolkit (XDELTA_DIR) — the patch tools break on long
+# paths when it sits inside. Nothing moves it automatically; the repacker is asked to.
+XDELTA_SHIPPED_DIR = BASE_DIR / "XDelta"
+XDELTA_DIR     = BASE_DIR.parent / "XDelta"
 PATCH_GUI_PS1  = XDELTA_DIR / "make_patch_gui.ps1"
 PATCH_OLD_DIR  = XDELTA_DIR / "Games" / "old"
 PATCH_NEW_DIR  = XDELTA_DIR / "Games" / "new"
@@ -884,7 +887,8 @@ def patch_launch_maker(old_release: str, new_release: str, log) -> bool:
         return False
     cmd = ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
            "-WindowStyle", "Hidden", "-File", str(PATCH_GUI_PS1),
-           "-OldRelease", old_release, "-NewRelease", new_release, "-KeepGames"]
+           "-OldRelease", old_release, "-NewRelease", new_release, "-KeepGames",
+           "-ToolkitDir", str(BASE_DIR)]
     flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
     subprocess.Popen(cmd, cwd=str(XDELTA_DIR), creationflags=flags)
     log("  Patch maker opened — click Build Patch there when ready.")
@@ -2496,6 +2500,73 @@ class RepackApp:
         done.wait()
         return out[0]
 
+    def _patch_xdelta_missing_dialog(self) -> bool:
+        """Loud, always-on-top, modal popup telling the repacker to move XDelta.
+        Returns True for Retry, False for 'skip the update patch'.  Main thread only."""
+        win = tk.Toplevel(self.root)
+        win.title("XDelta NOT FOUND")
+        win.configure(bg=BG)
+        win.transient(self.root)
+        win.resizable(False, False)
+        win.attributes("-topmost", True)
+        result = [False]
+
+        tk.Label(win, text="⚠   XDELTA FOLDER NOT FOUND   ⚠", bg=DANGER, fg="#ffffff",
+                 font=("Segoe UI", 15, "bold"), padx=30, pady=14).pack(fill="x")
+        body = tk.Frame(win, bg=BG, padx=24, pady=16)
+        body.pack(fill="both", expand=True)
+
+        def line(text, bold=False, fg=FG, mono=False):
+            tk.Label(body, text=text, bg=BG, fg=fg, justify="left", anchor="w",
+                     wraplength=620,
+                     font=("Cascadia Code" if mono else "Segoe UI", 10,
+                           "bold" if bold else "normal")).pack(anchor="w", pady=2)
+
+        line("The update patch maker has to sit NEXT TO the toolkit folder, not inside "
+             "it (long paths break the patch tools). It was not found at:")
+        line(str(XDELTA_DIR), bold=True, fg=WARN, mono=True)
+        if (XDELTA_SHIPPED_DIR / "make_patch_gui.ps1").exists():
+            line("It is currently still here, inside the toolkit:")
+            line(str(XDELTA_SHIPPED_DIR), mono=True)
+        line("Move the XDelta folder to the first location yourself, then click Retry.",
+             bold=True)
+
+        bf = tk.Frame(win, bg=BG)
+        bf.pack(fill="x", pady=(0, 16), padx=24)
+
+        def _done(val):
+            result[0] = val
+            win.destroy()
+
+        tk.Button(bf, text="Retry", command=lambda: _done(True), bg=ACCENT, fg="#ffffff",
+                  activebackground=ACCENT, activeforeground="#ffffff", relief="flat",
+                  cursor="hand2", font=("Segoe UI", 11, "bold"), padx=26, pady=7
+                  ).pack(side="right")
+        tk.Button(bf, text="Skip update patch", command=lambda: _done(False), bg=BTN,
+                  fg=FG, activebackground=BTN, activeforeground=FG, relief="flat",
+                  cursor="hand2", font=("Segoe UI", 10), padx=14, pady=7
+                  ).pack(side="right", padx=(0, 10))
+        win.protocol("WM_DELETE_WINDOW", lambda: _done(False))
+        win.update_idletasks()
+        w, h = win.winfo_reqwidth(), win.winfo_reqheight()
+        x = self.root.winfo_rootx() + (self.root.winfo_width() - w) // 2
+        y = self.root.winfo_rooty() + (self.root.winfo_height() - h) // 3
+        win.geometry(f"+{max(x, 0)}+{max(y, 0)}")
+        win.bell()
+        win.lift()
+        win.focus_force()
+        win.grab_set()
+        win.wait_window()
+        return result[0]
+
+    def _patch_ensure_xdelta(self) -> bool:
+        """True once the patch maker exists at XDELTA_DIR.  Keeps showing the
+        popup until the repacker moves it there (Retry) or skips the patch."""
+        while not PATCH_GUI_PS1.exists():
+            if not self._patch_xdelta_missing_dialog():
+                return False
+        return True
+
     def _patch_ensure_inputs(self):
         """Called right before the old repack would be installed.  If the old
         installer path or Build ID is missing/invalid, remind the repacker and
@@ -2905,10 +2976,13 @@ class RepackApp:
         make_patch   = self.patch_var.get()
         # ────────────────────────────────────────────────────────────────────
 
-        if make_patch and not PATCH_GUI_PS1.exists():
-            messagebox.showwarning(
-                "Update patch", f"The patch maker was not found:\n{PATCH_GUI_PS1}")
-            return
+        if make_patch and not self._patch_ensure_xdelta():
+            if not messagebox.askyesno(
+                    "Update patch",
+                    "Continue the repack WITHOUT an update patch?\n\n"
+                    "(No = cancel the whole run)"):
+                return
+            make_patch = False
 
         def _full():
             self.log("=" * 56)

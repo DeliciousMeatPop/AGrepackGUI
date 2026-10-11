@@ -27,6 +27,16 @@ The *Manual Steps* section runs each stage on its own; you normally won't need i
 
 ## Making an update patch
 
+**Move `XDelta` first.** It ships inside the toolkit folder, but the patch tools fail on long paths, so it has to run from a folder **next to** the toolkit instead:
+
+```
+D:\Repos\
+├── ARMGDDN Repacks\     <- the toolkit (this repo)
+└── XDelta\              <- move the XDelta folder here
+```
+
+Nothing moves it for you. When a patch is needed, the repacker and `Patch Builder.bat` check for `..\XDelta` and show a hard-to-miss popup if it isn't there — move the folder, then click **Retry**. (Git will then show `XDelta/` as deleted in the toolkit; that's expected.)
+
 Tick **Also make an update patch (XDelta)** on **Build & Pack** and fill in:
 
 - **Old repack installer** — the old repack's `setup.exe` or `AGRepackInstaller.exe`
@@ -41,7 +51,7 @@ If either is missing when the run starts, you'll be asked for it. Then:
 
 Installs use no start menu entries or desktop shortcuts. If `XDelta\Games\old` / `new` still hold files from a previous patch you're asked before they're cleared.
 
-The patch maker also works on its own: run **Patch Builder.bat** and type the old and new release names yourself. Its 7-Zip and music settings are stored relative to the `XDelta` folder, so nothing needs editing on a new machine (it defaults to the `7z.exe` in the toolkit root).
+The patch maker also works on its own: run **Patch Builder.bat** (in the toolkit folder) and type the old and new release names yourself. Its 7-Zip and music settings are stored relative to the `XDelta` or toolkit folder, so nothing needs editing on a new machine (it defaults to the `7z.exe` in the toolkit root).
 
 ## What's in the toolkit
 
@@ -52,7 +62,7 @@ The patch maker also works on its own: run **Patch Builder.bat** and type the ol
 | `COMPRESSOR/` | Compression tools and per-game presets |
 | `Resource/`, `Resources/` | Compression presets, templates, installer modules |
 | `Setup/` | Installer art, skins, music, EULAs; game art lands in `Setup/Background` |
-| `XDelta/` | Update patch maker (`make_patch_gui.ps1`) and its tools |
+| `XDelta/` | Update patch maker (`make_patch_gui.ps1`) and its tools — ships here, **run it from next to the toolkit folder** (see above) |
 | `Patch Builder.bat` | Launches the patch maker by itself |
 | `_PATCHING TOOLS/` | Optional third-party helpers for patching games |
 | `Help/` | Installer script reference |

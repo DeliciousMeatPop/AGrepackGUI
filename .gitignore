@@ -32,3 +32,6 @@ Resource/Save/repacker.txt
 # isxpm-generated hash files (kept: folder placeholder only)
 XDelta/checker/*
 !XDelta/checker/.gitkeep
+
+# Stray gude-*.log files created by a PowerShell glitch
+gude-*.log

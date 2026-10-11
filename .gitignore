@@ -35,3 +35,9 @@ XDelta/checker/*
 
 # Stray gude-*.log files created by a PowerShell glitch
 gude-*.log
+
+# Testing-remote upload: custom rclone build, its encrypted config and the remote map
+# live next to the program on each repacker's PC and are never committed
+/rclone.exe
+/rclone.conf
+/remotes.ini

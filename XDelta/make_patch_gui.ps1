@@ -9,11 +9,15 @@
 #   -ToolkitDir                the repacker toolkit folder (holds 7z.exe). XDelta
 #                              normally sits NEXT TO it, so it can't be assumed
 #                              to be this folder's parent
+#   -ResultFile                when a patch has been packaged, write a small JSON
+#                              file here ({uploadDir, patchName}) so the repacker
+#                              knows what to upload and when it is ready
 param(
     [string]$OldRelease = "",
     [string]$NewRelease = "",
     [switch]$KeepGames,
-    [string]$ToolkitDir = ""
+    [string]$ToolkitDir = "",
+    [string]$ResultFile = ""
 )
 
 Set-StrictMode -Version Latest
@@ -1006,7 +1010,11 @@ $btnBuild.Add_Click({
             $zipBase = Join-Path $subFolder "$patchFilename.zip"
 
             $sc3 = Get-SetupConfig
-            if ($sc3.SevenZipPath -and (Test-Path $sc3.SevenZipPath -EA SilentlyContinue)) {
+            $packOk = $false
+            # More than one file -> zip (named after the folder). A lone exe is uploaded as is.
+            $zipIt = ($allFiles.Count -gt 1) -and $sc3.SevenZipPath -and
+                     (Test-Path $sc3.SevenZipPath -EA SilentlyContinue)
+            if ($zipIt) {
                 $fileArgs = ($allFiles | ForEach-Object { "`"$($_.FullName)`"" }) -join " "
                 $splitArg = if ($totalGB -gt 10) { "-v5000m " } else { "" }
                 if ($totalGB -gt 10) {
@@ -1034,13 +1042,28 @@ $btnBuild.Add_Click({
                     $zipSizeGB  = ($zipFiles | Measure-Object -Property Length -Sum).Sum / 1GB
                     Log "  $($zipFiles.Count) zip file(s) in: $subFolder" $cSuccess
                     Log "  Zip total: $([Math]::Round($zipSizeGB, 2)) GB" $cSuccess
+                    $packOk = $true
                 }
             } else {
-                Log "  7-Zip not available -- copying files to upload folder instead." $cWarn
+                if ($allFiles.Count -le 1) {
+                    Log "  Single file -- not zipped, copying to upload folder." $cMuted
+                } else {
+                    Log "  7-Zip not available -- copying files to upload folder instead." $cWarn
+                }
                 foreach ($f in $allFiles) {
                     Copy-Item $f.FullName (Join-Path $subFolder $f.Name) -Force
                     Log "  Copied: $($f.Name)"
                 }
+                $packOk = $true
+            }
+
+            # Tell the repacker (if it launched us) that the patch is ready to upload
+            if ($packOk -and $ResultFile) {
+                try {
+                    New-Item -ItemType Directory -Force -Path (Split-Path $ResultFile -Parent) | Out-Null
+                    @{ uploadDir = $subFolder; patchName = $patchFilename } | ConvertTo-Json |
+                        Set-Content -Path $ResultFile -Encoding UTF8
+                } catch { Log "  Could not write result file: $_" $cWarn }
             }
 
             $script:lastUploadDir = $subFolder

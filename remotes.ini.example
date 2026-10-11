@@ -1,0 +1,11 @@
+; Copy to "remotes.ini" next to the program (and next to rclone.exe + rclone.conf).
+; Maps the two testing destinations to  <rclone remote>:<path>.  Each package is
+; uploaded to <that path>/<package folder name>.  Edit freely - no rebuild needed.
+
+[Remotes]
+pc   = testing-remote:PC
+pcvr = testing-remote:PCVR
+
+[Options]
+; Optional extra rclone flags added to every copy/move, e.g. --transfers 2
+flags =

@@ -10,6 +10,8 @@ Usage       : python DMPRepackGUI.py
 
 import os
 import re
+import json
+import configparser
 import sys
 import time
 import shutil
@@ -60,6 +62,14 @@ PATCH_GUI_PS1  = XDELTA_DIR / "make_patch_gui.ps1"
 PATCH_OLD_DIR  = XDELTA_DIR / "Games" / "old"
 PATCH_NEW_DIR  = XDELTA_DIR / "Games" / "new"
 PATCH_OLD_TAG  = "-ARMGDDN"
+PATCH_RESULT   = XDELTA_DIR / "Output" / "last_patch_result.json"
+
+# Testing-remote upload (rclone). All three files sit next to the program and are
+# never committed: the custom rclone.exe carries the config password itself.
+RCLONE_EXE     = BASE_DIR / "rclone.exe"
+RCLONE_CONF    = BASE_DIR / "rclone.conf"       # encrypted rclone config
+REMOTES_INI    = BASE_DIR / "remotes.ini"       # [Remotes] pc= / pcvr= -> remote:path
+UPLOAD_TARGETS = ("pc", "pcvr")
 # A build in a release name: no whitespace or filename-illegal characters. Mostly
 # digits (Steam), but non-Steam games and VR mods can use things like "1.0b".
 PATCH_BUILD_RE = r'[^\s\\/:*?"<>|]+'
@@ -707,7 +717,15 @@ def release_name_parts(lines: list) -> tuple:
     return name, build, group
 
 
-def work_zip_and_name(log) -> bool:
+def work_zip_and_name(log, nested: bool = False):
+    """Zip the converted files and name the package.  Returns the package folder
+    (truthy) on success, False on failure.
+
+    Normal layout:   <Release>\\<appid>   and the .7z / .7z.00x beside it.
+    nested=True (an update patch goes with it):
+                     <Release>\\<appid>
+                     <Release>\\<Release>\\*.7z.00x
+    The patch folder then sits next to <Release> at upload time."""
     if not SETTINGS_INI.exists():
         log("[ERROR] settings.ini not found.")
         return False
@@ -724,6 +742,8 @@ def work_zip_and_name(log) -> bool:
     folder_name = f"{name} v{build} {group}"
     out_folder  = BASE_DIR / folder_name
     out_folder.mkdir(exist_ok=True)
+    archive_dir = out_folder / folder_name if nested else out_folder
+    archive_dir.mkdir(parents=True, exist_ok=True)
 
     files = [f for f in CONVERSION_DIR.iterdir() if f.is_file()]
     total = sum(f.stat().st_size for f in files)
@@ -745,14 +765,14 @@ def work_zip_and_name(log) -> bool:
             if not part_list:
                 break
             for pf in part_list:
-                shutil.move(str(pf), str(out_folder / pf.name))
+                shutil.move(str(pf), str(archive_dir / pf.name))
             n += 1
-        log(f"  Multi-part archive moved to: {out_folder}")
+        log(f"  Multi-part archive moved to: {archive_dir}")
     else:
         zf = BASE_DIR / zip_name
         if zf.exists():
-            shutil.move(str(zf), str(out_folder / zf.name))
-        log(f"  Archive moved to: {out_folder}")
+            shutil.move(str(zf), str(archive_dir / zf.name))
+        log(f"  Archive moved to: {archive_dir}")
 
     if appid:
         (out_folder / appid).touch()
@@ -776,7 +796,7 @@ def work_zip_and_name(log) -> bool:
         optional.unlink()
         log("  VR Optional files restored for second pass.")
 
-    return True
+    return out_folder
 
 
 # ── Update patch (XDelta) ────────────────────────────────────────────────────
@@ -880,18 +900,125 @@ def patch_install(label: str, installer: Path, dest: Path, log,
     return True
 
 
-def patch_launch_maker(old_release: str, new_release: str, log) -> bool:
-    """Open the patch maker GUI pre-filled with both release names."""
+def patch_launch_maker(old_release: str, new_release: str, log):
+    """Open the patch maker GUI pre-filled with both release names.  Returns the
+    process (so the upload step can wait for the result file) or None."""
     if not PATCH_GUI_PS1.exists():
         log(f"[ERROR] Patch maker not found: {PATCH_GUI_PS1}")
-        return False
+        return None
+    PATCH_RESULT.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        PATCH_RESULT.unlink()          # a stale result must never count as this run's
+    except OSError:
+        pass
     cmd = ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
            "-WindowStyle", "Hidden", "-File", str(PATCH_GUI_PS1),
            "-OldRelease", old_release, "-NewRelease", new_release, "-KeepGames",
-           "-ToolkitDir", str(BASE_DIR)]
+           "-ToolkitDir", str(BASE_DIR), "-ResultFile", str(PATCH_RESULT)]
     flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-    subprocess.Popen(cmd, cwd=str(XDELTA_DIR), creationflags=flags)
+    proc = subprocess.Popen(cmd, cwd=str(XDELTA_DIR), creationflags=flags)
     log("  Patch maker opened — click Build Patch there when ready.")
+    return proc
+
+
+def patch_wait_result(proc, log):
+    """Block until the patch maker has packaged a patch (or been closed without
+    one).  Returns the patch's upload folder, or None."""
+    log("  Waiting for the update patch to finish building "
+        "(click Build Patch in the patch maker if you haven't)...")
+    waited = 0
+    while True:
+        if PATCH_RESULT.exists():
+            try:
+                data = json.loads(PATCH_RESULT.read_text(encoding="utf-8-sig"))
+                folder = Path(data.get("uploadDir", ""))
+                if folder.is_dir():
+                    log(f"  Update patch ready: {folder.name}")
+                    return folder
+            except (OSError, ValueError):
+                pass                    # half-written — look again next pass
+        if proc is not None and proc.poll() is not None and not PATCH_RESULT.exists():
+            return None                 # patch maker closed with nothing built
+        time.sleep(3)
+        waited += 3
+        if waited % 300 == 0:
+            log(f"  ...still waiting for the update patch ({waited // 60} min)")
+
+
+# ── Testing-remote upload (rclone) ───────────────────────────────────────────
+
+def load_remotes() -> dict:
+    """{'pc': 'remote:path', 'pcvr': 'remote:path'} from remotes.ini."""
+    cp = configparser.ConfigParser(interpolation=None)
+    try:
+        cp.read(REMOTES_INI, encoding="utf-8-sig")
+    except configparser.Error:
+        return {}
+    if not cp.has_section("Remotes"):
+        return {}
+    return {k.lower(): v.strip() for k, v in cp.items("Remotes") if v.strip()}
+
+
+def rclone_problems() -> list:
+    """Reasons an upload can't run (empty list = ready)."""
+    out = []
+    if not RCLONE_EXE.exists():
+        out.append(f"rclone.exe not found next to the program ({RCLONE_EXE.name})")
+    if not RCLONE_CONF.exists():
+        out.append(f"rclone config not found next to the program ({RCLONE_CONF.name})")
+    if not REMOTES_INI.exists():
+        out.append(f"{REMOTES_INI.name} not found next to the program")
+    else:
+        missing = [k for k in UPLOAD_TARGETS if k not in load_remotes()]
+        if missing:
+            out.append(f"{REMOTES_INI.name} has no [Remotes] entry for: {', '.join(missing)}")
+    return out
+
+
+def run_rclone(args: list, log) -> int:
+    """Run the bundled rclone with the config beside it; stream its output to the log."""
+    cmd = [str(RCLONE_EXE), "--config", str(RCLONE_CONF)] + list(args)
+    flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    proc = subprocess.Popen(cmd, cwd=str(BASE_DIR), stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, text=True, encoding="utf-8",
+                            errors="replace", creationflags=flags)
+    for line in proc.stdout:
+        line = line.rstrip()
+        if line:
+            log("    " + line)
+    return proc.wait()
+
+
+def join_remote(base: str, name: str) -> str:
+    return base + name if base.endswith((":", "/")) else f"{base}/{name}"
+
+
+def upload_sources(sources: list, base: str, mode: str, log) -> bool:
+    """rclone copy (leave local files) or move (delete them once uploaded) each
+    folder to base/<folder name>.  Stops at the first failure; with move, only
+    files rclone has verified are ever deleted."""
+    verb = "move" if mode == "move" else "copy"
+    cp = configparser.ConfigParser(interpolation=None)
+    cp.read(REMOTES_INI, encoding="utf-8-sig")
+    extra = cp.get("Options", "flags", fallback="").split()
+
+    log(f"  Checking destination: {base}")
+    probe = ["lsd", base] if base.endswith(":") else ["mkdir", base]
+    if run_rclone(probe, log) != 0:
+        log("[ERROR] Could not reach the destination — nothing was uploaded.")
+        return False
+    for src in sources:
+        dest = join_remote(base, src.name)
+        log(f"\n  {verb.capitalize()}: {src.name}  →  {dest}")
+        args = [verb, str(src), dest, "--stats", "30s", "--stats-one-line",
+                "--stats-log-level", "NOTICE", "--retries", "3"]
+        if verb == "move":
+            args.append("--delete-empty-src-dirs")
+        if run_rclone(args + extra, log) != 0:
+            log(f"[ERROR] rclone failed on {src.name}. Local files were left in place "
+                "(anything not yet uploaded is untouched).")
+            return False
+        log(f"  Done: {src.name}")
     return True
 
 
@@ -2401,7 +2528,7 @@ class RepackApp:
                  font=("Segoe UI", 13, "bold"), width=38, pady=12)
         tk.Label(frame,
                  text="Pre-Process  →  Save INI  →  Compile  →  Compress  "
-                      "→  Create DLL  →  Merge  →  Zip  →  Archive Art",
+                      "→  Create DLL  →  Merge  →  Zip  →  Archive Art  →  Upload",
                  bg=BG, fg=FG2, font=("Segoe UI", 8)).pack(pady=(2, 4))
 
         # ── Manual steps (hidden until explicitly revealed) ──────────
@@ -2455,6 +2582,7 @@ class RepackApp:
             ("6.  Merge DLL into EXE",       self._step_internal_dll,   BTN),
             ("7.  Zip & Name Package",       self._step_zip,            BTN),
             ("8.  Archive Game Art",         self._step_archive_art,    BTN),
+            ("9.  Upload to Testing…",       self._step_upload,         BTN),
         ]
         for i, (label, cmd, color) in enumerate(step_defs):
             r, c = divmod(i, 2)
@@ -2566,6 +2694,134 @@ class RepackApp:
             if not self._patch_xdelta_missing_dialog():
                 return False
         return True
+
+    def _upload_dialog(self, folders: list, remotes: dict, patch_pending: bool):
+        """Ask copy-or-move and PC-or-PCVR.  Returns (mode, target) or None to skip.
+        The destination is always the repacker's explicit choice — the repack type
+        picked earlier is deliberately NOT used.  Main thread only."""
+        win = tk.Toplevel(self.root)
+        win.title("Upload to testing")
+        win.configure(bg=BG)
+        win.transient(self.root)
+        win.resizable(False, False)
+        win.attributes("-topmost", True)
+        result = [None]
+        mode_v, target_v = tk.StringVar(value="copy"), tk.StringVar(value="")
+
+        tk.Label(win, text="Upload to the testing remote", bg=BG, fg=ACCENT,
+                 font=("Segoe UI", 13, "bold")).pack(anchor="w", padx=20, pady=(16, 4))
+        box = tk.Frame(win, bg=PANEL, padx=14, pady=10)
+        box.pack(fill="x", padx=20, pady=(0, 10))
+        for f in folders:
+            tk.Label(box, text=f"•  {f.name}   ({dir_size_str(f)})", bg=PANEL, fg=FG,
+                     font=("Segoe UI", 10), anchor="w", justify="left").pack(anchor="w")
+        if patch_pending:
+            tk.Label(box, text="•  Update patch  (added automatically once it has "
+                               "finished building)", bg=PANEL, fg=WARN,
+                     font=("Segoe UI", 10), anchor="w").pack(anchor="w")
+
+        def group(title, var, options):
+            tk.Label(win, text=title, bg=BG, fg=FG2,
+                     font=("Segoe UI", 9, "bold")).pack(anchor="w", padx=20, pady=(6, 0))
+            for value, text in options:
+                tk.Radiobutton(win, text=text, variable=var, value=value, bg=BG, fg=FG,
+                               activebackground=BG, activeforeground=FG, selectcolor=ENTRY,
+                               font=("Segoe UI", 10), anchor="w", justify="left"
+                               ).pack(anchor="w", padx=34)
+
+        group("What to do with the local files", mode_v, [
+            ("copy", "Copy — upload and leave the files here"),
+            ("move", "Move — upload, then delete the local files")])
+        group("Destination  (your choice — not taken from the repack type)", target_v, [
+            ("pc",   f"PC testing      →  {remotes.get('pc', '?')}"),
+            ("pcvr", f"PCVR testing    →  {remotes.get('pcvr', '?')}")])
+
+        def _go():
+            if not target_v.get():
+                messagebox.showwarning("Upload", "Pick PC or PCVR first.", parent=win)
+                return
+            if mode_v.get() == "move" and not messagebox.askyesno(
+                    "Move files",
+                    "Move deletes the local files once they are uploaded.\n\nContinue?",
+                    parent=win):
+                return
+            result[0] = (mode_v.get(), target_v.get())
+            win.destroy()
+
+        bf = tk.Frame(win, bg=BG)
+        bf.pack(fill="x", padx=20, pady=16)
+        tk.Button(bf, text="Upload", command=_go, bg=ACCENT, fg="#ffffff",
+                  activebackground=ACCENT, activeforeground="#ffffff", relief="flat",
+                  cursor="hand2", font=("Segoe UI", 11, "bold"), padx=24, pady=6
+                  ).pack(side="right")
+        tk.Button(bf, text="Skip upload", command=win.destroy, bg=BTN, fg=FG,
+                  activebackground=BTN, activeforeground=FG, relief="flat",
+                  cursor="hand2", font=("Segoe UI", 10), padx=14, pady=6
+                  ).pack(side="right", padx=(0, 10))
+        win.update_idletasks()
+        x = self.root.winfo_rootx() + (self.root.winfo_width() - win.winfo_reqwidth()) // 2
+        y = self.root.winfo_rooty() + (self.root.winfo_height() - win.winfo_reqheight()) // 3
+        win.geometry(f"+{max(x, 0)}+{max(y, 0)}")
+        win.lift()
+        win.focus_force()
+        win.grab_set()
+        win.wait_window()
+        return result[0]
+
+    def _upload_step(self, folders: list, patch_proc=None):
+        """Ask where/how, wait for the update patch (if any), then upload it all
+        together.  Runs on a worker thread.  Returns a summary dict (for the
+        testing-site submission step) or None if nothing was uploaded."""
+        problems = rclone_problems()
+        if problems:
+            self.log("\n[UPLOAD] Skipped:")
+            for pr in problems:
+                self.log("  - " + pr)
+            return None
+        remotes = load_remotes()
+        choice = self._on_main(lambda: self._upload_dialog(
+            folders, remotes, patch_proc is not None))
+        if not choice:
+            self.log("\n[UPLOAD] Skipped.")
+            return None
+        mode, target = choice
+
+        sources = list(folders)
+        patch_folder = None
+        if patch_proc is not None:
+            patch_folder = patch_wait_result(patch_proc, self.log)
+            if patch_folder:
+                sources.append(patch_folder)
+            elif not self._on_main(lambda: messagebox.askyesno(
+                    "Update patch",
+                    "The patch maker was closed without a finished patch.\n\n"
+                    "Upload the repack WITHOUT the update patch?")):
+                self.log("\n[UPLOAD] Cancelled — no patch to upload.")
+                return None
+
+        self.log(f"\n[UPLOAD] {mode.upper()} to {target.upper()}  ({remotes[target]})")
+        if not upload_sources(sources, remotes[target], mode, self.log):
+            self.root.after(0, lambda: messagebox.showerror(
+                "Upload failed", "The upload did not finish — see the log."))
+            return None
+        self.log("\n[UPLOAD] Complete.")
+        return {"folder": folders[0].name, "patch_folder": patch_folder.name if patch_folder else None,
+                "target": target, "mode": mode, "dest": join_remote(remotes[target], folders[0].name)}
+
+    def _step_upload(self):
+        """Manual: pick an already-built package folder (and optionally a patch folder)."""
+        first = filedialog.askdirectory(title="Package folder to upload  (Game vBUILD -ARMGDDN)",
+                                        initialdir=str(BASE_DIR))
+        if not first:
+            return
+        folders = [Path(first)]
+        if messagebox.askyesno("Update patch", "Also upload an update patch folder?"):
+            pf = filedialog.askdirectory(
+                title="Update patch folder  (Game vOLD-NEW_Update_Patch)",
+                initialdir=str(XDELTA_DIR / "Output" / "Upload"))
+            if pf:
+                folders.append(Path(pf))
+        self._run(self._upload_step, folders)
 
     def _patch_ensure_inputs(self):
         """Called right before the old repack would be installed.  If the old
@@ -3036,6 +3292,7 @@ class RepackApp:
             old_state = {"ok": False}
             old_thread = None
             old_exe, old_build = None, ""
+            patch_proc = None
             if patch_on:
                 inputs = self._on_main(self._patch_ensure_inputs)
                 if not inputs:
@@ -3120,11 +3377,11 @@ class RepackApp:
                                        uninstaller=False):
                         self.log("[PATCH] New repack install failed — update patch skipped.")
                     else:
-                        patch_launch_maker(names[0], names[1], self.log)
+                        patch_proc = patch_launch_maker(names[0], names[1], self.log)
 
             # 7 — Zip
             self.log("\n[7/8] Zipping final package...")
-            work_zip_and_name(self.log)
+            package = work_zip_and_name(self.log, nested=patch_proc is not None)
 
             # 8 — Archive art (log saved first so it's bundled in)
             self.log("\n[8/8] Archiving game art...")
@@ -3135,6 +3392,12 @@ class RepackApp:
             self.log("\n" + "=" * 56)
             self.log("  REPACK COMPLETE!")
             self.log("=" * 56)
+
+            # 9 — Upload (copy/move to the PC or PCVR testing remote), once everything
+            # above is zipped and backed up.  Skips quietly when rclone isn't set up.
+            if package:
+                self._upload_step([package], patch_proc)
+
             self.root.after(0, lambda: messagebox.showinfo(
                 "Done", "Repack complete!\nAll files have been packaged and archived."))
 

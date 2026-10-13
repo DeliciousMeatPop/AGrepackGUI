@@ -6,10 +6,18 @@
 #   -OldRelease / -NewRelease  pre-fill the two release name boxes
 #   -KeepGames                 Games\old and Games\new were just installed by the
 #                              repacker, so don't offer to wipe them at startup
+#   -ToolkitDir                the repacker toolkit folder (holds 7z.exe). XDelta
+#                              normally sits NEXT TO it, so it can't be assumed
+#                              to be this folder's parent
+#   -ResultFile                when a patch has been packaged, write a small JSON
+#                              file here ({uploadDir, patchName}) so the repacker
+#                              knows what to upload and when it is ready
 param(
     [string]$OldRelease = "",
     [string]$NewRelease = "",
-    [switch]$KeepGames
+    [switch]$KeepGames,
+    [string]$ToolkitDir = "",
+    [string]$ResultFile = ""
 )
 
 Set-StrictMode -Version Latest
@@ -99,14 +107,21 @@ function Find-GameFolder([string]$base, [string]$preferred) {
 }
 
 # ── Setup config (setup.ini) ───────────────────────────────────────────────────
-# Paths in setup.ini are stored relative to this folder (e.g. ..\7z.exe) so the
-# whole tool can be moved or shared without editing anything. They are resolved
-# to absolute paths on read, so the rest of the script never sees relative ones.
-$RepoRoot = Split-Path $Root -Parent
+# Paths in setup.ini are stored relative to this folder (e.g. resources\music\1.mod),
+# or as {TOOLKIT}\... for anything inside the repacker toolkit (e.g. {TOOLKIT}\7z.exe),
+# so the whole thing can be moved or shared without editing anything. They are
+# resolved to absolute paths on read, so the rest of the script never sees these forms.
+$ToolkitRoot = if ($ToolkitDir -and (Test-Path $ToolkitDir)) {
+                   [System.IO.Path]::GetFullPath($ToolkitDir)
+               } else { Split-Path $Root -Parent }
 
 function Resolve-SetupPath([string]$value) {
     if ([string]::IsNullOrWhiteSpace($value)) { return "" }
     $value = $value.Trim()
+    if ($value -like '{TOOLKIT}*') {
+        $rest = $value.Substring(9).TrimStart('\', '/')
+        return [System.IO.Path]::GetFullPath((Join-Path $ToolkitRoot $rest))
+    }
     if ([System.IO.Path]::IsPathRooted($value)) { return $value }
     return [System.IO.Path]::GetFullPath((Join-Path $Root $value))
 }
@@ -114,15 +129,15 @@ function Resolve-SetupPath([string]$value) {
 function ConvertTo-SetupRelative([string]$value) {
     if ([string]::IsNullOrWhiteSpace($value)) { return "" }
     $full = [System.IO.Path]::GetFullPath((Resolve-SetupPath $value))
-    foreach ($base in @($Root, $RepoRoot)) {
+    foreach ($base in @($Root, $ToolkitRoot)) {
         $prefix = $base.TrimEnd('\', '/') + [System.IO.Path]::DirectorySeparatorChar
         if ($full.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
             $rel = $full.Substring($prefix.Length)
             if ($base -eq $Root) { return $rel }
-            return "..\" + $rel
+            return "{TOOLKIT}\" + $rel
         }
     }
-    return $full   # outside the tool/repo (e.g. C:\Program Files\7-Zip) - keep absolute
+    return $full   # outside the tool/toolkit (e.g. C:\Program Files\7-Zip) - keep absolute
 }
 
 function Get-SetupConfig {
@@ -138,9 +153,9 @@ function Get-SetupConfig {
             }
         } catch { }
     }
-    # Nothing (valid) configured: fall back to the 7z.exe shipped in the repo root
+    # Nothing (valid) configured: fall back to the 7z.exe shipped in the toolkit
     if (-not $cfg.SevenZipPath -or -not (Test-Path $cfg.SevenZipPath -EA SilentlyContinue)) {
-        $bundled = Join-Path $RepoRoot "7z.exe"
+        $bundled = Join-Path $ToolkitRoot "7z.exe"
         if (Test-Path $bundled -EA SilentlyContinue) { $cfg.SevenZipPath = $bundled }
     }
     return $cfg
@@ -995,7 +1010,11 @@ $btnBuild.Add_Click({
             $zipBase = Join-Path $subFolder "$patchFilename.zip"
 
             $sc3 = Get-SetupConfig
-            if ($sc3.SevenZipPath -and (Test-Path $sc3.SevenZipPath -EA SilentlyContinue)) {
+            $packOk = $false
+            # More than one file -> zip (named after the folder). A lone exe is uploaded as is.
+            $zipIt = ($allFiles.Count -gt 1) -and $sc3.SevenZipPath -and
+                     (Test-Path $sc3.SevenZipPath -EA SilentlyContinue)
+            if ($zipIt) {
                 $fileArgs = ($allFiles | ForEach-Object { "`"$($_.FullName)`"" }) -join " "
                 $splitArg = if ($totalGB -gt 10) { "-v5000m " } else { "" }
                 if ($totalGB -gt 10) {
@@ -1023,13 +1042,28 @@ $btnBuild.Add_Click({
                     $zipSizeGB  = ($zipFiles | Measure-Object -Property Length -Sum).Sum / 1GB
                     Log "  $($zipFiles.Count) zip file(s) in: $subFolder" $cSuccess
                     Log "  Zip total: $([Math]::Round($zipSizeGB, 2)) GB" $cSuccess
+                    $packOk = $true
                 }
             } else {
-                Log "  7-Zip not available -- copying files to upload folder instead." $cWarn
+                if ($allFiles.Count -le 1) {
+                    Log "  Single file -- not zipped, copying to upload folder." $cMuted
+                } else {
+                    Log "  7-Zip not available -- copying files to upload folder instead." $cWarn
+                }
                 foreach ($f in $allFiles) {
                     Copy-Item $f.FullName (Join-Path $subFolder $f.Name) -Force
                     Log "  Copied: $($f.Name)"
                 }
+                $packOk = $true
+            }
+
+            # Tell the repacker (if it launched us) that the patch is ready to upload
+            if ($packOk -and $ResultFile) {
+                try {
+                    New-Item -ItemType Directory -Force -Path (Split-Path $ResultFile -Parent) | Out-Null
+                    @{ uploadDir = $subFolder; patchName = $patchFilename } | ConvertTo-Json |
+                        Set-Content -Path $ResultFile -Encoding UTF8
+                } catch { Log "  Could not write result file: $_" $cWarn }
             }
 
             $script:lastUploadDir = $subFolder

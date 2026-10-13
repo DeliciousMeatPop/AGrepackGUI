@@ -77,6 +77,8 @@ Game vBUILD -ARMGDDN\
 Game vOLDBUILD-NEWBUILD_Update_Patch\   (zipped if more than one file, split over 10 GB; a lone exe is left as is)
 ```
 
+Live upload progress (`rclone -P`) is drawn in the console window — the same one that shows the compression — and details go to `rclone_upload.log`. (Running without a console window? Progress lines appear in the GUI log instead.) Don't add `-P` to `remotes.ini`; it's handled for you.
+
 The patch is waited for and uploaded together with the repack. A failed upload stops immediately and leaves your local files in place; **Manual Steps → 9. Upload to Testing…** re-runs it on any package folder.
 
 Setup (per repacker, **never committed**): put these three files next to the program (`AG Repack GUI.exe` / `DMPRepackGUI.py`):

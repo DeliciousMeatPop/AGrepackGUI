@@ -41,3 +41,6 @@ gude-*.log
 /rclone.exe
 /rclone.conf
 /remotes.ini
+
+# rclone log of the last upload
+/rclone_upload.log

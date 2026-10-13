@@ -70,6 +70,7 @@ RCLONE_EXE     = BASE_DIR / "rclone.exe"
 RCLONE_CONF    = BASE_DIR / "rclone.conf"       # encrypted rclone config
 REMOTES_INI    = BASE_DIR / "remotes.ini"       # [Remotes] pc= / pcvr= -> remote:path
 UPLOAD_TARGETS = ("pc", "pcvr")
+UPLOAD_LOG     = BASE_DIR / "rclone_upload.log"  # rclone's own log of the last upload
 # A build in a release name: no whitespace or filename-illegal characters. Mostly
 # digits (Steam), but non-Steam games and VR mods can use things like "1.0b".
 PATCH_BUILD_RE = r'[^\s\\/:*?"<>|]+'
@@ -975,9 +976,15 @@ def rclone_problems() -> list:
     return out
 
 
-def run_rclone(args: list, log) -> int:
-    """Run the bundled rclone with the config beside it; stream its output to the log."""
+def run_rclone(args: list, log, console: bool = False) -> int:
+    """Run the bundled rclone with the config beside it.
+
+    console=True lets rclone share this program's console window (the one that
+    shows the compression) so its live -P progress block draws there; nothing is
+    captured.  Otherwise the output is streamed into the GUI log."""
     cmd = [str(RCLONE_EXE), "--config", str(RCLONE_CONF)] + list(args)
+    if console:
+        return subprocess.run(cmd, cwd=str(BASE_DIR)).returncode
     flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
     proc = subprocess.Popen(cmd, cwd=str(BASE_DIR), stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, text=True, encoding="utf-8",
@@ -993,30 +1000,58 @@ def join_remote(base: str, name: str) -> str:
     return base + name if base.endswith((":", "/")) else f"{base}/{name}"
 
 
+def _log_tail(path: Path, n: int = 12) -> list:
+    try:
+        lines = [l.rstrip() for l in path.read_text(encoding="utf-8", errors="replace").splitlines()]
+    except OSError:
+        return []
+    return [l for l in lines if l.strip()][-n:]
+
+
 def upload_sources(sources: list, base: str, mode: str, log) -> bool:
     """rclone copy (leave local files) or move (delete them once uploaded) each
     folder to base/<folder name>.  Stops at the first failure; with move, only
-    files rclone has verified are ever deleted."""
+    files rclone has verified are ever deleted.
+
+    With a console window available, rclone draws its live progress (-P) there and
+    logs details to rclone_upload.log; without one, periodic stats lines go to the
+    GUI log instead."""
     verb = "move" if mode == "move" else "copy"
     cp = configparser.ConfigParser(interpolation=None)
     cp.read(REMOTES_INI, encoding="utf-8-sig")
-    extra = cp.get("Options", "flags", fallback="").split()
+    # -P/--progress only works on a real console, so it's managed here, not by the ini
+    extra = [f for f in cp.get("Options", "flags", fallback="").split()
+             if f not in ("-P", "--progress")]
+    use_console = _has_console()
 
     log(f"  Checking destination: {base}")
     probe = ["lsd", base] if base.endswith(":") else ["mkdir", base]
     if run_rclone(probe, log) != 0:
         log("[ERROR] Could not reach the destination — nothing was uploaded.")
         return False
+    try:
+        UPLOAD_LOG.unlink()
+    except OSError:
+        pass
     for src in sources:
         dest = join_remote(base, src.name)
         log(f"\n  {verb.capitalize()}: {src.name}  →  {dest}")
-        args = [verb, str(src), dest, "--stats", "30s", "--stats-one-line",
-                "--stats-log-level", "NOTICE", "--retries", "3"]
+        args = [verb, str(src), dest, "--retries", "3"]
         if verb == "move":
             args.append("--delete-empty-src-dirs")
-        if run_rclone(args + extra, log) != 0:
+        if use_console:
+            args += ["-P", "--stats", "1s", "--log-file", str(UPLOAD_LOG),
+                     "--log-level", "INFO"]
+            log("  Live progress is in the console window (the one that shows compression).")
+        else:
+            args += ["--stats", "30s", "--stats-one-line", "--stats-log-level", "NOTICE"]
+        if run_rclone(args + extra, log, console=use_console) != 0:
             log(f"[ERROR] rclone failed on {src.name}. Local files were left in place "
                 "(anything not yet uploaded is untouched).")
+            for line in _log_tail(UPLOAD_LOG):
+                log("    " + line)
+            if use_console:
+                log(f"  Full details: {UPLOAD_LOG}")
             return False
         log(f"  Done: {src.name}")
     return True

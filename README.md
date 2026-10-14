@@ -91,6 +91,34 @@ Setup (per repacker, **never committed**): put these three files next to the pro
 
 If any of them is missing the upload step is skipped with a note in the log, and the repack finishes as normal.
 
+(Posting to AGTesting has its own optional `agtesting.ini` — see below.)
+
+## Posting to AGTesting
+
+After an upload the GUI can post the release to the AGTesting site for you. The upload dialog gets a **Post to AGTesting when the upload finishes** box (ticked by default; it only appears once `agtesting.ini` is set up).
+
+**One-time setup** (per repacker, **never committed**): copy `agtesting.ini.example` to `agtesting.ini` next to the program and put the site address in it. The `[Types]` section maps the upload destination to the site's type (`pc` → PC, `pcvr` → VR by default; use `BOTH` if you want).
+
+**First post — linking this PC.** The site logs in through Telegram, so the GUI never handles a login. Instead, the first time it posts it opens an approval page in your browser and shows a code like `ABCD-EFGH`:
+
+1. Sign in with Telegram if the page asks.
+2. Check the code on the page matches the one in the GUI, then click **Approve**.
+3. The GUI picks up a personal token by itself and saves it as `agtesting.token` (next to the program). You won't be asked again on this PC.
+
+Only repackers and admins can approve. Lost a PC or want to cut it off? Open the site's `/link.html` page while signed in and **Revoke** it — the next post just links again. Delete `agtesting.token` to force a re-link.
+
+**What gets posted.** The site decides, from the release name (`Game vBUILD -ARMGDDN`):
+
+| Situation | Result |
+|---|---|
+| New release | Posted to the testing channel like a normal submission (with its update patch, if the patch folder name is `Game vOLD-NEW_Update_Patch`) |
+| Same name, current version posted **less than 30 minutes ago** | Nothing happens — treated as a double click or retry |
+| Same name, posted longer ago | Treated as a redo: reposted for retesting like any other repost (old reports are kept, any claim is released) |
+
+The 30 minutes is `REPOST_COOLDOWN_MINUTES` on the site. A repost does not add a new update patch entry.
+
+**If a post fails** (site down, wrong account...) the upload is untouched. Use **Manual Steps → 10. Post to AGTesting…**, pick the package folder, and it posts without re-uploading.
+
 ## What's in the toolkit
 
 | Folder / file | Purpose |
@@ -106,7 +134,7 @@ If any of them is missing the upload step is skipped with a note in the log, and
 | `Help/` | Installer script reference |
 | `Build_EXE.bat` | Builds the exe locally (needs Python + PyInstaller) |
 
-Not stored in the repo (see above for the upload files `rclone.exe`, `rclone.conf` and `remotes.ini`), created locally as you work: your saved repacker name (`Resource/Save/repacker.txt`), `Setup/Background/_OldGameArt/` (archived old game art), the built exe, and patch build output. Keep `_OldGameArt` in the folder when you zip up a release if you want it included.
+Not stored in the repo (see above for the upload files `rclone.exe`, `rclone.conf`, `remotes.ini` and the AGTesting files `agtesting.ini`, `agtesting.token`), created locally as you work: your saved repacker name (`Resource/Save/repacker.txt`), `Setup/Background/_OldGameArt/` (archived old game art), the built exe, and patch build output. Keep `_OldGameArt` in the folder when you zip up a release if you want it included.
 
 ## Building the exe yourself
 

@@ -1,0 +1,11 @@
+; Copy to "agtesting.ini" next to the program (next to remotes.ini).
+; Turns on "Post to AGTesting" after an upload.  Edit freely - no rebuild needed.
+
+[Site]
+; Address of the testing site, no trailing path
+url = https://your-testing-site.example
+
+[Types]
+; Which AGTesting type each upload destination is posted as: PC, VR or BOTH
+pc   = PC
+pcvr = VR

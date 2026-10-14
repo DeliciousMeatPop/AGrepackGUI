@@ -17,6 +17,9 @@ import time
 import shutil
 import subprocess
 import threading
+import socket
+import urllib.error
+import urllib.request
 import webbrowser
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext, simpledialog
@@ -71,6 +74,18 @@ RCLONE_CONF    = BASE_DIR / "rclone.conf"       # encrypted rclone config
 REMOTES_INI    = BASE_DIR / "remotes.ini"       # [Remotes] pc= / pcvr= -> remote:path
 UPLOAD_TARGETS = ("pc", "pcvr")
 UPLOAD_LOG     = BASE_DIR / "rclone_upload.log"  # rclone's own log of the last upload
+
+# Testing-site posting (AGTesting).  Both files sit next to the program and are never
+# committed: agtesting.ini holds the site address, agtesting.token is this PC's
+# personal API token (written by the one-time browser link, revocable on the site).
+SITE_INI       = BASE_DIR / "agtesting.ini"      # [Site] url= / optional [Types] pc= pcvr=
+SITE_TOKEN     = BASE_DIR / "agtesting.token"
+SITE_DEFAULT_TYPES = {"pc": "PC", "pcvr": "VR"}  # upload destination -> site repack type
+SITE_TYPES_OK  = ("PC", "VR", "BOTH")
+# The site only accepts "Game Name vBUILDID -ARMGDDN" (same rule as its API)
+GAME_NAME_RE   = re.compile(r"^.+\s+v[A-Za-z0-9._\-]+\s+-ARMGDDN$")
+# "Game vOLD-NEW_Update_Patch": the site wants the numeric old build
+PATCH_FOLDER_RE = re.compile(r"\sv(\d+)-(\d+)[ _]Update[ _]Patch$", re.I)
 # A build in a release name: no whitespace or filename-illegal characters. Mostly
 # digits (Steam), but non-Steam games and VR mods can use things like "1.0b".
 PATCH_BUILD_RE = r'[^\s\\/:*?"<>|]+'
@@ -1055,6 +1070,130 @@ def upload_sources(sources: list, base: str, mode: str, log) -> bool:
             return False
         log(f"  Done: {src.name}")
     return True
+
+
+# ── Testing-site posting (AGTesting) ─────────────────────────────────────────
+
+class SiteError(Exception):
+    """The testing site couldn't be reached (DNS, TLS, timeout...)."""
+
+
+def load_site_config() -> dict:
+    """{'url': 'https://site', 'types': {'pc': 'PC', 'pcvr': 'VR'}} from agtesting.ini,
+    or {} when the file is missing or has no usable [Site] url."""
+    cp = configparser.ConfigParser(interpolation=None)
+    try:
+        cp.read(SITE_INI, encoding="utf-8-sig")
+    except configparser.Error:
+        return {}
+    url = cp.get("Site", "url", fallback="").strip().rstrip("/")
+    if not re.match(r"^https?://", url, re.I):
+        return {}
+    types = dict(SITE_DEFAULT_TYPES)
+    if cp.has_section("Types"):
+        types.update({k.lower(): v.strip().upper() for k, v in cp.items("Types")
+                      if v.strip().upper() in SITE_TYPES_OK})
+    return {"url": url, "types": types}
+
+
+def read_site_token() -> str:
+    try:
+        return SITE_TOKEN.read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+
+
+def write_site_token(token: str):
+    SITE_TOKEN.write_text(token, encoding="utf-8")
+    try:
+        os.chmod(SITE_TOKEN, 0o600)     # best effort; a no-op on most Windows setups
+    except OSError:
+        pass
+
+
+def clear_site_token():
+    try:
+        SITE_TOKEN.unlink()
+    except OSError:
+        pass
+
+
+def site_request(cfg: dict, method: str, path: str, body=None, token: str = "",
+                 timeout: int = 30):
+    """-> (http status, parsed JSON dict).  Raises SiteError if the site can't be reached."""
+    headers = {"Content-Type": "application/json", "Accept": "application/json",
+               "User-Agent": f"AGrepackGUI/{__version__}"}
+    if token:
+        headers["Authorization"] = "Bearer " + token
+    data = json.dumps(body).encode("utf-8") if body is not None else None
+    req = urllib.request.Request(cfg["url"] + path, data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            status, raw = resp.status, resp.read()
+    except urllib.error.HTTPError as e:      # 4xx/5xx still carry a JSON body
+        status, raw = e.code, e.read()
+    except (urllib.error.URLError, OSError, ValueError) as e:
+        raise SiteError(str(getattr(e, "reason", e))) from e
+    try:
+        parsed = json.loads(raw.decode("utf-8", "replace") or "{}")
+    except ValueError:
+        parsed = {}
+    return status, parsed if isinstance(parsed, dict) else {}
+
+
+def site_link_device(cfg: dict, log, announce) -> str:
+    """One-time link of this PC to the repacker's AGTesting account.
+
+    Asks the site for a code, opens the approval page in the browser (where the
+    repacker signs in with Telegram as usual and clicks Approve), then waits for
+    the site to hand over a personal API token.  Returns the token, or "" if it
+    was rejected / timed out.  announce(code) shows the code to the user."""
+    status, r = site_request(cfg, "POST", "/api/device?action=start",
+                             {"label": f"AGrepackGUI on {socket.gethostname()}"})
+    if status != 201 or not r.get("device_code"):
+        raise SiteError(r.get("error") or f"link request failed (HTTP {status})")
+    code, url = r["user_code"], r["verification_url"]
+    log(f"  Link code: {code}")
+    announce(code)
+    try:
+        webbrowser.open(url)
+    except Exception:
+        pass
+    log(f"  Approval page (open it yourself if the browser didn't): {url}")
+
+    deadline = time.time() + int(r.get("expires_in", 600))
+    interval = max(2, int(r.get("interval", 3)))
+    hiccups = 0
+    while time.time() < deadline:
+        time.sleep(interval)
+        try:
+            _, p = site_request(cfg, "POST", "/api/device?action=poll",
+                                {"device_code": r["device_code"]})
+        except SiteError:
+            hiccups += 1                  # a dropped poll isn't fatal, a dead site is
+            if hiccups >= 5:
+                raise
+            continue
+        hiccups = 0
+        state = p.get("status")
+        if state == "approved" and p.get("token"):
+            return p["token"]
+        if state in ("denied", "expired", "invalid", "consumed"):
+            log(f"  Link {state}.")
+            return ""
+    log("  Link timed out - nobody approved the code in time.")
+    return ""
+
+
+def site_payload(summary: dict, cfg: dict) -> dict:
+    """Body for POST /api/repacks?action=submit from an upload summary."""
+    payload = {"game_name": summary["folder"],
+               "type": cfg["types"].get(summary.get("target"), "PC")}
+    m = PATCH_FOLDER_RE.search(summary.get("patch_folder") or "")
+    if m:
+        payload["has_patch"] = True
+        payload["patch_old_build_id"] = m.group(1)
+    return payload
 
 
 # ── Archive art ──────────────────────────────────────────────────────────────
@@ -2618,6 +2757,7 @@ class RepackApp:
             ("7.  Zip & Name Package",       self._step_zip,            BTN),
             ("8.  Archive Game Art",         self._step_archive_art,    BTN),
             ("9.  Upload to Testing…",       self._step_upload,         BTN),
+            ("10. Post to AGTesting…",       self._step_post,           BTN),
         ]
         for i, (label, cmd, color) in enumerate(step_defs):
             r, c = divmod(i, 2)
@@ -2731,7 +2871,8 @@ class RepackApp:
         return True
 
     def _upload_dialog(self, folders: list, remotes: dict, patch_pending: bool):
-        """Ask copy-or-move and PC-or-PCVR.  Returns (mode, target) or None to skip.
+        """Ask copy-or-move and PC-or-PCVR (and whether to post to AGTesting afterwards).
+        Returns (mode, target, post) or None to skip.
         The destination is always the repacker's explicit choice — the repack type
         picked earlier is deliberately NOT used.  Main thread only."""
         win = tk.Toplevel(self.root)
@@ -2742,6 +2883,8 @@ class RepackApp:
         win.attributes("-topmost", True)
         result = [None]
         mode_v, target_v = tk.StringVar(value="copy"), tk.StringVar(value="")
+        site_on = bool(load_site_config())
+        post_v = tk.BooleanVar(value=True)
 
         tk.Label(win, text="Upload to the testing remote", bg=BG, fg=ACCENT,
                  font=("Segoe UI", 13, "bold")).pack(anchor="w", padx=20, pady=(16, 4))
@@ -2770,6 +2913,11 @@ class RepackApp:
         group("Destination  (your choice — not taken from the repack type)", target_v, [
             ("pc",   f"PC testing      →  {remotes.get('pc', '?')}"),
             ("pcvr", f"PCVR testing    →  {remotes.get('pcvr', '?')}")])
+        if site_on:
+            tk.Checkbutton(win, text="Post to AGTesting when the upload finishes",
+                           variable=post_v, bg=BG, fg=FG, activebackground=BG,
+                           activeforeground=FG, selectcolor=ENTRY, font=("Segoe UI", 10),
+                           anchor="w").pack(anchor="w", padx=20, pady=(10, 0))
 
         def _go():
             if not target_v.get():
@@ -2780,7 +2928,7 @@ class RepackApp:
                     "Move deletes the local files once they are uploaded.\n\nContinue?",
                     parent=win):
                 return
-            result[0] = (mode_v.get(), target_v.get())
+            result[0] = (mode_v.get(), target_v.get(), site_on and post_v.get())
             win.destroy()
 
         bf = tk.Frame(win, bg=BG)
@@ -2819,7 +2967,7 @@ class RepackApp:
         if not choice:
             self.log("\n[UPLOAD] Skipped.")
             return None
-        mode, target = choice
+        mode, target, post = choice
 
         sources = list(folders)
         patch_folder = None
@@ -2841,7 +2989,137 @@ class RepackApp:
             return None
         self.log("\n[UPLOAD] Complete.")
         return {"folder": folders[0].name, "patch_folder": patch_folder.name if patch_folder else None,
-                "target": target, "mode": mode, "dest": join_remote(remotes[target], folders[0].name)}
+                "target": target, "mode": mode, "post": post,
+                "dest": join_remote(remotes[target], folders[0].name)}
+
+    def _upload_and_post(self, folders: list, patch_proc=None):
+        """Upload, then (if chosen) post the release to AGTesting.  Worker thread."""
+        summary = self._upload_step(folders, patch_proc)
+        if summary and summary.get("post"):
+            self._post_step(summary)
+
+    def _site_link(self, cfg: dict) -> str:
+        """First-time link of this PC to the repacker's AGTesting account.
+        Returns the new token ("" if not linked).  Worker thread."""
+        self.log("  This PC isn't linked to your AGTesting account yet - "
+                 "opening the approval page in your browser...")
+
+        def announce(code):
+            self.root.after(0, lambda: messagebox.showinfo(
+                "Link AGTesting",
+                "Approve this code on the AGTesting page that just opened:\n\n"
+                f"          {code}\n\n"
+                "Make sure it matches, sign in with Telegram if asked, then click "
+                "Approve.\n\nYou can close this box - the program finishes the link "
+                "by itself. This only has to be done once per PC."))
+
+        try:
+            token = site_link_device(cfg, self.log, announce)
+        except SiteError as e:
+            self.log(f"[ERROR] Couldn't reach {cfg['url']}: {e}")
+            return ""
+        if token:
+            write_site_token(token)
+            self.log("  Linked - this PC can now post to AGTesting.")
+        return token
+
+    def _post_step(self, summary: dict) -> bool:
+        """Post an uploaded release to AGTesting.  The site decides what it is: new
+        release -> posted; same name posted in the last 30 min -> left alone;
+        otherwise -> reposted for retesting.  Worker thread; True if it went through."""
+        self.log("\n[POST] AGTesting")
+        cfg = load_site_config()
+        if not cfg:
+            self.log(f"  Skipped - {SITE_INI.name} not found next to the program "
+                     "(or it has no [Site] url).")
+            return False
+        name = summary["folder"]
+        if not GAME_NAME_RE.match(name):
+            self.log(f'[ERROR] "{name}" is not in the form "Game Name vBUILDID -ARMGDDN" '
+                     "- AGTesting would reject it, so it was not posted.")
+            return False
+        payload = site_payload(summary, cfg)
+        if summary.get("patch_folder") and "has_patch" not in payload:
+            self.log(f'  Note: couldn\'t read the old build from "{summary["patch_folder"]}" '
+                     "- posting without the update patch entry.")
+
+        for attempt in range(2):            # the 2nd pass only follows a fresh link
+            token = read_site_token() or self._site_link(cfg)
+            if not token:
+                self.log("  Not posted. Use Manual Steps → 10. Post to AGTesting… to try again.")
+                return False
+            while True:
+                try:
+                    status, r = site_request(cfg, "POST", "/api/repacks?action=submit",
+                                             payload, token, timeout=60)
+                    break
+                except SiteError as e:
+                    msg = str(e)
+                    self.log(f"[ERROR] Couldn't reach {cfg['url']}: {msg}")
+                    if not self._on_main(lambda: messagebox.askretrycancel(
+                            "AGTesting", f"Couldn't reach the testing site:\n\n{msg}\n\nRetry?")):
+                        self.log("  Not posted. Use Manual Steps → 10. Post to AGTesting… "
+                                 "to try again - nothing needs re-uploading.")
+                        return False
+
+            if status == 401:                # token revoked / account removed
+                clear_site_token()
+                self.log("  The saved AGTesting link is no longer valid.")
+                if attempt == 0:
+                    continue
+                return False
+            if status == 403:
+                self.log("[ERROR] AGTesting says this account can't post "
+                         "(it needs the repacker or admin role).")
+                return False
+            if status == 409 and r.get("conflict"):
+                ex = r.get("existing") or {}
+                self.log(f'[ERROR] Not posted: build ID already used by "{ex.get("game_name", "?")}" '
+                         "on AGTesting. Fix the name/build or ask an admin.")
+                return False
+            if status in (200, 201) and r.get("success"):
+                outcome = r.get("outcome")
+                if outcome == "created":
+                    self.log(f"  Posted to AGTesting: {name}")
+                    if r.get("patch"):
+                        self.log(f'  ...and its update patch: {r["patch"].get("game_name", "")}')
+                elif outcome == "reposted":
+                    self.log(f"  Already on AGTesting - reposted for retesting: {name}")
+                elif outcome == "duplicate":
+                    self.log(f"  {r.get('message', 'Already posted a moment ago.')} "
+                             "Nothing changed on AGTesting.")
+                else:
+                    self.log(f"  AGTesting: {r.get('message', 'OK')}")
+                return True
+            self.log(f"[ERROR] AGTesting refused it (HTTP {status}): "
+                     f"{r.get('error') or r.get('message') or 'no details'}")
+            return False
+        return False
+
+    def _step_post(self):
+        """Manual: post an already-uploaded package folder to AGTesting (retry after
+        a failed post - nothing is re-uploaded)."""
+        if not load_site_config():
+            messagebox.showinfo("Post to AGTesting",
+                                f"{SITE_INI.name} wasn't found next to the program (or it has no "
+                                "[Site] url).\n\nCopy agtesting.ini.example to agtesting.ini and "
+                                "fill in the site address.")
+            return
+        first = filedialog.askdirectory(title="Package folder to post  (Game vBUILD -ARMGDDN)",
+                                        initialdir=str(BASE_DIR))
+        if not first:
+            return
+        target = "pcvr" if messagebox.askyesno(
+            "Post to AGTesting", "Is this a PCVR release?\n\nYes = PCVR      No = PC") else "pc"
+        patch_name = None
+        if messagebox.askyesno("Update patch", "Does it have an update patch to list too?"):
+            pf = filedialog.askdirectory(
+                title="Update patch folder  (Game vOLD-NEW_Update_Patch)",
+                initialdir=str(XDELTA_DIR / "Output" / "Upload"))
+            if pf:
+                patch_name = Path(pf).name
+        self._run(self._post_step, {"folder": Path(first).name,
+                                    "patch_folder": patch_name, "target": target})
 
     def _step_upload(self):
         """Manual: pick an already-built package folder (and optionally a patch folder)."""
@@ -2856,7 +3134,7 @@ class RepackApp:
                 initialdir=str(XDELTA_DIR / "Output" / "Upload"))
             if pf:
                 folders.append(Path(pf))
-        self._run(self._upload_step, folders)
+        self._run(self._upload_and_post, folders)
 
     def _patch_ensure_inputs(self):
         """Called right before the old repack would be installed.  If the old
@@ -3431,7 +3709,7 @@ class RepackApp:
             # 9 — Upload (copy/move to the PC or PCVR testing remote), once everything
             # above is zipped and backed up.  Skips quietly when rclone isn't set up.
             if package:
-                self._upload_step([package], patch_proc)
+                self._upload_and_post([package], patch_proc)
 
             self.root.after(0, lambda: messagebox.showinfo(
                 "Done", "Repack complete!\nAll files have been packaged and archived."))

@@ -44,3 +44,7 @@ gude-*.log
 
 # rclone log of the last upload
 /rclone_upload.log
+
+# AGTesting posting: site address and this PC's personal API token (never committed)
+/agtesting.ini
+/agtesting.token

@@ -3,7 +3,7 @@
 Everything below is already set up for you in this folder. The only thing you do yourself is a **one-time link** to your AGTesting account (section 4). If you're in a hurry, read the box below and section 4, then skim the rest when you need it.
 
 > **The short version**
-> 1. **Move the `XDelta` folder** so it sits *next to* this folder, not inside it (only needed for update patches — section 2).
+> 1. The **`XDelta` folder must stay beside the `ARMGDDN Repacks` folder** (same parent folder), never inside it. It's already packaged that way — just don't move it (only matters for update patches — section 2).
 > 2. When a repack finishes, an **Upload window** appears. Pick **Copy/Move** and **PC/PCVR**. Leave **Post to AGTesting** ticked.
 > 3. The first time you post, your browser opens once to link your Telegram account. Check the code matches, click **Approve**. Never asked again on that PC.
 > 4. Name your folders exactly `Game Name vBUILDID -ARMGDDN`.
@@ -51,17 +51,17 @@ You don't have to arrange any of this; the GUI does it.
 
 Used when a game gets an update and you want to give people a small patch instead of a whole new download.
 
-### One-time: move the XDelta folder
+### Where the XDelta folder lives
 
-`XDelta` (the patch maker) comes inside this folder, but the patch tools break when they're buried in long folder paths. So it must live in a folder **next to** this one:
+`XDelta` (the patch maker) has to sit **beside the `ARMGDDN Repacks` folder — in the same parent folder** — and **not inside it**. The patch tools break when they're buried in long folder paths, so the program only looks for it there:
 
 ```
-D:\Repos\
-├── ARMGDDN Repacks\     <- this folder (the toolkit)
-└── XDelta\              <- move the XDelta folder here
+D:\Repos\                  <- any parent folder you like
+├── ARMGDDN Repacks\       <- this folder (the toolkit, with the GUI in it)
+└── XDelta\                <- must be right next to it, same parent
 ```
 
-Nothing moves it for you. If you start a patch and it isn't there, a **big red-banner popup** tells you; move the folder and click **Retry**, or **Skip update patch** to carry on without one.
+It comes packaged that way, so you don't need to do anything — just keep the two folders together if you move or copy them (move the *parent*, or move both). If you start a patch and `XDelta` isn't in the right place, a **big red-banner popup** tells you where it expected it; put the folder there and click **Retry**, or click **Skip update patch** to carry on without one.
 
 ### Making a patch
 
@@ -153,7 +153,7 @@ When the upload finishes, the log shows one of these:
 |---|---|
 | No "Post to AGTesting" box in the Upload window | `agtesting.ini` is missing or has no address in it. It must be named exactly `agtesting.ini` and sit next to the program |
 | "Skipped" lines about rclone | `rclone.exe`, `rclone.conf` or `remotes.ini` is missing from the folder |
-| Big red "XDelta NOT FOUND" popup | Move the `XDelta` folder next to this folder (section 2), then **Retry** |
+| Big red "XDelta NOT FOUND" popup | The `XDelta` folder isn't beside the `ARMGDDN Repacks` folder (same parent). Put it there (section 2), then **Retry** |
 | Browser says the link code is invalid or expired | Wait-and-click took over 10 minutes. Start the post again for a new code |
 | "This account can't post (needs the repacker or admin role)" | You've left the staff/repackers channels, or you're a tester. Ask an admin |
 | "The saved AGTesting link is no longer valid" | Your link was revoked. It re-links by itself — just approve the new code |

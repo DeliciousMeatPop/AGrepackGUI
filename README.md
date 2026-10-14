@@ -27,15 +27,15 @@ The *Manual Steps* section runs each stage on its own; you normally won't need i
 
 ## Making an update patch
 
-**Move `XDelta` first.** It ships inside the toolkit folder, but the patch tools fail on long paths, so it has to run from a folder **next to** the toolkit instead:
+**Where `XDelta` lives.** The patch tools fail on long paths, so the `XDelta` folder has to sit **beside the toolkit folder (`ARMGDDN Repacks`) — in the same parent folder — not inside it**:
 
 ```
 D:\Repos\
 ├── ARMGDDN Repacks\     <- the toolkit (this repo)
-└── XDelta\              <- move the XDelta folder here
+└── XDelta\              <- right next to it, same parent
 ```
 
-Nothing moves it for you. When a patch is needed, the repacker and `Patch Builder.bat` check for `..\XDelta` and show a hard-to-miss popup if it isn't there — move the folder, then click **Retry**. (Git will then show `XDelta/` as deleted in the toolkit; that's expected.)
+The shared package already comes laid out like this; keep the two together if you move them. Nothing moves it for you: when a patch is needed, the repacker and `Patch Builder.bat` check for `..\XDelta` and show a hard-to-miss popup if it isn't there — put the folder there, then click **Retry**. (If you cloned the repo, `XDelta/` arrives inside the toolkit; move it out to the parent first. Git will then show it as deleted in the toolkit; that's expected.)
 
 Tick **Also make an update patch (XDelta)** on **Build & Pack** and fill in:
 
@@ -128,7 +128,7 @@ The 30 minutes is `REPOST_COOLDOWN_MINUTES` on the site. A repost does not add a
 | `COMPRESSOR/` | Compression tools and per-game presets |
 | `Resource/`, `Resources/` | Compression presets, templates, installer modules |
 | `Setup/` | Installer art, skins, music, EULAs; game art lands in `Setup/Background` |
-| `XDelta/` | Update patch maker (`make_patch_gui.ps1`) and its tools — ships here, **run it from next to the toolkit folder** (see above) |
+| `XDelta/` | Update patch maker (`make_patch_gui.ps1`) and its tools — ships with the repo, but **must sit beside the toolkit folder (same parent)** — see above |
 | `Patch Builder.bat` | Launches the patch maker by itself |
 | `_PATCHING TOOLS/` | Optional third-party helpers for patching games |
 | `Help/` | Installer script reference |

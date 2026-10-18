@@ -72,12 +72,13 @@ jobs:
         run: |
           # The in-app updater extracts this zip over the toolkit folder, so it
           # carries the exe, runtime AND every tracked toolkit file (minus git
-          # housekeeping). Files that only exist locally (rclone.conf,
+          # housekeeping, docs, Help and *.example files). Files that only exist locally (rclone.conf,
           # agtesting.token, saved repacker name...) are never in it, so an
           # update can't overwrite them.
           $stage = "dist/AG Repack GUI"
           git ls-files -z | ForEach-Object { $_ -split "`0" } | Where-Object { $_ } | ForEach-Object {
-            if ($_ -match '^\.git' -or $_ -match '^\.github/') { return }
+            # git housekeeping, plus docs/help/example files repackers already have set up
+            if ($_ -match '^\.git' -or $_ -match '^(docs|Help)/' -or $_ -match '\.example$') { return }
             $target = Join-Path $stage $_
             New-Item -ItemType Directory -Force -Path (Split-Path $target) | Out-Null
             Copy-Item -LiteralPath $_ -Destination $target -Force

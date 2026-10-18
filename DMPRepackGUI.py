@@ -2103,7 +2103,10 @@ class RepackApp:
         Dead simple by design: force-kill the exe (guarantees the file lock is
         gone — no waiting on a graceful exit that might not happen), pause, then
         extract the release zip straight over the app folder, overwriting.
-        7-Zip ships beside the app; PowerShell's Expand-Archive is the fallback.
+        The release zip holds the exe, runtime and the whole toolkit, so one
+        update refreshes everything.  7-Zip ships beside the app (7z.exe/7z.dll
+        are skipped: they're in use while extracting); PowerShell's
+        Expand-Archive is the fallback.
         On failure it keeps the zip, logs, and PAUSES so the error is visible."""
         exe_name = Path(sys.executable).name
         zip_name = Path(zip_path).name
@@ -2124,7 +2127,7 @@ class RepackApp:
             "ping 127.0.0.1 -n 6 >nul\r\n"
             f'if not exist "{zip_name}" goto nozip\r\n'
             'if exist "7z.exe" (\r\n'
-            f'    "7z.exe" x -y "{zip_name}" >> "%LOG%" 2>&1\r\n'
+            f'    "7z.exe" x -y -x!7z.exe -x!7z.dll "{zip_name}" >> "%LOG%" 2>&1\r\n'
             "    if errorlevel 2 goto fail\r\n"
             ") else (\r\n"
             f"    powershell -NoProfile -Command \"Expand-Archive -LiteralPath '{zip_name}' -DestinationPath '.' -Force\" >> \"%LOG%\" 2>&1\r\n"

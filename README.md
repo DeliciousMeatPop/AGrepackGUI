@@ -12,10 +12,10 @@ The repo holds the whole toolkit (compressor, installer script, skins, patch mak
    ```
    Put it somewhere writable (not inside `Program Files`), or run the app as administrator.
 2. **Get the program** — pick one:
-   - **Exe (recommended):** download `AG Repack GUI.zip` from the [latest release](https://github.com/DeliciousMeatPop/AGrepackGUI/releases/latest) and extract it **into the toolkit folder**, so `AG Repack GUI.exe` and its `runtime` folder sit next to `7z.exe`, `COMPRESSOR`, `Resource`, `Setup`, etc.
+   - **Exe (recommended):** download `AG Repack GUI.zip` from the [latest release](https://github.com/DeliciousMeatPop/AGrepackGUI/releases/latest) and extract it. The release zip holds the exe, its `runtime` folder **and the whole toolkit** (`COMPRESSOR`, `Resource`, `Setup`, `XDelta`, ...), so on a fresh PC it is all you need. To update an existing install, extract it over the toolkit folder (the in-app updater does exactly that).
    - **Python:** with Python 3.8+ (tkinter is included with the standard Windows install), run `python DMPRepackGUI.py` from the toolkit folder.
 
-The app finds everything relative to its own folder, so the toolkit can live anywhere and be moved freely. When a newer release is published, the exe offers to update itself.
+The app finds everything relative to its own folder, so the toolkit can live anywhere and be moved freely. When a newer release is published, the exe offers to update itself, refreshing the exe and every toolkit file. Files that exist only on your PC (`rclone.conf`, `remotes.ini`, `agtesting.*`, your saved repacker name, `_OldGameArt`) are not in the zip and are left alone.
 
 ## Making a repack
 

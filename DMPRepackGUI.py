@@ -2104,7 +2104,8 @@ class RepackApp:
         gone — no waiting on a graceful exit that might not happen), pause, then
         extract the release zip straight over the app folder, overwriting.
         The release zip holds the exe, runtime and the whole toolkit, so one
-        update refreshes everything.  7-Zip ships beside the app (7z.exe/7z.dll
+        update refreshes everything, and XDelta is moved
+        out to sit beside the toolkit where the patch maker needs it.  7-Zip ships beside the app (7z.exe/7z.dll
         are skipped: they're in use while extracting); PowerShell's
         Expand-Archive is the fallback.
         On failure it keeps the zip, logs, and PAUSES so the error is visible."""
@@ -2132,6 +2133,12 @@ class RepackApp:
             ") else (\r\n"
             f"    powershell -NoProfile -Command \"Expand-Archive -LiteralPath '{zip_name}' -DestinationPath '.' -Force\" >> \"%LOG%\" 2>&1\r\n"
             "    if errorlevel 1 goto fail\r\n"
+            ")\r\n"
+            # XDelta must live NEXT TO the toolkit, not inside it: merge the freshly
+            # extracted copy into ..\XDelta (keeps that folder's Games/Output/settings).
+            'if exist "XDelta\\" (\r\n'
+            '    robocopy "XDelta" "..\\XDelta" /E /MOVE /NFL /NDL /NJH /NJS /NP >> "%LOG%" 2>&1\r\n'
+            "    if errorlevel 8 goto fail\r\n"
             ")\r\n"
             f'del /q "{zip_name}" >nul 2>&1\r\n'
             'echo [update] success>> "%LOG%"\r\n'

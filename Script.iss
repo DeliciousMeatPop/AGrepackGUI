@@ -2348,7 +2348,7 @@ begin
   #if Music
     ExtractTemporaryFile('BASS.dll');
     ExtractTemporaryFile('{#MusicFile}');
-    if BASS_Init(-1, 44100, 0, 0, 0) and BASS_Start then
+    if (not WizardSilent) and BASS_Init(-1, 44100, 0, 0, 0) and BASS_Start then
     begin
       SoundStream := BASS_StreamCreateFile(False, ExpandConstant('{tmp}\{#MusicFile}'), 0, 0, 0, 0, BASS_UNICODE or BASS_SAMPLE_LOOP);
       if SoundStream <> 0 then
@@ -4707,9 +4707,9 @@ begin
         #endif
         WizardForm.Position := poScreenCenter;
         WizardForm.Hide;
-        MakeSlideShow();
+        if not WizardSilent then MakeSlideShow();
         WizardForm.Top := GetSystemMetrics(1) - ScaleY(225);
-        WizardForm.Show;
+        if not WizardSilent then WizardForm.Show;
         BackgroundButton.Show;
         BackgroundButton.Left := ScaleX(11);
         BackgroundButton.Top := WizardForm.CancelButton.Top;
@@ -4813,8 +4813,8 @@ begin
         #if UseInstallBackground
           BackgroundButton.Hide;
           #if !BGAfterInstall
-            BackgroundForm.Visible := False
-            DeinitializeSlideShow;
+            if BackgroundForm <> nil then BackgroundForm.Visible := False;
+            if BackgroundForm <> nil then DeinitializeSlideShow;
             if BOOL(SlideTimerID <> 0) and KillTimer(0, SlideTimerID) then
               SlideTimerID := 0;
           #endif
@@ -4892,8 +4892,8 @@ begin
             #if UseInstallBackground
               BackgroundButton.Hide;
               #if !BGAfterInstall
-                BackgroundForm.Visible := False
-                DeinitializeSlideShow;
+                if BackgroundForm <> nil then BackgroundForm.Visible := False;
+                if BackgroundForm <> nil then DeinitializeSlideShow;
                 if BOOL(SlideTimerID <> 0) and KillTimer(0, SlideTimerID) then
                   SlideTimerID := 0;
               #endif

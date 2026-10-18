@@ -1377,19 +1377,26 @@ def _parse_version(v: str) -> tuple:
     return tuple(int(n) for n in re.findall(r"\d+", v or ""))
 
 
+UPDATE_CHECK_ERROR = ""   # why the last check_for_update() found nothing (empty = it just was current)
+
+
 def check_for_update(current: str = __version__):
     """Return (latest_tag, release_url, exe_asset_url) when a newer GitHub
     release exists, else None.  exe_asset_url is the direct download for the
     first .exe attached to the release (None if the release has no exe asset).
     Never raises — no network, no releases, or a parse error all just return
     None so the app carries on silently."""
+    global UPDATE_CHECK_ERROR
+    UPDATE_CHECK_ERROR = ""
     raw = _http_get(
         f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest", timeout=10)
     if not raw:
+        UPDATE_CHECK_ERROR = "could not reach GitHub (offline, blocked, or rate-limited)"
         return None
     try:
         rel = json.loads(raw)
     except ValueError:
+        UPDATE_CHECK_ERROR = "GitHub sent an unreadable reply"
         return None
     tag = (rel.get("tag_name") or "").strip()
     url = rel.get("html_url") or f"https://github.com/{GITHUB_REPO}/releases"
@@ -1957,8 +1964,10 @@ class RepackApp:
         hdr.pack(fill="x")
         tk.Label(hdr, text="AG Repack GUI", bg="#0a0f1e", fg=ACCENT,
                  font=("Segoe UI", 16, "bold")).pack(side="left", padx=16)
-        tk.Label(hdr, text=f"v{__version__}", bg="#0a0f1e", fg=FG2,
-                 font=("Segoe UI", 9)).pack(side="left", padx=(0, 8))
+        ver_lbl = tk.Label(hdr, text=f"v{__version__}", bg="#0a0f1e", fg=FG2,
+                           font=("Segoe UI", 9), cursor="hand2")
+        ver_lbl.pack(side="left", padx=(0, 8))
+        ver_lbl.bind("<Button-1>", lambda e: self._manual_update_check())   # click = check now
         tk.Label(hdr, text="Made by DMP of ARMGDDN Games",
                  bg="#0a0f1e", fg=FG2, font=("Segoe UI", 10)).pack(side="left")
         tk.Button(hdr, text="?", command=self._show_about,
@@ -1997,14 +2006,30 @@ class RepackApp:
     def _start_update_check(self):
         threading.Thread(target=self._update_check_worker, daemon=True).start()
 
-    def _update_check_worker(self):
+    def _update_check_worker(self, manual: bool = False):
         try:
             result = check_for_update()
-        except Exception:
+        except Exception as exc:
             result = None
+            globals()["UPDATE_CHECK_ERROR"] = str(exc)
         if result:
             tag, url, asset = result
-            self.root.after(0, lambda: self._on_update_available(tag, url, asset))
+            if tag == getattr(self, "_update_offered", None) and not manual:
+                pass                      # already prompted for this release
+            else:
+                self._update_offered = tag
+                self.root.after(0, lambda: self._on_update_available(tag, url, asset))
+        elif manual or UPDATE_CHECK_ERROR:
+            msg = (f"[UPDATE] Update check failed: {UPDATE_CHECK_ERROR}" if UPDATE_CHECK_ERROR
+                   else f"[UPDATE] You're up to date (v{__version__}).")
+            self.root.after(0, lambda: self.log(msg))
+        if not manual:                    # re-check while the app stays open
+            self.root.after(30 * 60 * 1000, self._start_update_check)
+
+    def _manual_update_check(self, _event=None):
+        self.log("[UPDATE] Checking for updates...")
+        threading.Thread(target=self._update_check_worker, args=(True,),
+                         daemon=True).start()
 
     def _on_update_available(self, tag, url, asset_url):
         # Persistent clickable banner in the header ...

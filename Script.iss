@@ -2348,7 +2348,8 @@ begin
   #if Music
     ExtractTemporaryFile('BASS.dll');
     ExtractTemporaryFile('{#MusicFile}');
-    if (not WizardSilent) and BASS_Init(-1, 44100, 0, 0, 0) and BASS_Start then
+    if not WizardSilent then
+    if BASS_Init(-1, 44100, 0, 0, 0) and BASS_Start then
     begin
       SoundStream := BASS_StreamCreateFile(False, ExpandConstant('{tmp}\{#MusicFile}'), 0, 0, 0, 0, BASS_UNICODE or BASS_SAMPLE_LOOP);
       if SoundStream <> 0 then

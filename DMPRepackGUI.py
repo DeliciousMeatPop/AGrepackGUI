@@ -73,7 +73,6 @@ RCLONE_EXE     = BASE_DIR / "rclone.exe"
 RCLONE_CONF    = BASE_DIR / "rclone.conf"       # encrypted rclone config
 REMOTES_INI    = BASE_DIR / "remotes.ini"       # [Remotes] pc= / pcvr= -> remote:path
 UPLOAD_TARGETS = ("pc", "pcvr")
-UPLOAD_LOG     = BASE_DIR / "rclone_upload.log"  # rclone's own log of the last upload
 
 # Testing-site posting (AGTesting).  Both files sit next to the program and are never
 # committed: agtesting.ini holds the site address, agtesting.token is this PC's
@@ -1015,59 +1014,60 @@ def join_remote(base: str, name: str) -> str:
     return base + name if base.endswith((":", "/")) else f"{base}/{name}"
 
 
-def _log_tail(path: Path, n: int = 12) -> list:
+def _remove_empty_tree(folder: Path) -> bool:
+    """Remove folder if it holds nothing but empty directories (rclone move
+    clears empty subfolders but leaves the top-level source folder behind).
+    Never touches a folder that still has a file in it."""
     try:
-        lines = [l.rstrip() for l in path.read_text(encoding="utf-8", errors="replace").splitlines()]
+        for root, _dirs, files in os.walk(folder):
+            if files:
+                return False
+        for root, dirs, _files in os.walk(folder, topdown=False):
+            for d in dirs:
+                os.rmdir(os.path.join(root, d))
+        os.rmdir(folder)
+        return True
     except OSError:
-        return []
-    return [l for l in lines if l.strip()][-n:]
+        return False
 
 
 def upload_sources(sources: list, base: str, mode: str, log) -> bool:
     """rclone copy (leave local files) or move (delete them once uploaded) each
     folder to base/<folder name>.  Stops at the first failure; with move, only
-    files rclone has verified are ever deleted.
+    files rclone has verified are ever deleted, and the emptied source folder is
+    removed afterwards.
 
-    With a console window available, rclone draws its live progress (-P) there and
-    logs details to rclone_upload.log; without one, periodic stats lines go to the
-    GUI log instead."""
+    Progress is streamed into the GUI log as a stats line every few seconds for
+    both modes (rclone's console -P block redraws in place and was unreliable
+    with move)."""
     verb = "move" if mode == "move" else "copy"
     cp = configparser.ConfigParser(interpolation=None)
     cp.read(REMOTES_INI, encoding="utf-8-sig")
-    # -P/--progress only works on a real console, so it's managed here, not by the ini
+    # progress is managed here, not by the ini
     extra = [f for f in cp.get("Options", "flags", fallback="").split()
              if f not in ("-P", "--progress")]
-    use_console = _has_console()
 
     log(f"  Checking destination: {base}")
     probe = ["lsd", base] if base.endswith(":") else ["mkdir", base]
     if run_rclone(probe, log) != 0:
-        log("[ERROR] Could not reach the destination — nothing was uploaded.")
+        log("[ERROR] Could not reach the destination - nothing was uploaded.")
         return False
-    try:
-        UPLOAD_LOG.unlink()
-    except OSError:
-        pass
     for src in sources:
         dest = join_remote(base, src.name)
         log(f"\n  {verb.capitalize()}: {src.name}  →  {dest}")
-        args = [verb, str(src), dest, "--retries", "3"]
+        args = [verb, str(src), dest, "--retries", "3",
+                "--stats", "5s", "--stats-one-line", "--stats-log-level", "NOTICE"]
         if verb == "move":
             args.append("--delete-empty-src-dirs")
-        if use_console:
-            args += ["-P", "--stats", "1s", "--log-file", str(UPLOAD_LOG),
-                     "--log-level", "INFO"]
-            log("  Live progress is in the console window (the one that shows compression).")
-        else:
-            args += ["--stats", "30s", "--stats-one-line", "--stats-log-level", "NOTICE"]
-        if run_rclone(args + extra, log, console=use_console) != 0:
+        if run_rclone(args + extra, log) != 0:
             log(f"[ERROR] rclone failed on {src.name}. Local files were left in place "
                 "(anything not yet uploaded is untouched).")
-            for line in _log_tail(UPLOAD_LOG):
-                log("    " + line)
-            if use_console:
-                log(f"  Full details: {UPLOAD_LOG}")
             return False
+        if verb == "move" and src.exists():
+            if _remove_empty_tree(src):
+                log(f"  Removed the emptied local folder: {src.name}")
+            else:
+                log(f"  [WARN] {src.name} still has files in it - left in place.")
         log(f"  Done: {src.name}")
     return True
 

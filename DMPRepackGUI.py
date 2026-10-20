@@ -263,6 +263,12 @@ def sanitize_name(name: str) -> str:
     return re.sub(r"\s+", " ", name).strip()
 
 
+def fs_safe_name(name: str) -> str:
+    """Make a release/game name usable as a Windows folder name (no : etc.)."""
+    name = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", name)
+    return re.sub(r"\s+", " ", name).strip().rstrip(". ") or "game"
+
+
 def dir_size_str(folder: Path) -> str:
     """Return a human-readable size string for a directory (e.g. '14.23 GB')."""
     total = sum(f.stat().st_size for f in folder.rglob("*") if f.is_file())
@@ -3663,7 +3669,7 @@ class RepackApp:
                     self.log("\n[PATCH] Installing the OLD repack in the background...")
                     def _old():
                         old_state["ok"] = patch_install(
-                            "old", old_exe, PATCH_OLD_DIR / game_name, self.log)
+                            "old", old_exe, PATCH_OLD_DIR / fs_safe_name(game_name), self.log)
                     old_thread = threading.Thread(target=_old, daemon=True)
                     old_thread.start()
 
@@ -3721,7 +3727,7 @@ class RepackApp:
                     new_exe = CONVERSION_DIR / "AGRepackInstaller.exe"
                     if not old_state["ok"]:
                         self.log("[PATCH] Old repack install failed — update patch skipped.")
-                    elif not patch_install("new", new_exe, PATCH_NEW_DIR / name, self.log,
+                    elif not patch_install("new", new_exe, PATCH_NEW_DIR / fs_safe_name(name), self.log,
                                        uninstaller=False):
                         self.log("[PATCH] New repack install failed — update patch skipped.")
                     else:

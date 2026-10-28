@@ -746,7 +746,7 @@ def work_zip_and_name(log, nested: bool = False):
     nested=True (an update patch goes with it):
                      <Release>\\<appid>
                      <Release>\\<Release>\\*.7z.00x
-    The patch folder then sits next to <Release> at upload time."""
+    The patch folder is later moved into <Release> as <Release>\\<patch name>."""
     if not SETTINGS_INI.exists():
         log("[ERROR] settings.ini not found.")
         return False
@@ -966,11 +966,11 @@ def patch_wait_result(proc, log):
             log(f"  ...still waiting for the update patch ({waited // 60} min)")
 
 
-def patch_place_beside_release(patch_folder: Path, release_folder: Path, log) -> Path:
-    """Move the finished patch into <main repack dir>\\<patch name>\\, next to the
-    release folder, so both sit together at upload time.  Returns the patch's new
-    folder (or the original if it couldn't be moved)."""
-    dest = release_folder.parent / patch_folder.name
+def patch_place_in_release(patch_folder: Path, release_folder: Path, log) -> Path:
+    """Move the finished patch into <Release>\\<patch name>\\ (beside the nested
+    <Release>\\<Release> archive folder), so it uploads with the release.  Returns
+    the patch's new folder (or the original if it couldn't be moved)."""
+    dest = release_folder / patch_folder.name
     if dest.resolve() == patch_folder.resolve():
         return patch_folder
     try:
@@ -987,7 +987,7 @@ def patch_place_beside_release(patch_folder: Path, release_folder: Path, log) ->
         log(f"  Update patch moved to: {dest}")
         return dest
     except OSError as e:
-        log(f"  [WARN] Couldn't move the patch next to the release ({e}) - "
+        log(f"  [WARN] Couldn't move the patch into the release ({e}) - "
             f"uploading it from {patch_folder}")
         return patch_folder
 
@@ -3041,8 +3041,9 @@ class RepackApp:
         if patch_proc is not None:
             patch_folder = patch_wait_result(patch_proc, self.log)
             if patch_folder:
-                patch_folder = patch_place_beside_release(patch_folder, folders[0], self.log)
-                sources.append(patch_folder)
+                patch_folder = patch_place_in_release(patch_folder, folders[0], self.log)
+                if folders[0] not in patch_folder.parents:   # move failed: upload it on its own
+                    sources.append(patch_folder)
             elif not self._on_main(lambda: messagebox.askyesno(
                     "Update patch",
                     "The patch maker was closed without a finished patch.\n\n"

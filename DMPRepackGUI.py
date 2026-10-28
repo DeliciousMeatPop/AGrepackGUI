@@ -966,6 +966,32 @@ def patch_wait_result(proc, log):
             log(f"  ...still waiting for the update patch ({waited // 60} min)")
 
 
+def patch_place_beside_release(patch_folder: Path, release_folder: Path, log) -> Path:
+    """Move the finished patch into <main repack dir>\\<patch name>\\, next to the
+    release folder, so both sit together at upload time.  Returns the patch's new
+    folder (or the original if it couldn't be moved)."""
+    dest = release_folder.parent / patch_folder.name
+    if dest.resolve() == patch_folder.resolve():
+        return patch_folder
+    try:
+        dest.mkdir(parents=True, exist_ok=True)
+        for item in patch_folder.iterdir():
+            target = dest / item.name
+            if target.exists():
+                if target.is_dir():
+                    shutil.rmtree(target)
+                else:
+                    target.unlink()
+            shutil.move(str(item), str(target))
+        _remove_empty_tree(patch_folder)
+        log(f"  Update patch moved to: {dest}")
+        return dest
+    except OSError as e:
+        log(f"  [WARN] Couldn't move the patch next to the release ({e}) - "
+            f"uploading it from {patch_folder}")
+        return patch_folder
+
+
 # ── Testing-remote upload (rclone) ───────────────────────────────────────────
 
 def load_remotes() -> dict:
@@ -3015,6 +3041,7 @@ class RepackApp:
         if patch_proc is not None:
             patch_folder = patch_wait_result(patch_proc, self.log)
             if patch_folder:
+                patch_folder = patch_place_beside_release(patch_folder, folders[0], self.log)
                 sources.append(patch_folder)
             elif not self._on_main(lambda: messagebox.askyesno(
                     "Update patch",

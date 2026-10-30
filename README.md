@@ -89,7 +89,7 @@ Setup (per repacker, **never committed**): put these three files next to the pro
 | `rclone.conf` | The encrypted rclone config |
 | `remotes.ini` | Maps `pc` / `pcvr` to `remote:path` — copy `remotes.ini.example` and edit |
 
-If any of them is missing the upload step is skipped with a note in the log, and the repack finishes as normal.
+If any of them is missing the upload step is skipped with a note in the log, and the repack finishes as normal. If `rclone.exe` or `rclone.conf` is missing, the note also reminds you to get them from the repack channel (or ask DMP) if you want to auto upload and announce on the testing site.
 
 (Posting to AGTesting has its own optional `agtesting.ini` — see below.)
 

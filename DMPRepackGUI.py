@@ -3027,6 +3027,10 @@ class RepackApp:
             self.log("\n[UPLOAD] Skipped:")
             for pr in problems:
                 self.log("  - " + pr)
+            if not (RCLONE_EXE.exists() and RCLONE_CONF.exists()):
+                self.log("  Want to auto upload and announce on the testing site? Grab "
+                         "rclone.exe and rclone.conf from the repack channel (or ask DMP) "
+                         "and put them next to the program.")
             return None
         remotes = load_remotes()
         choice = self._on_main(lambda: self._upload_dialog(

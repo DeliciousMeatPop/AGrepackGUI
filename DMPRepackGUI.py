@@ -362,10 +362,32 @@ def work_sort_dlc(game_dir: str, log) -> bool:
 
 # ── Settings.ini ─────────────────────────────────────────────────────────────
 
+def has_exe_path(game_type: str, fields: dict) -> bool:
+    """True if at least ONE shortcut has an EXE path (not every shortcut is
+    used on every repack, but zero is never valid)."""
+    keys = {"PC": ["exe1"],
+            "VR": ["exe1", "exe2"] + (["exe3"] if fields.get("meta") else []),
+            "VR Optional": ["exe1", "exe2", "exe3"] + (["exe4"] if fields.get("meta") else []),
+            }.get(game_type, ["exe1"])
+    return any(fields.get(k, "").strip() for k in keys)
+
+
+def ini_has_exe_path() -> bool:
+    """True if the saved settings.ini has at least one non-empty Exe= value."""
+    if not SETTINGS_INI.exists():
+        return False
+    return any(l.strip().lower().startswith("exe=") and l.split("=", 1)[1].strip()
+               for l in ini_read(SETTINGS_INI)
+               if not l.strip().startswith(";"))
+
+
 def work_build_settings(game_type: str, fields: dict, log) -> bool:
     template = INI_TEMPLATES.get(game_type)
     if not template or not template.exists():
         log(f"[ERROR] Template not found: {template}")
+        return False
+    if not has_exe_path(game_type, fields):
+        log("[ERROR] No EXE path set for any shortcut — settings.ini not written.")
         return False
 
     lines = ini_read(template)
@@ -1253,17 +1275,35 @@ def work_archive_art(log) -> bool:
         "logo.png", "banner.bmp", "library_hero.jpg",
         "logo_2x.png", "library_hero_2x.jpg", "AGRepackInstaller.dll",
     ]
-    for fname in art_files:
-        moved = False
-        for search_dir in (SETUP_DIR, BASE_DIR):
-            src = search_dir / fname
-            if not src.exists():
+    # Match names case-insensitively but keep each file's real on-disk name,
+    # so Splash.png stays Splash.png and Banner.bmp stays Banner.bmp.
+    wanted = {f.lower() for f in art_files}
+    moved  = set()
+    for search_dir in (SETUP_DIR, BASE_DIR):
+        for src in sorted(search_dir.iterdir()):
+            key = src.name.lower()
+            if key not in wanted or not src.is_file():
                 continue
-            if not moved:
-                shutil.move(str(src), str(bg_dir / fname))
-                moved = True
+            if key not in moved:
+                shutil.move(str(src), str(bg_dir / src.name))
+                moved.add(key)
             else:
                 src.unlink()   # duplicate — drop it so nothing's left behind
+
+    # InfoBefore: COPY (never move) into the archive, only if this repack uses
+    # it.  Setup\ always keeps its infobefore file for the next repack.
+    sec, uses_info = "", False
+    for l in lines:
+        t = l.strip()
+        if t.startswith("[") and t.endswith("]"):
+            sec = t[1:-1].strip().lower()
+        elif sec == "infobefore" and re.match(r"(?i)enable\s*=\s*1\s*$", t):
+            uses_info = True
+    if uses_info:
+        for src in SETUP_DIR.iterdir():
+            if src.is_file() and src.name.lower() in ("infobefore.txt", "infobefore.rtf"):
+                shutil.copy2(str(src), str(bg_dir / src.name))
+                log(f"  Copied {src.name} into the art archive")
 
     # Collect settings.ini from either location, drop any duplicates
     moved_ini = False
@@ -1279,9 +1319,17 @@ def work_archive_art(log) -> bool:
     zip_path = BASE_DIR / f"{arc_name}.7z"
     cmd = [str(SEVEN_ZIP), "a", "-t7z", "-mx=9", "-sdel",
            str(zip_path), str(bg_dir / "*"),
-           "-xr!*\\*", "-xr!_OldGameArt", "-xr!_OldGameArt\\*"]
+           "-xr!*\\*", "-xr!_OldGameArt", "-xr!_OldGameArt\\*", "-xr!gude-*.log"]
     log(f"  Archiving game art as: {arc_name}.7z")
     subprocess.run(cmd, cwd=str(BASE_DIR))
+
+    # Stray gude-*.log files (PowerShell glitch) must never ride along or linger
+    for d in (bg_dir, SETUP_DIR, BASE_DIR):
+        for stray in d.glob("gude-*.log"):
+            try:
+                stray.unlink()
+            except OSError:
+                pass
 
     # Belt-and-suspenders cleanup of the log no matter where it landed
     for stray in (bg_dir / "repack_log.txt",
@@ -3544,9 +3592,22 @@ class RepackApp:
             return
         fields = self._fields()
         gt     = self.game_type_var.get()
+        if not has_exe_path(gt, fields):
+            self._settings_saved = False
+            messagebox.showwarning(
+                "EXE path missing",
+                "Set an EXE path for at least one shortcut before saving.\n\n"
+                "Nothing was written to settings.ini.")
+            return
         self.log(f"Saving settings.ini for [{gt}]: {fields['name']} ...")
-        self._run(lambda: work_build_settings(gt, fields, self.log)
-                  and self.log("  Done."))
+
+        def _save():
+            if work_build_settings(gt, fields, self.log):
+                self._settings_saved = True
+                self.log("  Done.")
+            else:
+                self._settings_saved = False
+        self._run(_save)
 
     def _step_preprocess(self):
         gd = self.game_dir_var.get().strip()
@@ -3570,6 +3631,12 @@ class RepackApp:
         gd = self.game_dir_var.get().strip()
         if not gd:
             messagebox.showwarning("Required", "Set the Game Directory first.")
+            return
+        if not getattr(self, "_settings_saved", False) or not ini_has_exe_path():
+            messagebox.showwarning(
+                "Save settings first",
+                "Press 'Save Settings → settings.ini' with at least one shortcut "
+                "EXE path filled in before compressing.")
             return
         preset = self.preset_var.get()
         self.log(f"Compressing game data (preset {preset}) — this takes a while...")
@@ -3617,6 +3684,12 @@ class RepackApp:
         do_dlc    = self.do_dlc_var.get()
         make_patch   = self.patch_var.get()
         # ────────────────────────────────────────────────────────────────────
+
+        if not has_exe_path(gt, fields):
+            messagebox.showwarning(
+                "EXE path missing",
+                "Set an EXE path for at least one shortcut before starting a repack.")
+            return
 
         if make_patch and not self._patch_ensure_xdelta():
             if not messagebox.askyesno(

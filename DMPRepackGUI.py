@@ -1292,7 +1292,14 @@ def work_archive_art(log) -> bool:
 
     # InfoBefore: COPY (never move) into the archive, only if this repack uses
     # it.  Setup\ always keeps its infobefore file for the next repack.
-    if ini_get_in_section(lines, "InfoBefore", "Enable", "0") == "1":
+    sec, uses_info = "", False
+    for l in lines:
+        t = l.strip()
+        if t.startswith("[") and t.endswith("]"):
+            sec = t[1:-1].strip().lower()
+        elif sec == "infobefore" and re.match(r"(?i)enable\s*=\s*1\s*$", t):
+            uses_info = True
+    if uses_info:
         for src in SETUP_DIR.iterdir():
             if src.is_file() and src.name.lower() in ("infobefore.txt", "infobefore.rtf"):
                 shutil.copy2(str(src), str(bg_dir / src.name))
